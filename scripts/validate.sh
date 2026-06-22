@@ -16,4 +16,13 @@ while IFS= read -r skill; do
   head -20 "$skill" | grep -q '^description:[[:space:]]*[^[:space:]]' || err "no description: in $skill"
 done < <(find "$ROOT/skills" -name SKILL.md 2>/dev/null)
 
+# 3. harness-protocol.md exists and defines required keys
+PROTO="$ROOT/docs/harness-protocol.md"
+[ -f "$PROTO" ] || err "missing docs/harness-protocol.md"
+if [ -f "$PROTO" ]; then
+  for key in current_phase current_round next_role status pause_reason; do
+    grep -q "$key" "$PROTO" || err "harness-protocol.md missing state key: $key"
+  done
+fi
+
 [ "$fail" -eq 0 ] && echo "validate: OK" || exit 1
