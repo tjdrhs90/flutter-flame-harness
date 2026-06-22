@@ -1,0 +1,186 @@
+default_platform(:ios)
+
+ASC_KEY = {
+  key_id: "339MZ7CUZ5",
+  issuer_id: "f9a69502-1e93-4fd1-9f53-5eb4db1b637a",
+  key_filepath: File.expand_path("AuthKey_339MZ7CUZ5.p8", __dir__),
+}
+APP_ID = "__APP_ID__"
+TEAM_ID = "8DHJJJ66LY"
+CERTS_DIR = File.expand_path("certs", __dir__)
+
+def asc_key
+  app_store_connect_api_key(**ASC_KEY)
+end
+
+platform :ios do
+  desc "Verify ASC API auth and that the app record is reachable"
+  lane :auth_check do
+    num = latest_testflight_build_number(
+      api_key: asc_key,
+      app_identifier: APP_ID,
+      initial_build_number: 0,
+    )
+    UI.success("ASC auth OK — latest TestFlight build number: #{num}")
+  end
+
+  desc "Build the signed IPA and upload it to TestFlight"
+  lane :beta do
+    key = asc_key
+    # Use the existing Apple Distribution identity already in the (unlocked)
+    # login keychain — no setup_ci (it hijacks the default keychain) and no
+    # new certificate creation. Just (re)download the matching profile.
+    get_provisioning_profile(
+      api_key: key,
+      app_identifier: APP_ID,
+      output_path: CERTS_DIR,
+      filename: "__PROFILE_NAME__.mobileprovision",
+      readonly: false,
+    )
+    # Manual signing scoped to the Runner target only (Pods frameworks keep
+    # their own settings — a global profile breaks them). Reverted after.
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "Runner.xcodeproj",
+      team_id: TEAM_ID,
+      code_sign_identity: "Apple Distribution",
+      profile_name: "__PROFILE_NAME__",
+      bundle_identifier: APP_ID,
+      targets: ["Runner"],
+    )
+    build_app(
+      scheme: "Runner",
+      workspace: "Runner.xcworkspace",
+      export_method: "app-store",
+      output_directory: "build",
+      output_name: "__IPA_NAME__",
+      export_options: {
+        signingStyle: "manual",
+        teamID: TEAM_ID,
+        provisioningProfiles: { APP_ID => "__PROFILE_NAME__" },
+      },
+    )
+    upload_to_testflight(
+      api_key: key,
+      app_identifier: APP_ID,
+      skip_waiting_for_build_processing: true,
+    )
+    UI.success("Uploaded build to TestFlight")
+  end
+
+  desc "Upload App Store text metadata (no binary, no screenshots)"
+  lane :metadata do
+    upload_to_app_store(
+      api_key: asc_key,
+      app_identifier: APP_ID,
+      skip_binary_upload: true,
+      skip_screenshots: true,
+      skip_app_version_update: false,
+      run_precheck_before_submit: false,
+      force: true,
+      precheck_include_in_app_purchases: false,
+    )
+    UI.success("App Store metadata uploaded")
+  end
+
+  desc "Read back the live App Store metadata via the API to verify it landed"
+  lane :verify do
+    Spaceship::ConnectAPI.token = Spaceship::ConnectAPI::Token.create(
+      key_id: ASC_KEY[:key_id],
+      issuer_id: ASC_KEY[:issuer_id],
+      filepath: ASC_KEY[:key_filepath],
+    )
+    app = Spaceship::ConnectAPI::App.find(APP_ID)
+    UI.success("APP: #{app.name} | #{app.bundle_id} | id=#{app.id}")
+
+    info = app.fetch_edit_app_info
+    info&.get_app_info_localizations&.each do |loc|
+      next if (loc.name || '').empty? && (loc.subtitle || '').empty?
+      UI.success("INFO[#{loc.locale}] name='#{loc.name}' subtitle='#{loc.subtitle}'")
+    end
+
+    version = app.get_edit_app_store_version
+    UI.message("EDIT VERSION: #{version&.version_string} (#{version&.app_store_state})")
+    version&.get_app_store_version_localizations&.each do |loc|
+      d = (loc.description || '').length
+      s = loc.get_app_screenshot_sets || []
+      total = s.map { |set| (set.app_screenshots || []).length }.sum
+      UI.success(
+        "VER[#{loc.locale}] descLen=#{d} keywords='#{loc.keywords}' " \
+        "promo?=#{!(loc.promotional_text || '').empty?} " \
+        "whatsNew?=#{!(loc.whats_new || '').empty?} screenshots=#{total}",
+      )
+    end
+  end
+
+  desc "List valid App Store category + subcategory IDs"
+  lane :list_cats do
+    Spaceship::ConnectAPI.token = Spaceship::ConnectAPI::Token.create(
+      key_id: ASC_KEY[:key_id],
+      issuer_id: ASC_KEY[:issuer_id],
+      filepath: ASC_KEY[:key_filepath],
+    )
+    require "net/http"
+    require "json"
+    uri = URI(
+      "https://api.appstoreconnect.apple.com/v1/appCategories/GAMES/subcategories?limit=50",
+    )
+    req = Net::HTTP::Get.new(uri)
+    req["Authorization"] = "Bearer #{Spaceship::ConnectAPI.token.text}"
+    res = Net::HTTP.start(uri.host, uri.port, use_ssl: true) { |h| h.request(req) }
+    data = JSON.parse(res.body)
+    ids = (data["data"] || []).map { |c| c["id"] }
+    UI.message("GAMES subcategories: #{ids.join(', ')}")
+  end
+
+  desc "Set App Store categories (Games: Arcade+Casual, secondary Entertainment)"
+  lane :categories do
+    # App Store has no "Arcade" game subcategory; Action is the closest to the
+    # intended arcade feel, paired with Casual.
+    upload_to_app_store(
+      api_key: asc_key,
+      app_identifier: APP_ID,
+      primary_category: "GAMES",
+      primary_first_sub_category: "GAMES_ACTION",
+      primary_second_sub_category: "GAMES_CASUAL",
+      secondary_category: "ENTERTAINMENT",
+      skip_binary_upload: true,
+      skip_screenshots: true,
+      skip_app_version_update: true,
+      run_precheck_before_submit: false,
+      force: true,
+    )
+    UI.success("Categories set")
+  end
+
+  desc "Upload App Store screenshots only (from fastlane/screenshots/<locale>)"
+  lane :screenshots do
+    upload_to_app_store(
+      api_key: asc_key,
+      app_identifier: APP_ID,
+      skip_binary_upload: true,
+      skip_metadata: true,
+      skip_app_version_update: true,
+      overwrite_screenshots: true,
+      run_precheck_before_submit: false,
+      force: true,
+    )
+    UI.success("App Store screenshots uploaded")
+  end
+
+  desc "Provision an App Store distribution certificate + profile via the API"
+  lane :certs do
+    key = asc_key
+    get_certificates(
+      api_key: key,
+      output_path: CERTS_DIR,
+    )
+    get_provisioning_profile(
+      api_key: key,
+      app_identifier: APP_ID,
+      output_path: CERTS_DIR,
+      filename: "__PROFILE_NAME__.mobileprovision",
+    )
+    UI.success("Signing assets ready in #{CERTS_DIR}")
+  end
+end

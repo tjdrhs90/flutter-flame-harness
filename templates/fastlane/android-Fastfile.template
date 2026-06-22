@@ -1,0 +1,62 @@
+default_platform(:android)
+
+PACKAGE = "__PACKAGE__"
+JSON_KEY = File.expand_path("play-store-key.json", __dir__)
+
+platform :android do
+  desc "Upload only the Play store listing metadata (no binary, no images)"
+  lane :metadata do
+    upload_to_play_store(
+      package_name: PACKAGE,
+      json_key: JSON_KEY,
+      skip_upload_aab: true,
+      skip_upload_apk: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      skip_upload_changelogs: true,
+    )
+  end
+
+  desc "Upload Play store graphics — screenshots, icon, feature graphic"
+  lane :images do
+    # NB: don't skip_upload_metadata — the hi-res icon and feature graphic are
+    # attached during the listing (metadata) upload; only screenshots upload
+    # independently. Text is re-sent (idempotent, same content).
+    upload_to_play_store(
+      package_name: PACKAGE,
+      json_key: JSON_KEY,
+      skip_upload_aab: true,
+      skip_upload_apk: true,
+      skip_upload_changelogs: true,
+    )
+  end
+
+  desc "Set the release notes (changelog) on the production draft release"
+  lane :release_notes do
+    upload_to_play_store(
+      package_name: PACKAGE,
+      json_key: JSON_KEY,
+      track: "production",
+      version_code: 1,
+      release_status: "draft", # app is unpublished → keep the draft as draft
+      skip_upload_aab: true,
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      skip_upload_changelogs: false,
+    )
+  end
+
+  desc "Upload the signed AAB to the internal track + metadata"
+  lane :internal do
+    upload_to_play_store(
+      package_name: PACKAGE,
+      json_key: JSON_KEY,
+      track: "internal",
+      aab: "../build/app/outputs/bundle/release/app-release.aab",
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+    )
+  end
+end
