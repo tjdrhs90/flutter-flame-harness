@@ -308,7 +308,7 @@ Leave all other keys unchanged. Use `Edit` for a targeted update.
 Append one row to `docs/harness/pipeline-log.md` per the schema in `docs/harness-protocol.md` §6:
 
 ```
-| <ISO-8601 UTC now> | complete | plan | PRD written; app_slug: <slug>; bundle_id: com.gonigon.<slug> |
+| <ISO-8601 UTC now> | complete | plan | PRD written; app_slug: <slug>; bundle_id: com.gonigon.<id> |
 ```
 
 ---
