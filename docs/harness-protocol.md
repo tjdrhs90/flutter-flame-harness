@@ -39,6 +39,12 @@ android:
   key_alias: upload
 
 credentials_dir: /Users/ssg/AndroidStudioProjects/credentials
+
+admob:
+  enabled: true          # false when skip_admob
+  ios_app_id: ""         # ca-app-pub-XXXX~YYYY
+  android_app_id: ""     # ca-app-pub-XXXX~ZZZZ
+  ad_units: []           # list of { key, ios_id, android_id, format }
 ```
 
 ### Key Notes
@@ -264,9 +270,15 @@ The state machine governing `current_phase`, `next_role`, and `status` transitio
 | design | complete | contract |
 | contract | AGREED | generator (current_round=1) |
 | generator | handoff | evaluator |
-| evaluator | PASS | admob (Phase B boundary → pause/handoff) |
+| evaluator | PASS | admob (or `build` if `skip_admob: true`) |
 | evaluator | FAIL | generator (current_round+1) |
 | evaluator | max_rounds | forced judgment, then admob |
+| admob      | complete       | build                                    |
+| build      | complete       | screenshot                               |
+| screenshot | complete       | submit                                   |
+| submit     | metadata-done  | status=paused, pause_reason=manual_action|
+| (paused)   | resume         | retro                                    |
+| retro      | complete       | status=completed                         |
 | any | rate_limit | status=paused, pause_reason=rate_limit |
 
 ### State Transition Rules
@@ -277,5 +289,6 @@ The state machine governing `current_phase`, `next_role`, and `status` transitio
 4. When `status` is set to `running` after a pause, `resume_attempts` must be incremented.
 5. `current_round` starts at 1 when the contract is AGREED and increments each time the evaluator returns FAIL (i.e., at the start of each new generator round).
 6. When `current_round` exceeds `max_rounds` the evaluator triggers the `max_rounds` event, writes a forced judgment, and transitions to `admob`.
-7. `completed` status is set only after the final phase (submit) exits cleanly.
+7. `completed` status is set only after the final phase (`retro`) exits cleanly.
 8. `pause_reason` is set only by the rate-limit hook / error path, and is cleared (set to `""`) by `flame-harness-resume` when it returns `status` to `running`. Forward-flow phase skills do not need to touch `pause_reason`.
+9. If `config.md` `skip_admob: true`, the evaluator's PASS sets `next_role: build` (admob is skipped).

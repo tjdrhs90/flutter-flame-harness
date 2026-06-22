@@ -95,34 +95,17 @@ After bootstrap (or when resuming without `--resume` flag), enter the dispatch l
 Read `docs/harness/state.md` and extract `next_role` and `status`.
 
 - If `status: completed` — print a completion summary and exit.
-- If `status: paused` — print the `pause_reason` and instruct the user to run with `--resume`.
-  Do not continue automatically.
-
-### Phase B boundary
-
-The Phase B boundary is reached when `next_role` is `admob` (or `current_phase` transitions to
-`admob` per the transition table in `docs/harness-protocol.md` Section 7).
-
-When this boundary is hit, stop the loop and print:
-
-```
-Phase B (AdMob + submission) is not yet implemented.
-The game pipeline has completed Phase A successfully.
-To continue once Phase B skills are available, run:
-  /flame-harness --resume
-```
-
-Then exit. Do NOT invoke `flame-harness-admob`.
+- If `status: paused` — print the `pause_reason` and any pending manual steps, then instruct the user to run with `--resume`. Do not continue automatically.
 
 ### Dispatch
 
-For any other `next_role` value, invoke the corresponding phase skill:
+For any `next_role` value in the known set, invoke the corresponding phase skill:
 
 ```
 Skill("flame-harness-<next_role>")
 ```
 
-Valid Phase A `next_role` values and their skills (per transition table in `docs/harness-protocol.md`
+Valid `next_role` values and their skills (per transition table in `docs/harness-protocol.md`
 Section 7):
 
 | next_role | Skill invoked |
@@ -133,6 +116,11 @@ Section 7):
 | `contract` | `flame-harness-contract` |
 | `generator` | `flame-harness-generator` |
 | `evaluator` | `flame-harness-evaluator` |
+| `admob` | `flame-harness-admob` |
+| `build` | `flame-harness-build` |
+| `screenshot` | `flame-harness-screenshot` |
+| `submit` | `flame-harness-submit` |
+| `retro` | `flame-harness-retro` |
 
 Each phase skill is responsible for updating `state.md` (including setting `next_role` to the
 next phase) before returning, following the transition rules in `docs/harness-protocol.md` Section 7.
@@ -142,10 +130,13 @@ After each skill returns, re-read `state.md` and verify that either `updated_at`
 with: "orchestrator: phase skill `<role>` returned without updating state.md — halting to avoid a
 redispatch loop."
 
+When `status: paused` (e.g. after `submit` sets `pause_reason: manual_action`), print the pending
+manual steps from `state.md` and instruct the user to complete them, then run with `--resume`.
+Do not continue automatically.
+
 Then repeat the dispatch check. Continue until:
-- `status: completed`
-- `status: paused`
-- `next_role: admob` (Phase B boundary)
+- `status: completed` (set by `retro` — print a completion summary and exit)
+- `status: paused` (print pause_reason and instruct user to run with `--resume`, then exit)
 
 ---
 
@@ -173,5 +164,4 @@ Do not attempt to read or modify `state.md` before delegating to the resume skil
 - If `docs/harness/config.md` is missing on a non-first run, abort with a clear error message.
 - If an invoked phase skill exits with an error or sets `status: paused` with
   `pause_reason: error`, stop the loop and report the failure to the user.
-- If `next_role` contains a value not in the known Phase A set and is not `admob`, abort with
-  an "unknown next_role" error so the user can investigate `state.md`.
+- If `next_role` contains a value not in the known set (research, plan, design, contract, generator, evaluator, admob, build, screenshot, submit, retro), abort with an "unknown next_role" error so the user can investigate `state.md`.
