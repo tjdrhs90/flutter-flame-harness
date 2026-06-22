@@ -26,8 +26,13 @@ See [`docs/SMOKE-TEST-phaseB.md`](docs/SMOKE-TEST-phaseB.md) for the full manual
 ## Usage
 
 ```
-/flame-harness <idea>
+/flame-harness "<idea>"
+/flame-harness
 ```
+
+Run with a quoted idea to seed the pipeline directly. Run with no idea and the AI researches the
+market, recommends 2-3 game concepts, and waits for you to pick one before proceeding.
+
 
 Flags:
 

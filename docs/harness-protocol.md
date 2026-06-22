@@ -11,7 +11,7 @@ redefining schemas (DRY principle).
 Each game's `docs/harness/config.md` must be valid YAML containing the following keys:
 
 ```yaml
-app_idea: "<one-line description of the game>"
+app_idea: ""  # blank => research generates & recommends concepts; populated after research confirms choice
 app_name: "<display name>"
 app_slug: "<kebab-case identifier>"
 bundle_id: "com.gonigon.<slug>"

@@ -60,6 +60,10 @@ In your Claude Code session, run:
 /flame-harness --skip-research "tap to flap, single obstacle"
 ```
 
+**Variation — no-idea run:** run `/flame-harness` with no arguments and confirm that the research
+phase presents 2-3 concept recommendations via AskUserQuestion and waits for your pick before
+proceeding (the pipeline must not auto-select a concept).
+
 The orchestrator bootstraps `docs/harness/` inside the new game project directory, writes
 `config.md` and `state.md`, then dispatches each phase in order.
 

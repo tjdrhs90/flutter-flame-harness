@@ -24,7 +24,10 @@ Read `docs/harness/config.md` and extract:
 
 - `app_idea` — the raw one-line game idea supplied by the user (may be blank if the user invoked
   the harness without an idea, in which case you will generate ideas from scratch in the Discovery
-  step).
+  step). When `app_idea` is blank, the Discovery and "Propose & query" steps run exactly as normal
+  but driven purely by market research and creative reasoning with no seed concept; the resulting
+  proposals are still presented via AskUserQuestion for the user to pick — the AI never selects
+  automatically.
 - `skip_research` — boolean. If `true`, treat `app_idea` as the chosen concept verbatim and
   **skip the Discovery and "Propose & query" steps entirely**. Jump directly to Clone avoidance,
   then Output. Even when skipping discovery you must still write the research spec.

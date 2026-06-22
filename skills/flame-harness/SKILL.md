@@ -1,7 +1,7 @@
 ---
 name: flame-harness
 description: Orchestrator — bootstrap a Flutter/Flame game pipeline (idea→playable game) and dispatch each phase skill. Use when starting or continuing a flame-harness run.
-argument-hint: "<game idea> [--strict] [--rounds N] [--skip-research] [--skip-admob] [--resume]"
+argument-hint: "[game idea] [--strict] [--rounds N] [--skip-research] [--skip-admob] [--resume]"
 allowed-tools: [Agent, Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion, Skill]
 ---
 
@@ -20,12 +20,15 @@ Parse the invocation arguments before doing anything else.
 
 | Argument | Config key (in `config.md`) | Default |
 |---|---|---|
-| `<game idea>` | `app_idea` | — (required on first run) |
+| `[game idea]` | `app_idea` | optional — if omitted, research generates & recommends ideas from scratch |
 | `--strict` | `strict_mode: true` | `false` |
 | `--rounds N` | `max_rounds: N` | `3` |
 | `--skip-research` | `skip_research: true` | `false` |
 | `--skip-admob` | `skip_admob: true` | `false` |
 | `--resume` | (delegates to resume handler; see Resume section) | — |
+
+**Guard:** if `--skip-research` is set AND no idea is given, abort immediately with:
+`flame-harness: --skip-research needs a game idea (nothing to build without research or an idea).`
 
 Key-to-file mapping follows the `config.md` schema in `docs/harness-protocol.md` Section 1.
 
@@ -60,7 +63,7 @@ with the full schema from `docs/harness-protocol.md` Section 1.
 
 Populate the game-specific keys from the parsed arguments:
 
-- `app_idea` — from the positional argument
+- `app_idea` — from the positional argument; if no positional argument was given, write `app_idea: ""` (blank is valid — research will generate and recommend concepts). Do NOT abort on an empty idea.
 - `app_name` — derive a short display name from the idea (ask the user if ambiguous)
 - `app_slug` — kebab-case version of `app_name`
 - `bundle_id` — `com.gonigon.<slug>`
