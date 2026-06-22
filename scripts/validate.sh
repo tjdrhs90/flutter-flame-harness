@@ -110,4 +110,12 @@ if [ -f "$BLD" ]; then
   require_section "$BLD" "next_role" "state update"
 fi
 
+SHOT="$ROOT/skills/flame-harness-screenshot/SKILL.md"
+if [ -f "$SHOT" ]; then
+  require_section "$SHOT" "integration_test" "integration test harness"
+  require_section "$SHOT" "ko\|KO\|en\|EN\|locale" "KO+EN locales"
+  require_section "$SHOT" "keywords" "ASO keywords"
+  require_section "$SHOT" "screenshots\|images" "fastlane upload"
+fi
+
 [ "$fail" -eq 0 ] && echo "validate: OK" || exit 1

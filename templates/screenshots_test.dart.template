@@ -1,0 +1,123 @@
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:integration_test/integration_test.dart';
+import 'package:<__APP_SLUG__>/main.dart' as app;
+
+/// Drives the game and captures store screenshots at the running device's
+/// resolution. Run via:
+///
+///   flutter drive \
+///     --driver=test_driver/integration_test.dart \
+///     --target=integration_test/screenshots_test.dart \
+///     -d DEVICE_ID \
+///     --dart-define=SCREENSHOT_LOCALE=ko \
+///     --dart-define=screenshots=true
+///
+/// Repeat with --dart-define=SCREENSHOT_LOCALE=en for the English set.
+/// The --dart-define=screenshots=true flag tells the ad helper to suppress
+/// all ad units during capture (no banner/interstitial/rewarded overlays).
+///
+/// iOS 6.7" iPhone simulator and Android phone emulator are the required
+/// device sizes for store screenshot compliance.
+void main() {
+  final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  /// Settle the frame then capture a named screenshot.
+  ///
+  /// Pumps a couple of real frames so [takeScreenshot] reflects the current
+  /// composited surface. On Android the surface is converted to an image once
+  /// up front (see [convertFlutterSurfaceToImage] below) — converting again
+  /// here would trigger an assertion.
+  Future<void> shot(WidgetTester tester, String name) async {
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pump();
+    await binding.takeScreenshot(name);
+  }
+
+  /// Settle without [pumpAndSettle] — avoid timing out on looping animations.
+  Future<void> wait(WidgetTester tester, [int ms = 900]) async {
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(Duration(milliseconds: ms));
+  }
+
+  testWidgets('capture store screenshots', (tester) async {
+    // Locale for this capture run, injected via --dart-define=SCREENSHOT_LOCALE=ko|en.
+    // (Platform.environment reflects the host, not the device — use fromEnvironment.)
+    const locale = String.fromEnvironment(
+      'SCREENSHOT_LOCALE',
+      defaultValue: 'ko',
+    );
+
+    // TODO(generator): seed any SharedPreferences / Hive / Isar mock data that
+    // avoids the first-run tutorial and displays a representative UI state
+    // (e.g. a high score, coin balance, unlocked skins).
+    // Example:
+    //   SharedPreferences.setMockInitialValues({...});
+
+    app.main();
+
+    // Generous warm-up so the first composited frame is ready.
+    await wait(tester, 1500);
+    await wait(tester, 1000);
+
+    // TODO(generator): force the app locale to `locale` using the game's
+    // locale controller / provider so screenshots are language-deterministic
+    // regardless of the simulator's system locale.
+    // Example:
+    //   localeController.value = locale == 'en'
+    //       ? const Locale('en')
+    //       : const Locale('ko');
+    await wait(tester, 700);
+
+    // Android: convert the render surface to an image ONCE so takeScreenshot
+    // works. Widget-tree taps still dispatch normally; the image re-renders as
+    // we navigate.
+    if (Platform.isAndroid) {
+      await binding.convertFlutterSurfaceToImage();
+      await tester.pump();
+    }
+
+    // -------------------------------------------------------------------------
+    // Placeholder screen list — replace with the game's real screens.
+    // Each entry: (screenshotName, drivingLogic)
+    // -------------------------------------------------------------------------
+
+    // TODO(generator): drive <game>-specific screens below.
+    // Keep screenshot names as zero-padded two-digit prefixes so they sort
+    // correctly in the fastlane / App Store Connect upload order.
+
+    // Screen 1 — Home / Main menu
+    // (app launches directly here; no extra navigation needed)
+    await shot(tester, '01_home');
+
+    // Screen 2 — <Second key screen, e.g. character select, tutorial, shop>
+    // TODO(generator): navigate to the second representative screen.
+    // await tester.tap(find.byIcon(Icons.XXXX));
+    // await wait(tester);
+    // await shot(tester, '02_<screen_name>');
+    // TODO(generator): navigate back if required.
+
+    // Screen 3 — Gameplay
+    // TODO(generator): tap the play/start button and let the game reach a
+    // visually interesting state (countdown finished, enemies/obstacles
+    // visible, score non-zero).
+    // Example:
+    //   await tester.tap(find.byIcon(Icons.play_arrow));
+    //   await tester.pump(const Duration(milliseconds: 400));
+    //   for (var i = 0; i < 12; i++) {
+    //     await tester.pump(const Duration(milliseconds: 500));
+    //   }
+    //   await shot(tester, '03_gameplay');
+
+    // Screen 4 — Game Over / Results (optional but recommended)
+    // TODO(generator): trigger game-over state and capture the results screen.
+    // await shot(tester, '04_game_over');
+
+    // -------------------------------------------------------------------------
+    // Add or remove screens as needed for the 10-screenshot store requirement.
+    // -------------------------------------------------------------------------
+  });
+}
