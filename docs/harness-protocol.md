@@ -272,8 +272,9 @@ The state machine governing `current_phase`, `next_role`, and `status` transitio
 ### State Transition Rules
 
 1. A skill must update `state.md` atomically before exiting (write then rename/overwrite).
-2. When `status` is set to `paused`, `pause_reason` must be one of `rate_limit`, `manual_action`, or `error` (never empty).
-3. When `status` is set to `running` after a pause, `resume_attempts` must be incremented.
+2. When a phase skill completes successfully and advances the pipeline, it sets `status: running` together with `current_phase` and `next_role` in the same `state.md` update. Only the rate-limit hook, an error, or a pause sets `status: paused`.
+3. When `status` is set to `paused`, `pause_reason` must be one of `rate_limit`, `manual_action`, or `error` (never empty).
+4. When `status` is set to `running` after a pause, `resume_attempts` must be incremented.
 4. `current_round` starts at 1 when the contract is AGREED and increments each time the evaluator returns FAIL (i.e., at the start of each new generator round).
 5. When `current_round` exceeds `max_rounds` the evaluator triggers the `max_rounds` event, writes a forced judgment, and transitions to `admob`.
 6. `completed` status is set only after the final phase (submit) exits cleanly.

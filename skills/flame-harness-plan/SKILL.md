@@ -291,6 +291,7 @@ Apply the identity keys (`app_name`, `app_slug`, `bundle_id`) via `Edit` as desc
 Update `docs/harness/state.md` per the schema in `docs/harness-protocol.md` §2:
 
 ```yaml
+status: running
 current_phase: plan
 next_role: design
 updated_at: "<ISO-8601 UTC now>"

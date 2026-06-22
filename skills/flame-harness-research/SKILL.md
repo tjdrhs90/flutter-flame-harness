@@ -189,6 +189,7 @@ Use `Edit` to make a targeted update — do not rewrite the entire file.
 Update `docs/harness/state.md` per the schema in `docs/harness-protocol.md` §2:
 
 ```yaml
+status: running
 current_phase: research
 next_role: plan
 updated_at: "<ISO-8601 UTC now>"
