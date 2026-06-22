@@ -1,0 +1,181 @@
+---
+name: flame-harness-submit
+description: Phase 10 — upload store text metadata + categories via fastlane, then pause with exact manual steps for the final iOS review submission and Android production promotion.
+argument-hint: ""
+allowed-tools: [Read, Write, Edit, Bash, AskUserQuestion]
+---
+
+# flame-harness-submit
+
+Phase 10 of the flutter-flame-harness pipeline. Uploads store text metadata and app categories via
+fastlane for both iOS and Android, then pauses the pipeline with exact manual steps for the final
+review submission / production promotion that cannot be automated.
+
+All file schemas (`config.md`, `state.md`, `pipeline-log.md`) and the phase transition table are
+defined in `docs/harness-protocol.md` — that document is the single source of truth (§1 for
+`config.md`; §2 for `state.md` keys and `pause_reason` values; §6 for `pipeline-log.md` schema;
+§7 for the `submit → metadata-done → paused` transition and the `(paused) → resume → retro`
+transition). Do not redefine schemas here.
+
+**Boundary:** Text metadata upload is automated. The final "Submit for Review" tap on iOS and the
+"Promote to production" action on Android are **manual** — the Apple and Google APIs do not permit
+fully automated submission without human confirmation after the review build is staged.
+
+**Prerequisites:** Phase 9 (`flame-harness-screenshot`) completed; screenshots and ASO metadata
+already uploaded; `state.md` shows `next_role: submit`.
+
+---
+
+## Input — Read Inputs
+
+Before any action, load:
+
+1. `docs/harness/config.md` — extract `app_slug`, `bundle_id`, `app_name`, and `default_language`
+   (per protocol §1).
+2. `docs/harness/state.md` — confirm `next_role: submit` (per protocol §2).
+
+Derive the game root path: `/Users/ssg/AndroidStudioProjects/<app_slug>/`.
+
+---
+
+## Phase 1 — Metadata Upload
+
+Run the fastlane metadata and categories lanes for both platforms. These lanes push text metadata
+(localized titles, descriptions, release notes) and app category assignments to the stores without
+uploading a binary.
+
+### iOS metadata upload
+
+```bash
+cd <game>/ios
+fastlane metadata
+fastlane categories
+```
+
+- `fastlane metadata` pushes all locale text files under `ios/fastlane/metadata/` to App Store
+  Connect via `deliver` (titles, subtitles, descriptions, keywords, promotional text,
+  release notes).
+- `fastlane categories` sets the primary and secondary App Store category. The `categories` lane
+  must already exist in the generated `ios/fastlane/Fastfile` (written by Phase 8
+  `flame-harness-build`).
+
+### Android metadata upload
+
+```bash
+cd <game>/android
+fastlane metadata
+fastlane release_notes
+```
+
+- `fastlane metadata` pushes all locale text files under `android/fastlane/metadata/android/` to
+  Google Play (titles, short descriptions, full descriptions) via `upload_to_play_store` with
+  `skip_upload_apk: true` and `skip_upload_aab: true`.
+- `fastlane release_notes` pushes the `changelogs/<version-code>.txt` files for the current
+  release.
+
+If any fastlane lane exits non-zero, do NOT proceed to the pause step. Instead write
+`docs/harness/state.md` with `status: paused`, `pause_reason: manual_action`, and
+`next_role: submit` (retry), then explain the error and stop.
+
+---
+
+## Phase 2 — Manual Steps + Pause
+
+After both upload sequences complete successfully, the pipeline must pause so the developer can
+perform the final submission actions that cannot be automated.
+
+### Pre-pause state write
+
+Per `docs/harness-protocol.md` §7 (`submit → metadata-done` event row) and §7 rule 3 (when
+`status` is `paused`, `pause_reason` must be non-empty), write `docs/harness/state.md` atomically
+with **exactly** these field changes (leave `created_at`, `current_round`, `resume_attempts`
+unchanged):
+
+```yaml
+status: paused
+current_phase: submit
+next_role: submit
+pause_reason: manual_action
+updated_at: "<ISO-8601 UTC now>"
+```
+
+**Important:** Do NOT advance `next_role` past `submit` here. The pipeline remains at
+`next_role: submit` while paused so that `flame-harness-resume` can detect which phase owns the
+pause. `flame-harness-resume` will set `next_role: retro` once the user confirms the manual steps
+are done (see Resume contract below).
+
+### Append to pipeline-log.md
+
+Append one row to `docs/harness/pipeline-log.md` per the schema in `docs/harness-protocol.md` §6,
+using the transition event name `metadata-done` (matches protocol §7):
+
+```
+| <ISO-8601 UTC now> | pause | submit | metadata-done: iOS metadata+categories uploaded, Android metadata+release_notes uploaded; awaiting manual Submit for Review (iOS) and production promotion (Android) |
+```
+
+### Print exact manual steps
+
+After writing state, print the following instructions verbatim for the developer:
+
+---
+
+**PIPELINE PAUSED — MANUAL SUBMISSION REQUIRED**
+
+Fastlane has uploaded all text metadata and categories. You must now complete the final
+submission steps manually, as the Apple and Google APIs do not support fully automated review
+submission.
+
+**iOS — Submit for Review**
+
+1. Open [App Store Connect](https://appstoreconnect.apple.com) and navigate to your app.
+2. Select the version that was uploaded by `flame-harness-build` (Phase 8).
+3. Verify that the build, all screenshots, and all metadata are correct and complete.
+4. Click **"Submit for Review"** (심사 제출).
+5. Answer any pre-submission questionnaires Apple presents (export compliance, content rights,
+   advertising identifier / IDFA).
+6. Confirm submission. The app status will change to "Waiting for Review".
+
+**Android — Promote to Production**
+
+1. Open [Google Play Console](https://play.google.com/console) and navigate to your app.
+2. Go to **Testing → Internal testing** and locate the internal-track release uploaded by
+   `flame-harness-build` (Phase 8).
+3. Complete the following questionnaires if not already done (the Google Play API cannot set
+   these programmatically):
+   - **Content Rating** — complete the IARC questionnaire.
+   - **Data Safety** — declare what data your app collects and how it is used.
+   - **Target Audience** — confirm the app is not directed at children (if applicable).
+4. Once all questionnaires are complete, click **"Promote release → Production"**.
+5. Set the rollout percentage (100% recommended for a new app).
+6. Click **"Review release"** then **"Start rollout to production"**.
+
+When you have completed all of the above steps on both platforms, run:
+
+```
+/flame-harness-resume
+```
+
+`flame-harness-resume` will confirm you are done, clear the pause, advance `next_role` to `retro`,
+and launch `flame-harness-retro`.
+
+---
+
+## Resume Contract
+
+This section documents the expected behaviour of `flame-harness-resume` when it encounters the
+pause written by this skill. It is informational — `flame-harness-resume` is the authoritative
+implementation (see its SKILL.md).
+
+Per `docs/harness-protocol.md` §7:
+
+- The pause event is `metadata-done`; it sets `status: paused` with `pause_reason: manual_action`.
+- The resume event transitions `(paused) → resume → retro`.
+- When the user confirms all manual steps are complete, `flame-harness-resume` will:
+  1. Clear `pause_reason` to `""` (per §7 rule 8).
+  2. Set `status: running` and `next_role: retro` atomically (per §7 rules 1 and 2).
+  3. Increment `resume_attempts` (per §7 rule 4).
+  4. Append a `resume` row to `pipeline-log.md` (per §6).
+  5. Dispatch `Skill("flame-harness-retro")`.
+
+The retro phase (`next_role: retro`) is the final phase; when it completes it sets
+`status: completed` (per §7 `retro → complete` row).

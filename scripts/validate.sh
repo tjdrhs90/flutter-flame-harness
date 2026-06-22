@@ -118,4 +118,12 @@ if [ -f "$SHOT" ]; then
   require_section "$SHOT" "screenshots\|images" "fastlane upload"
 fi
 
+SUB="$ROOT/skills/flame-harness-submit/SKILL.md"
+if [ -f "$SUB" ]; then
+  require_section "$SUB" "metadata" "metadata upload"
+  require_section "$SUB" "manual_action\|paused" "manual pause"
+  require_section "$SUB" "Submit for Review\|심사 제출\|production" "manual submit steps"
+  require_section "$SUB" "retro" "resume target"
+fi
+
 [ "$fail" -eq 0 ] && echo "validate: OK" || exit 1
