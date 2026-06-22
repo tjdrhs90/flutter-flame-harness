@@ -72,20 +72,7 @@ Do NOT hard-code credential values; always read them from `credentials_dir`.
 
 ### 3. Write `docs/harness/state.md`
 
-Write initial state per the schema in `docs/harness-protocol.md` Section 2:
-
-```yaml
-status: running
-current_phase: (init)
-current_round: 1
-next_role: research   # use "plan" if --skip-research was passed
-pause_reason: ""
-created_at: "<ISO-8601 UTC now>"
-updated_at: "<ISO-8601 UTC now>"
-resume_attempts: 0
-```
-
-If `--skip-research` was given, set `next_role: plan`.
+Write `state.md` per the schema in `docs/harness-protocol.md` §2. Initial values: `status: running`, `current_phase: (init)`, `current_round: 1`, `next_role: research` (or `plan` if `--skip-research`), `pause_reason: ""`, `resume_attempts: 0`, and `created_at`/`updated_at` set to the current ISO-8601 UTC timestamp.
 
 ### 4. Append INIT row to `docs/harness/pipeline-log.md`
 
@@ -150,7 +137,12 @@ Section 7):
 Each phase skill is responsible for updating `state.md` (including setting `next_role` to the
 next phase) before returning, following the transition rules in `docs/harness-protocol.md` Section 7.
 
-After each skill returns, re-read `state.md` and repeat the dispatch check. Continue until:
+After each skill returns, re-read `state.md` and verify that either `updated_at` changed or
+`next_role` advanced compared to the values before dispatch. If neither changed, abort immediately
+with: "orchestrator: phase skill `<role>` returned without updating state.md — halting to avoid a
+redispatch loop."
+
+Then repeat the dispatch check. Continue until:
 - `status: completed`
 - `status: paused`
 - `next_role: admob` (Phase B boundary)
@@ -159,8 +151,11 @@ After each skill returns, re-read `state.md` and repeat the dispatch check. Cont
 
 ## Resume
 
-If `--resume` is passed as an argument, skip all bootstrap and dispatch logic and delegate
-immediately to the resume skill:
+If `--resume` is passed as an argument, first verify that `docs/harness/state.md` exists. If it
+does not exist, abort with: "Nothing to resume — no state.md found. Run without --resume to start
+a new pipeline."
+
+Otherwise, skip all bootstrap and dispatch logic and delegate immediately to the resume skill:
 
 ```
 Skill("flame-harness-resume")

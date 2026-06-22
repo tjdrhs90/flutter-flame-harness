@@ -25,7 +25,7 @@ if [ -f "$PROTO" ]; then
   done
 fi
 
-# 4. Per-skill required-section assertions (set by REQ_<skillname> env in CI; here inline)
+# 4. Per-skill required-section assertions (inline grep checks).
 require_section() { # file, pattern, label
   grep -qi "$2" "$1" || err "$(basename "$(dirname "$1")") missing section: $3"
 }
