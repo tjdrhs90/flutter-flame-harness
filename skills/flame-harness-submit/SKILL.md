@@ -34,7 +34,7 @@ Before any action, load:
    (per protocol §1).
 2. `docs/harness/state.md` — confirm `next_role: submit` (per protocol §2).
 
-Derive the game root path: `/Users/ssg/AndroidStudioProjects/<app_slug>/`.
+Derive the game root path: `/Users/ssg/AndroidStudioProjects/<app_slug>/`, read the project base from `config.md`/the harness working directory rather than assuming this absolute prefix.
 
 ---
 
@@ -94,15 +94,16 @@ unchanged):
 ```yaml
 status: paused
 current_phase: submit
-next_role: submit
+next_role: retro
 pause_reason: manual_action
 updated_at: "<ISO-8601 UTC now>"
 ```
 
-**Important:** Do NOT advance `next_role` past `submit` here. The pipeline remains at
-`next_role: submit` while paused so that `flame-harness-resume` can detect which phase owns the
-pause. `flame-harness-resume` will set `next_role: retro` once the user confirms the manual steps
-are done (see Resume contract below).
+**Important:** `next_role: retro` is set at pause time because a paused state stores the role to
+run *after* resume. `flame-harness-resume` reads `next_role` directly from `state.md` (it does
+NOT set `next_role` itself) and dispatches `Skill("flame-harness-<next_role>")`. Setting
+`next_role: retro` here is what causes resume to advance to retro rather than re-dispatching
+submit (see Resume Contract below).
 
 ### Append to pipeline-log.md
 
@@ -155,8 +156,8 @@ When you have completed all of the above steps on both platforms, run:
 /flame-harness-resume
 ```
 
-`flame-harness-resume` will confirm you are done, clear the pause, advance `next_role` to `retro`,
-and launch `flame-harness-retro`.
+`flame-harness-resume` will confirm you are done, clear the pause, and launch
+`flame-harness-retro` (the pipeline was already set to `next_role: retro` at pause time).
 
 ---
 
@@ -172,10 +173,13 @@ Per `docs/harness-protocol.md` §7:
 - The resume event transitions `(paused) → resume → retro`.
 - When the user confirms all manual steps are complete, `flame-harness-resume` will:
   1. Clear `pause_reason` to `""` (per §7 rule 8).
-  2. Set `status: running` and `next_role: retro` atomically (per §7 rules 1 and 2).
+  2. Set `status: running` atomically (per §7 rules 1 and 2). **`flame-harness-resume` does NOT
+     set `next_role`** — it reads whatever `next_role` is already in `state.md`. Because this
+     skill wrote `next_role: retro` at pause time, resume dispatches `retro`.
   3. Increment `resume_attempts` (per §7 rule 4).
   4. Append a `resume` row to `pipeline-log.md` (per §6).
-  5. Dispatch `Skill("flame-harness-retro")`.
+  5. Read `next_role` (= `retro`) from the updated `state.md` and dispatch
+     `Skill("flame-harness-retro")`.
 
 The retro phase (`next_role: retro`) is the final phase; when it completes it sets
 `status: completed` (per §7 `retro → complete` row).
