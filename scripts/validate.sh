@@ -43,4 +43,12 @@ if [ -f "$RES" ]; then
   require_section "$RES" "next_role" "state update"
 fi
 
+PLAN="$ROOT/skills/flame-harness-plan/SKILL.md"
+if [ -f "$PLAN" ]; then
+  require_section "$PLAN" "app_slug\|slug" "slug assignment"
+  require_section "$PLAN" "com.gonigon" "bundle id rule"
+  require_section "$PLAN" "scope\|스코프" "scope guard"
+  require_section "$PLAN" "lib/" "lib structure map"
+fi
+
 [ "$fail" -eq 0 ] && echo "validate: OK" || exit 1
