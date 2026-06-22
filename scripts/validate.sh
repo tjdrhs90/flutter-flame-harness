@@ -85,4 +85,12 @@ if [ -f "$EVA" ]; then
   require_section "$EVA" "strict" "strict-mode phases"
 fi
 
+STA="$ROOT/skills/flame-harness-status/SKILL.md"
+RSM="$ROOT/skills/flame-harness-resume/SKILL.md"
+[ -f "$STA" ] && require_section "$STA" "read-only\|읽기 전용\|state.md" "status reads state"
+if [ -f "$RSM" ]; then
+  require_section "$RSM" "rate_limit" "rate_limit resume"
+  require_section "$RSM" "manual_action" "manual_action resume"
+fi
+
 [ "$fail" -eq 0 ] && echo "validate: OK" || exit 1
