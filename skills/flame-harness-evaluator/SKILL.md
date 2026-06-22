@@ -15,7 +15,7 @@ All file schemas (`config.md`, `state.md`, `handoff/round-N-gen.md`, `feedback/r
 `build-log.md`) and the phase transition table are defined in `docs/harness-protocol.md` — that
 document is the single source of truth (§1 for `config.md`; §2 for `state.md`; §3 for
 `contract.md`; §4 for handoff layout; §5 for feedback layout; §6 for log schemas; §7 for the
-`evaluator → admob / evaluator → generator` transitions). Do not redefine schemas here.
+`evaluator → admob / evaluator → build / evaluator → generator` transitions). Do not redefine schemas here.
 
 ---
 
@@ -234,7 +234,7 @@ After completing all applicable sections (6.1, and 6.2 + 6.3 if `--strict`), wri
 Before writing the verdict, check: if `current_round == max_rounds`, force the judgment. Do
 not return FAIL regardless of results — write the verdict on the current state, record the
 forced-advance note in the feedback file, and proceed to PASS transitions (per protocol §7
-`evaluator → max_rounds → admob`).
+`evaluator → max_rounds → admob / build`, applying the same `skip_admob` branch as PASS).
 
 ### Write feedback/round-N-qa.md
 
@@ -251,13 +251,18 @@ as evidence.
 ### Update state.md (PASS)
 
 On PASS (or forced advance at max_rounds), update `docs/harness/state.md` per protocol §2 and
-the `evaluator → admob` transition in §7. Set `status: running` in the same atomic write
-(protocol §7 rule 2):
+the `evaluator → admob / evaluator → build` transition in §7 (rule 9: if `skip_admob: true` in
+`config.md`, route to `build`; otherwise route to `admob`). Set `status: running` in the same
+atomic write (protocol §7 rule 2).
+
+Read `skip_admob` from `docs/harness/config.md`:
+- if `skip_admob: true` → write `next_role: build`
+- otherwise → write `next_role: admob`
 
 ```yaml
 status: running
 current_phase: evaluator
-next_role: admob
+next_role: admob   # or "build" if skip_admob: true
 updated_at: "<ISO-8601 UTC now>"
 ```
 
@@ -292,7 +297,7 @@ Append one row to `docs/harness/build-log.md` per protocol §6:
 Append one row to `docs/harness/pipeline-log.md` per protocol §6:
 
 ```
-| <ISO-8601 UTC now> | PASS/FAIL | evaluator | round <N>; next: admob/generator |
+| <ISO-8601 UTC now> | PASS/FAIL | evaluator | round <N>; next: admob|build/generator |
 ```
 
 ---

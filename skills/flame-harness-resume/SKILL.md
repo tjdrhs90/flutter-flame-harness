@@ -192,9 +192,9 @@ Read `next_role` from the (now-updated) `state.md` and dispatch:
 Skill("flame-harness-<next_role>")
 ```
 
-Valid Phase A `next_role` values are listed in the transition table in
-`docs/harness-protocol.md` §7. If `next_role` is `admob`, print the Phase B boundary message
-(see orchestrator skill) and exit without dispatching.
+Valid `next_role` values are listed in the transition table in
+`docs/harness-protocol.md` §7. `admob` is a normal dispatchable role and is handled like any
+other `next_role` — dispatch `Skill("flame-harness-admob")` without any special boundary check.
 
 If `next_role` is empty or unknown, abort with:
 
