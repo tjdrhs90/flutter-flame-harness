@@ -33,7 +33,6 @@ See [`docs/SMOKE-TEST-phaseB.md`](docs/SMOKE-TEST-phaseB.md) for the full manual
 Run with a quoted idea to seed the pipeline directly. Run with no idea and the AI researches the
 market, recommends 2-3 game concepts, and waits for you to pick one before proceeding.
 
-
 Flags:
 
 | Flag | Default | Description |
@@ -41,6 +40,8 @@ Flags:
 | `--strict` | off | Run the evaluator in strict 3-phase QA mode |
 | `--rounds N` | 3 | Maximum generator–evaluator negotiation rounds |
 | `--skip-research` | off | Skip the market-research phase |
+| `--skip-admob` | off | Skip the AdMob phase |
+| `--resume` | — | Resume a paused run |
 
 ## Phase A Skills
 

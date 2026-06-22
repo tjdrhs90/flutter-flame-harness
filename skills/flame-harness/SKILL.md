@@ -64,8 +64,8 @@ with the full schema from `docs/harness-protocol.md` Section 1.
 Populate the game-specific keys from the parsed arguments:
 
 - `app_idea` — from the positional argument; if no positional argument was given, write `app_idea: ""` (blank is valid — research will generate and recommend concepts). Do NOT abort on an empty idea.
-- `app_name` — derive a short display name from the idea (ask the user if ambiguous)
-- `app_slug` — kebab-case version of `app_name`
+- `app_name` — derive a short display name from the idea (ask the user if ambiguous); if NO idea was given, write `app_name: ""` — the plan phase sets the name after research confirms the concept.
+- `app_slug` — kebab-case of `app_name`; write `app_slug: ""` if `app_name` is blank.
 - `bundle_id` — `com.gonigon.<slug>`
 - `strict_mode`, `max_rounds`, `skip_research`, `skip_admob` — from flags (defaults per table above)
 - `developer`, `ios`, `android` — from `credentials/store-metadata.md`
