@@ -58,4 +58,13 @@ if [ -f "$DES" ]; then
   require_section "$DES" "next_role" "state update"
 fi
 
+CON="$ROOT/skills/flame-harness-contract/SKILL.md"
+if [ -f "$CON" ]; then
+  require_section "$CON" "flutter analyze" "analyze gate"
+  require_section "$CON" "flutter test" "test gate"
+  require_section "$CON" "game_config" "config centralization gate"
+  require_section "$CON" "AGREED" "agreed status"
+  require_section "$CON" "stub\|스텁\|TODO" "anti-stub gate"
+fi
+
 [ "$fail" -eq 0 ] && echo "validate: OK" || exit 1
