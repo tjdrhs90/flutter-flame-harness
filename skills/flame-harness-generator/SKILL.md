@@ -199,7 +199,9 @@ enum GameState {
 ### 5a.7 FlameGame subclass
 
 Create `lib/game/<app_slug>_game.dart`. This is the root `FlameGame` (or `FlameGame` with
-`HasCollisionDetection` / `HasTappables` as the PRD requires). It must:
+`HasCollisionDetection` when the PRD requires collision detection). Do **not** add the removed
+`HasTappables` mixin — it was dropped in Flame 1.7 and will cause a compile error. Tap input is
+handled via `TapCallbacks` on individual components (see §5a.8). It must:
 
 - Declare `GameState _state = GameState.menu;` and a getter `GameState get state`.
 - Expose `void startGame()`, `void pauseGame()`, `void resumeGame()`, `void gameOver()` methods
@@ -555,6 +557,8 @@ updated_at: "<ISO-8601 UTC now>"
 
 Leave `current_round`, `created_at`, `resume_attempts`, and all other keys unchanged. Use
 `Edit` for a targeted update.
+
+> **Note:** `current_round` is incremented by the evaluator when it returns FAIL; the generator reads it but does not write it.
 
 ### Append to pipeline-log.md
 

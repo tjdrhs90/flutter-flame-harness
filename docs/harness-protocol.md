@@ -278,3 +278,4 @@ The state machine governing `current_phase`, `next_role`, and `status` transitio
 4. `current_round` starts at 1 when the contract is AGREED and increments each time the evaluator returns FAIL (i.e., at the start of each new generator round).
 5. When `current_round` exceeds `max_rounds` the evaluator triggers the `max_rounds` event, writes a forced judgment, and transitions to `admob`.
 6. `completed` status is set only after the final phase (submit) exits cleanly.
+7. `pause_reason` is set only by the rate-limit hook / error path, and is cleared (set to `""`) by `flame-harness-resume` when it returns `status` to `running`. Forward-flow phase skills do not need to touch `pause_reason`.
