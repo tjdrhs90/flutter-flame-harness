@@ -67,4 +67,13 @@ if [ -f "$CON" ]; then
   require_section "$CON" "stub\|스텁\|TODO" "anti-stub gate"
 fi
 
+GEN="$ROOT/skills/flame-harness-generator/SKILL.md"
+if [ -f "$GEN" ]; then
+  require_section "$GEN" "flutter create" "scaffold step"
+  require_section "$GEN" "sub-phase\|서브페이즈\|5a\|5b\|5c" "3 sub-phases"
+  require_section "$GEN" "analyze.*test\|test.*analyze\|HARD GATE\|게이트" "per-subphase gate"
+  require_section "$GEN" "handoff" "handoff output"
+  require_section "$GEN" "feedback" "feedback intake on round>1"
+fi
+
 [ "$fail" -eq 0 ] && echo "validate: OK" || exit 1
