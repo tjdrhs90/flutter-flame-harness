@@ -94,14 +94,14 @@ resume_attempts: 0       # integer; incremented each time the harness resumes af
 These criteria are non-negotiable. A FAIL on any one of these results in an immediate FAIL verdict,
 regardless of other passing criteria.
 
-1. `flutter analyze` returns zero errors (warnings allowed).
-2. `flutter test` returns zero failures.
-3. App cold-starts without crash on both iOS Simulator and Android Emulator.
-4. Flame game loop renders at ≥ 30 fps on the target device tier.
-5. No hardcoded credential, API key, or personal data in committed source.
-6. Bundle ID matches `com.gonigon.<slug>` exactly.
-7. All assets referenced in code exist in `assets/` and are declared in `pubspec.yaml`.
-8. AdMob ad unit IDs are read from environment / config, not hardcoded (unless `skip_admob: true`).
+1. `flutter analyze` returns zero issues.
+2. `flutter test` — all tests pass.
+3. No TODO, stub, or placeholder in game logic (grep-checkable).
+4. All tuning constants centralized in `game_config.dart` — no magic numbers in gameplay code.
+5. Game content (enemies / levels / waves) is defined as data, not hardcoded.
+6. KO + EN localization complete — no missing l10n keys.
+7. Core loop works end to end: start → play → win/lose → restart.
+8. Runs on a simulator/emulator with zero crashes and zero console errors.
 
 ## Functional Criteria (per game)
 
