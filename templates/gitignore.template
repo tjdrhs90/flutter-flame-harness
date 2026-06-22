@@ -1,0 +1,11 @@
+.DS_Store
+secrets/
+*.jks
+*.p8
+key.properties
+**/google-services.json
+play-store-key.json
+ios/Runner/Runner.entitlements
+build/
+.dart_tool/
+.flutter-plugins*
