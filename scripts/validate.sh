@@ -76,4 +76,13 @@ if [ -f "$GEN" ]; then
   require_section "$GEN" "feedback" "feedback intake on round>1"
 fi
 
+EVA="$ROOT/skills/flame-harness-evaluator/SKILL.md"
+if [ -f "$EVA" ]; then
+  require_section "$EVA" "Run the\|실행.*판\|run the game\|see the" "run-then-judge rule"
+  require_section "$EVA" "code.review.only\|코드.*PASS\|review alone" "no code-review-only pass"
+  require_section "$EVA" "stub.*FAIL\|스텁.*FAIL\|automatic FAIL" "stub auto-fail"
+  require_section "$EVA" "max_rounds" "forced judgment"
+  require_section "$EVA" "strict" "strict-mode phases"
+fi
+
 [ "$fail" -eq 0 ] && echo "validate: OK" || exit 1
