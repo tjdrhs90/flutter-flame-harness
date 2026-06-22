@@ -34,7 +34,7 @@ Before any action, load:
    (per protocol §1).
 2. `docs/harness/state.md` — confirm `next_role: submit` (per protocol §2).
 
-Derive the game root path: `/Users/ssg/AndroidStudioProjects/<app_slug>/`, read the project base from `config.md`/the harness working directory rather than assuming this absolute prefix.
+Derive the game project root for `<app_slug>` from `config.md` / the harness working directory (the games live under the same parent as the harness, e.g. `…/AndroidStudioProjects/<app_slug>/`).
 
 ---
 

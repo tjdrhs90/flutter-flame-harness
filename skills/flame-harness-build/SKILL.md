@@ -108,7 +108,6 @@ placeholders in the templates located at `templates/fastlane/`:
 |---|---|
 | `__APP_ID__` | `bundle_id` from `config.md` |
 | `__PACKAGE__` | `bundle_id` from `config.md` |
-| `__APP_NAME__` | `app_name` from `config.md` |
 | `__IPA_NAME__` | `<app_name>.ipa` (spaces allowed; use the value of `app_name` verbatim) |
 | `__PROFILE_NAME__` | `<bundle_id> AppStore` (e.g. `com.gonigon.mygame AppStore`) |
 

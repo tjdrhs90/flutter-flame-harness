@@ -232,9 +232,9 @@ cd <game>/android
 fastlane images
 ```
 
-The `images` lane calls `upload_to_play_store` with `track: "internal"`, `skip_upload_apk: true`,
-and `skip_upload_aab: true` so only metadata and images are pushed. Ensure the generated
-`<game>/android/fastlane/Fastfile` contains an `images` lane.
+The `images` lane calls `upload_to_play_store` with `skip_upload_apk: true` and
+`skip_upload_aab: true` so only metadata and images are pushed (no track needed for listing
+graphics). Ensure the generated `<game>/android/fastlane/Fastfile` contains an `images` lane.
 
 ### Store assets archive
 
