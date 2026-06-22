@@ -93,4 +93,12 @@ if [ -f "$RSM" ]; then
   require_section "$RSM" "manual_action" "manual_action resume"
 fi
 
+ADM="$ROOT/skills/flame-harness-admob/SKILL.md"
+if [ -f "$ADM" ]; then
+  require_section "$ADM" "rewarded\|리워드" "rewarded strategy"
+  require_section "$ADM" "ATT\|app_tracking\|UMP\|consent" "ATT/UMP consent"
+  require_section "$ADM" "skip_admob\|skip-admob" "skip flag"
+  require_section "$ADM" "next_role" "state update"
+fi
+
 [ "$fail" -eq 0 ] && echo "validate: OK" || exit 1
