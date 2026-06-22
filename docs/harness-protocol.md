@@ -264,7 +264,7 @@ The state machine governing `current_phase`, `next_role`, and `status` transitio
 
 | current_phase | event | → next_role / next_phase |
 |---|---|---|
-| (init) | bootstrap | research (or plan if --skip-research) |
+| (init) | bootstrap | research (always — research honors `skip_research` internally: skips discovery, still runs the clone check + writes the spec) |
 | research | complete | plan |
 | plan | complete | design |
 | design | complete | contract |

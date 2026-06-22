@@ -34,8 +34,10 @@ Key-to-file mapping follows the `config.md` schema in `docs/harness-protocol.md`
 
 - `--strict` → set `strict_mode: true` in `config.md`
 - `--rounds N` → set `max_rounds: N` in `config.md`
-- `--skip-research` → set `skip_research: true` in `config.md`; on first run this also means
-  `state.md` is written with `next_role: plan` instead of `next_role: research`
+- `--skip-research` → set `skip_research: true` in `config.md`. On first run `next_role` is still
+  `research` (NOT `plan`): the research skill honors `skip_research` by skipping market discovery and
+  idea generation, but it still runs the App Store 4.3 clone-avoidance check on the provided idea and
+  writes the research spec — so the clone check is never silently skipped.
 - `--skip-admob` → set `skip_admob: true` in `config.md`
 - `--resume` → skip bootstrap entirely, delegate straight to `flame-harness-resume` (see Resume)
 
@@ -75,7 +77,7 @@ Do NOT hard-code credential values; always read them from `credentials_dir`.
 
 ### 3. Write `docs/harness/state.md`
 
-Write `state.md` per the schema in `docs/harness-protocol.md` §2. Initial values: `status: running`, `current_phase: (init)`, `current_round: 1`, `next_role: research` (or `plan` if `--skip-research`), `pause_reason: ""`, `resume_attempts: 0`, and `created_at`/`updated_at` set to the current ISO-8601 UTC timestamp.
+Write `state.md` per the schema in `docs/harness-protocol.md` §2. Initial values: `status: running`, `current_phase: (init)`, `current_round: 1`, `next_role: research` (always `research` on first run — the research skill handles `skip_research` internally, still running the clone check and writing the spec), `pause_reason: ""`, `resume_attempts: 0`, and `created_at`/`updated_at` set to the current ISO-8601 UTC timestamp.
 
 ### 4. Append INIT row to `docs/harness/pipeline-log.md`
 
