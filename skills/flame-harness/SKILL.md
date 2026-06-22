@@ -1,7 +1,7 @@
 ---
 name: flame-harness
 description: Orchestrator — bootstrap a Flutter/Flame game pipeline (idea→playable game) and dispatch each phase skill. Use when starting or continuing a flame-harness run.
-argument-hint: "[game idea] [--strict] [--rounds N] [--skip-research] [--skip-admob] [--resume]"
+argument-hint: "[game idea] [--strict] [--rounds N] [--skip-research] [--skip-admob] [--auto-idea] [--resume]"
 allowed-tools: [Agent, Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion, Skill]
 ---
 
@@ -25,6 +25,7 @@ Parse the invocation arguments before doing anything else.
 | `--rounds N` | `max_rounds: N` | `3` |
 | `--skip-research` | `skip_research: true` | `false` |
 | `--skip-admob` | `skip_admob: true` | `false` |
+| `--auto-idea` | `auto_idea: true` | `false` |
 | `--resume` | (delegates to resume handler; see Resume section) | — |
 
 **Guard:** if `--skip-research` is set AND no idea is given, abort immediately with:
@@ -39,6 +40,9 @@ Key-to-file mapping follows the `config.md` schema in `docs/harness-protocol.md`
   idea generation, but it still runs the App Store 4.3 clone-avoidance check on the provided idea and
   writes the research spec — so the clone check is never silently skipped.
 - `--skip-admob` → set `skip_admob: true` in `config.md`
+- `--auto-idea` → set `auto_idea: true` in `config.md`. The research skill then auto-scores its
+  generated concepts and selects the best WITHOUT asking the user. No effect with `--skip-research`
+  (which already takes the idea verbatim — nothing to select).
 - `--resume` → skip bootstrap entirely, delegate straight to `flame-harness-resume` (see Resume)
 
 ---
@@ -69,7 +73,7 @@ Populate the game-specific keys from the parsed arguments:
 - `app_name` — derive a short display name from the idea (ask the user if ambiguous); if NO idea was given, write `app_name: ""` — the plan phase sets the name after research confirms the concept.
 - `app_slug` — kebab-case of `app_name`; write `app_slug: ""` if `app_name` is blank.
 - `bundle_id` — `com.gonigon.<id>` where `<id>` is `app_slug` with hyphens/underscores removed (bundle-id segments must be `[a-z0-9]+`; hyphens/underscores break signing). Blank if `app_slug` is blank.
-- `strict_mode`, `max_rounds`, `skip_research`, `skip_admob` — from flags (defaults per table above)
+- `strict_mode`, `max_rounds`, `skip_research`, `skip_admob`, `auto_idea` — from flags (defaults per table above)
 - `developer`, `ios`, `android` — from `credentials/store-metadata.md`
 - `credentials_dir` — `/Users/ssg/AndroidStudioProjects/credentials`
 

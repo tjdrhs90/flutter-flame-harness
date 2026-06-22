@@ -40,6 +40,7 @@ RES="$ROOT/skills/flame-harness-research/SKILL.md"
 if [ -f "$RES" ]; then
   require_section "$RES" "AskUserQuestion\|질의\|ask" "user query"
   require_section "$RES" "4\.3\|clone\|클론" "App Store 4.3 clone avoidance"
+  require_section "$RES" "auto_idea\|auto-select\|auto select" "auto-idea handling"
   require_section "$RES" "next_role" "state update"
 fi
 

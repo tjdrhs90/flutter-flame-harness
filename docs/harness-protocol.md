@@ -20,6 +20,7 @@ strict_mode: true          # if false, QA verdicts are advisory only
 max_rounds: 3              # default; generator/evaluator loop limit
 skip_research: false       # set true to skip Phase A research skill
 skip_admob: false          # set true to skip AdMob integration phase
+auto_idea: false           # true => research auto-selects the best concept without asking
 
 developer:
   company: gonigon

@@ -31,6 +31,10 @@ Read `docs/harness/config.md` and extract:
 - `skip_research` — boolean. If `true`, treat `app_idea` as the chosen concept verbatim and
   **skip the Discovery and "Propose & query" steps entirely**. Jump directly to Clone avoidance,
   then Output. Even when skipping discovery you must still write the research spec.
+- `auto_idea` — boolean (default `false`). When `true`, the "Propose & query" and "Clone avoidance"
+  steps auto-decide instead of calling AskUserQuestion: the skill scores its own generated concepts,
+  selects the best, and auto-revises any clone — running fully hands-off with no user input. Has no
+  effect when `skip_research: true` (the idea is already taken verbatim — nothing to select).
 
 If `config.md` does not exist, abort with:
 `flame-harness-research: docs/harness/config.md not found — run the orchestrator to bootstrap first.`
@@ -88,7 +92,11 @@ concept proposals**. Each proposal must include:
 
 Present the proposals in a numbered list that is easy to read.
 
-Then use **AskUserQuestion** to ask the user to pick one or refine:
+Then branch on `auto_idea`:
+
+### If `auto_idea: false` (default) — ask the user
+
+Use **AskUserQuestion** to ask the user to pick one or refine:
 
 ```
 Which concept would you like to build?
@@ -106,6 +114,25 @@ Is this correct? (yes / describe further)
 ```
 
 Repeat until the user confirms.
+
+### If `auto_idea: true` — auto-score and select (no user input)
+
+Do **not** call AskUserQuestion. Score each of the 2-3 proposals against these weighted criteria
+and present a short scoring table:
+
+| Criterion | Weight |
+|---|---|
+| Market fit | 30% |
+| Differentiation / clone-safety | 25% |
+| Flame suitability | 20% |
+| Monetisation fit | 15% |
+| MVP scope feasibility | 10% |
+
+Score each criterion 0–10, multiply by its weight, and sum to a weighted total per proposal. Render
+the table (one row per proposal, one column per criterion, plus a Total column), then **select the
+proposal with the highest total** as the chosen concept. Print the choice and a one-line rationale,
+e.g. `Auto-selected: <title> (total 8.4/10) — strongest market fit with a clone-safe twist.` Then
+proceed to Clone avoidance. Do not query the user.
 
 ---
 
@@ -126,13 +153,22 @@ Before writing the spec, verify the chosen concept does not constitute a direct 
    - A distinct setting/art direction not present in the top-3 matches
    - A gameplay mode absent from the top-3 matches (e.g. co-op, asynchronous multiplayer)
 
-5. If the concept is a clone, do not proceed. Use AskUserQuestion to ask:
+5. If the concept is a clone, do not proceed. Branch on `auto_idea`:
+
+   **If `auto_idea: false` (default)** — use AskUserQuestion to ask:
    ```
    The chosen concept is too similar to <similar app> on the App Store, which may violate
    App Store guideline 4.3 (clone rule).
    Please describe how you want to differentiate it, or pick a different concept.
    ```
    Then re-run the clone check on the revised concept.
+
+   **If `auto_idea: true`** — do **not** call AskUserQuestion. Auto-revise the concept by applying
+   one differentiator from the "safe" list above (a novel mechanic twist, a distinct setting/art
+   direction, or an absent gameplay mode), then re-run the clone check. Retry up to 2 attempts. If
+   the concept is still a clone after 2 attempts, fall back to the next-highest-scored proposal from
+   Propose & query and run the clone check on it. Record the outcome (which differentiator was
+   applied, or that a fallback was used).
 
 6. Record the clone-check result in the research spec (see Output).
 
@@ -156,6 +192,7 @@ structure:
 **Differentiator:** <unique hook>
 **Flame suitability:** <why Flutter/Flame fits>
 **Monetisation hook:** <AdMob integration point>
+**Selection:** <user-selected | auto-selected (auto_idea) — with the weighted total if auto-selected>
 
 ## Market Rationale
 
