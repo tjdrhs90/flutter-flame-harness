@@ -1,0 +1,11 @@
+{
+  "name": "flutter-flame-harness",
+  "owner": { "name": "tjdrhs90" },
+  "plugins": [
+    {
+      "name": "flutter-flame-harness",
+      "source": ".",
+      "description": "Idea-to-store harness for Flutter/Flame games."
+    }
+  ]
+}

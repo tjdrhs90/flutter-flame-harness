@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+fail=0
+err() { echo "FAIL: $1"; fail=1; }
+
+# 1. Manifests are valid JSON
+for f in "$ROOT/.claude-plugin/plugin.json" "$ROOT/.claude-plugin/marketplace.json"; do
+  [ -f "$f" ] || { err "missing $f"; continue; }
+  python3 -c "import json,sys; json.load(open(sys.argv[1]))" "$f" 2>/dev/null || err "invalid JSON: $f"
+done
+
+# 2. Every skill has name+description frontmatter
+while IFS= read -r skill; do
+  head -20 "$skill" | grep -q '^name:[[:space:]]*[^[:space:]]' || err "no name: in $skill"
+  head -20 "$skill" | grep -q '^description:[[:space:]]*[^[:space:]]' || err "no description: in $skill"
+done < <(find "$ROOT/skills" -name SKILL.md 2>/dev/null)
+
+[ "$fail" -eq 0 ] && echo "validate: OK" || exit 1
