@@ -4,9 +4,11 @@ A Claude Code plugin that takes a Flutter/Flame game from raw idea all the way t
 
 ## Phases
 
-**Phase A (this release): research → plan → design → contract → generator ↔ evaluator → playable game**
+**Phase A (complete): research → plan → design → contract → generator ↔ evaluator → playable game**
 
 The generator and evaluator negotiate completion criteria before any code is written, then build the Flutter/Flame project in three sub-phases (scaffold → API wiring → UI polish), with the evaluator gating each hand-off.
+
+See [`docs/SMOKE-TEST.md`](docs/SMOKE-TEST.md) for the full manual smoke-test procedure.
 
 **Phase B (planned): admob, build, screenshot, submit, retro**
 
