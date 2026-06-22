@@ -209,46 +209,50 @@ Future<void> requestATT() async {
 }
 ```
 
-Call `requestATT()` from `main()` before initializing MobileAds:
-
-```dart
-await requestATT();
-await MobileAds.instance.initialize();
-```
+Call `requestATT()` from `main()` before `loadConsentForm()` and `MobileAds.instance.initialize()` (see startup sequence in §5).
 
 ### 5. UMP Consent Flow — lib/admob/consent_helper.dart
 
 Create `lib/admob/consent_helper.dart`:
 
 ```dart
+import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 /// Loads and (if required) shows the UMP consent form.
-/// Must be called before loading any ads.
+/// Returns only after the consent callback fires — ads must NOT be
+/// requested before this Future completes.
 Future<void> loadConsentForm() async {
+  final completer = Completer<void>();
   final params = ConsentRequestParameters();
   ConsentInformation.instance.requestConsentInfoUpdate(
     params,
     () async {
       if (await ConsentInformation.instance.isConsentFormAvailable()) {
-        await ConsentForm.loadAndShowConsentFormIfRequired((formError) {
-          // Proceed regardless; ad loading is handled separately.
-        });
+        await ConsentForm.loadAndShowConsentFormIfRequired((_) {});
       }
+      if (!completer.isCompleted) completer.complete();
     },
     (FormError error) {
-      // Non-fatal: log and proceed.
       debugPrint('UMP consent error: ${error.message}');
+      if (!completer.isCompleted) completer.complete(); // non-fatal, continue
     },
   );
+  return completer.future;
 }
 ```
 
-Call `loadConsentForm()` immediately after `MobileAds.instance.initialize()`:
+> **Important:** ads must NOT be requested before `loadConsentForm()` completes.
+
+Use this startup order in `main()`:
 
 ```dart
+WidgetsFlutterBinding.ensureInitialized();
+await requestATT();          // iOS only — no-op on Android
+await loadConsentForm();     // waits for UMP consent decision
 await MobileAds.instance.initialize();
-await loadConsentForm();
+// preload ads / runApp after this point
 ```
 
 ### 6. ID Switch — lib/admob/ad_ids.dart
@@ -286,17 +290,27 @@ Create `lib/admob/rewarded_ad_helper.dart`:
 ```dart
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'ad_ids.dart';
 
-/// Loads and shows a rewarded ad.
+/// Loads and shows a rewarded ad for a single placement.
+/// Pass the ad unit ID from [AdIds] at construction time so the same
+/// class can be reused for every placement (revive, bonus coins, etc.)
+/// without subclassing.
+///
+/// Example:
+///   final _reviveAd = RewardedAdHelper(AdIds.rewardedRevive);
+///   final _bonusAd  = RewardedAdHelper(AdIds.rewardedBonus);
+///
 /// [onRewarded] is called when the user earns the reward.
 /// [onDismissed] is called when the ad is dismissed (with or without reward).
 class RewardedAdHelper {
+  RewardedAdHelper(this.adUnitId);
+
+  final String adUnitId;
   RewardedAd? _ad;
 
   Future<void> load() async {
     await RewardedAd.load(
-      adUnitId: AdIds.rewardedRevive,
+      adUnitId: adUnitId,
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: (ad) => _ad = ad,
@@ -360,11 +374,13 @@ if (_rewardedAdHelper.isLoaded) {
 }
 ```
 
-Pre-load the ad when the game session starts so it is ready when needed:
+Pre-load the ad when the game session starts so it is ready when needed.
+Instantiate one `RewardedAdHelper` per placement, passing the matching `AdIds` getter:
 
 ```dart
-_rewardedAdHelper = RewardedAdHelper();
-await _rewardedAdHelper.load();
+_reviveAdHelper = RewardedAdHelper(AdIds.rewardedRevive);
+await _reviveAdHelper.load();
+// Add one line per placement (e.g. RewardedAdHelper(AdIds.rewardedBonus))
 ```
 
 ---
