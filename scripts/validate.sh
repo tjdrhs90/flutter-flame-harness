@@ -101,4 +101,13 @@ if [ -f "$ADM" ]; then
   require_section "$ADM" "next_role" "state update"
 fi
 
+BLD="$ROOT/skills/flame-harness-build/SKILL.md"
+if [ -f "$BLD" ]; then
+  require_section "$BLD" "key.properties" "android signing setup"
+  require_section "$BLD" "Appfile\|Fastfile" "fastlane config generation"
+  require_section "$BLD" "testflight\|TestFlight" "ios upload"
+  require_section "$BLD" "internal" "android internal track"
+  require_section "$BLD" "next_role" "state update"
+fi
+
 [ "$fail" -eq 0 ] && echo "validate: OK" || exit 1
