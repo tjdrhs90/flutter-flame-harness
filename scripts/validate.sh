@@ -25,4 +25,15 @@ if [ -f "$PROTO" ]; then
   done
 fi
 
+# 4. Per-skill required-section assertions (set by REQ_<skillname> env in CI; here inline)
+require_section() { # file, pattern, label
+  grep -qi "$2" "$1" || err "$(basename "$(dirname "$1")") missing section: $3"
+}
+ORCH="$ROOT/skills/flame-harness/SKILL.md"
+if [ -f "$ORCH" ]; then
+  require_section "$ORCH" "next_role" "dispatch-by-next_role"
+  require_section "$ORCH" "config.md" "config-init"
+  require_section "$ORCH" "skip-research\|skip_research" "skip-research flag"
+fi
+
 [ "$fail" -eq 0 ] && echo "validate: OK" || exit 1
