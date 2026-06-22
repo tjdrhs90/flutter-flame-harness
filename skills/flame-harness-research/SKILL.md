@@ -26,8 +26,9 @@ Read `docs/harness/config.md` and extract:
   the harness without an idea, in which case you will generate ideas from scratch in the Discovery
   step). When `app_idea` is blank, the Discovery and "Propose & query" steps run exactly as normal
   but driven purely by market research and creative reasoning with no seed concept; the resulting
-  proposals are still presented via AskUserQuestion for the user to pick — the AI never selects
-  automatically.
+  proposals are presented via AskUserQuestion for the user to pick — the AI does not select
+  automatically **unless `auto_idea: true`**, in which case the "Propose & query" step auto-scores
+  and selects the best concept with no user prompt (see that section).
 - `skip_research` — boolean. If `true`, treat `app_idea` as the chosen concept verbatim and
   **skip the Discovery and "Propose & query" steps entirely**. Jump directly to Clone avoidance,
   then Output. Even when skipping discovery you must still write the research spec.
