@@ -126,4 +126,12 @@ if [ -f "$SUB" ]; then
   require_section "$SUB" "retro" "resume target"
 fi
 
+RET="$ROOT/skills/flame-harness-retro/SKILL.md"
+if [ -f "$RET" ]; then
+  require_section "$RET" "9\|principle\|원칙" "9 principles"
+  require_section "$RET" "Generator.*Evaluator\|generator-evaluator" "generator-evaluator principle"
+  require_section "$RET" "retro.md" "retro output"
+  require_section "$RET" "completed" "completion state"
+fi
+
 [ "$fail" -eq 0 ] && echo "validate: OK" || exit 1
