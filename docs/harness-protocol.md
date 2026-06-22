@@ -14,7 +14,7 @@ Each game's `docs/harness/config.md` must be valid YAML containing the following
 app_idea: ""  # blank => research generates & recommends concepts; populated after research confirms choice
 app_name: "<display name>"
 app_slug: "<kebab-case identifier>"
-bundle_id: "com.gonigon.<slug>"
+bundle_id: "com.gonigon.<id>"  # <id> = app_slug with hyphens/underscores stripped (segments must be [a-z0-9]+)
 default_language: ko
 strict_mode: true          # if false, QA verdicts are advisory only
 max_rounds: 3              # default; generator/evaluator loop limit
@@ -49,7 +49,7 @@ admob:
 
 ### Key Notes
 
-- `bundle_id` must always follow the pattern `com.gonigon.<slug>`.
+- `bundle_id` must follow `com.gonigon.<id>`, where `<id>` is `app_slug` with all hyphens and underscores removed (each reverse-DNS segment must match `[a-z0-9]+`; a hyphen/underscore makes the bundle id invalid and breaks iOS/Android signing). E.g. `swing-line` → `com.gonigon.swingline`.
 - `credentials_dir` is the shared directory for all credential files (keystores, p8 keys, etc.).
 - Skills must not hard-code credential paths; they must read `credentials_dir` from `config.md`.
 - `max_rounds` controls how many generator→evaluator cycles are allowed before a forced judgment.

@@ -72,11 +72,15 @@ Do not use underscores — kebab-case only.
 
 ### bundle_id
 
-Set `bundle_id` to exactly `com.gonigon.<slug>` where `<slug>` is the `app_slug` derived above.
+Set `bundle_id` to `com.gonigon.<id>` where `<id>` is the `app_slug` with **all hyphens and
+underscores removed** (lowercase alphanumeric only). Bundle IDs are reverse-DNS and each segment
+must match `[a-z0-9]+` — hyphens/underscores are INVALID and will break iOS/Android signing.
 
-Example: if `app_slug` is `space-hop`, then `bundle_id` is `com.gonigon.space-hop`.
+Example: if `app_slug` is `space-hop`, then `bundle_id` is `com.gonigon.spacehop` (NOT
+`com.gonigon.space-hop`). If `app_slug` is `swing-line`, `bundle_id` is `com.gonigon.swingline`.
 
-The format `com.gonigon.<slug>` is mandated by `docs/harness-protocol.md` §1. Never deviate.
+The format `com.gonigon.<id>` is mandated by `docs/harness-protocol.md` §1. Never emit a hyphen or
+underscore in the bundle id.
 
 ### Write to `config.md`
 
@@ -85,7 +89,7 @@ Use `Edit` to update `config.md` with the three identity keys:
 ```yaml
 app_name: "<display name>"
 app_slug: "<kebab-case-slug>"
-bundle_id: "com.gonigon.<slug>"
+bundle_id: "com.gonigon.<id>"   # <id> = app_slug with hyphens/underscores removed
 ```
 
 Make targeted edits — do not rewrite the entire file.
@@ -109,7 +113,7 @@ research spec alone — no guessing required.
 > **버전:** 1.0  
 > **작성일:** <YYYY-MM-DD>  
 > **작성자:** flame-harness-plan  
-> **번들 ID:** com.gonigon.<slug>
+> **번들 ID:** com.gonigon.<id> (slug에서 하이픈·언더스코어 제거)
 
 ---
 
