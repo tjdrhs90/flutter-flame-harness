@@ -10,9 +10,11 @@ The generator and evaluator negotiate completion criteria before any code is wri
 
 See [`docs/SMOKE-TEST.md`](docs/SMOKE-TEST.md) for the full manual smoke-test procedure.
 
-**Phase B (planned): admob, build, screenshot, submit, retro**
+**Phase B (complete): admob, build, screenshot, submit, retro**
 
 Automates AdMob integration, release builds (Android + iOS), App Store / Play Store screenshots, submission, and a post-launch retrospective.
+
+See [`docs/SMOKE-TEST-phaseB.md`](docs/SMOKE-TEST-phaseB.md) for the full manual deploy dry-run procedure.
 
 ## Install
 
@@ -45,6 +47,16 @@ Flags:
 | `flame-harness-contract` | `/flame-harness-contract` | Generator/evaluator negotiate completion criteria |
 | `flame-harness-generator` | `/flame-harness-generator` | Build the Flutter/Flame project in 3 sub-phases |
 | `flame-harness-evaluator` | `/flame-harness-evaluator` | QA gating — functional check or strict 3-phase |
+
+## Phase B Skills
+
+| Skill | Trigger command | Purpose |
+|-------|----------------|---------|
+| `flame-harness-admob` | `/flame-harness-admob` | Rewarded-ad strategy, guided AdMob unit creation, ATT/UMP code injection |
+| `flame-harness-build` | `/flame-harness-build` | Credential bootstrap, fastlane config generation, IPA → TestFlight, AAB → internal track |
+| `flame-harness-screenshot` | `/flame-harness-screenshot` | KO+EN store screenshots via integration_test, ASO metadata, fastlane upload |
+| `flame-harness-submit` | `/flame-harness-submit` | Upload store text metadata + categories via fastlane, then pause for manual review submission |
+| `flame-harness-retro` | `/flame-harness-retro` | Score the completed pipeline against 9 harness principles, write retrospective |
 
 ## File Protocol
 
