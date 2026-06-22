@@ -36,4 +36,11 @@ if [ -f "$ORCH" ]; then
   require_section "$ORCH" "skip-research\|skip_research" "skip-research flag"
 fi
 
+RES="$ROOT/skills/flame-harness-research/SKILL.md"
+if [ -f "$RES" ]; then
+  require_section "$RES" "AskUserQuestion\|질의\|ask" "user query"
+  require_section "$RES" "4\.3\|clone\|클론" "App Store 4.3 clone avoidance"
+  require_section "$RES" "next_role" "state update"
+fi
+
 [ "$fail" -eq 0 ] && echo "validate: OK" || exit 1
