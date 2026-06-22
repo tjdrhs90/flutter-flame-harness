@@ -51,4 +51,11 @@ if [ -f "$PLAN" ]; then
   require_section "$PLAN" "lib/" "lib structure map"
 fi
 
+DES="$ROOT/skills/flame-harness-design/SKILL.md"
+if [ -f "$DES" ]; then
+  require_section "$DES" "design_tokens" "design tokens spec"
+  require_section "$DES" "asset\|에셋\|audio\|오디오" "asset/audio plan"
+  require_section "$DES" "next_role" "state update"
+fi
+
 [ "$fail" -eq 0 ] && echo "validate: OK" || exit 1
