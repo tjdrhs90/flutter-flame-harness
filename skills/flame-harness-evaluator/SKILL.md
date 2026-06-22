@@ -137,6 +137,10 @@ flutter run -d "iPhone 16" --no-pub
 
 While the game is running:
 
+0. Create the screenshots directory if it does not already exist:
+   ```bash
+   mkdir -p /Users/ssg/AndroidStudioProjects/<app_slug>/docs/harness/screenshots
+   ```
 1. Navigate to the main menu. Capture a screenshot:
    ```bash
    xcrun simctl io booted screenshot \

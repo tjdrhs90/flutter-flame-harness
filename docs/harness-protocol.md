@@ -275,7 +275,7 @@ The state machine governing `current_phase`, `next_role`, and `status` transitio
 2. When a phase skill completes successfully and advances the pipeline, it sets `status: running` together with `current_phase` and `next_role` in the same `state.md` update. Only the rate-limit hook, an error, or a pause sets `status: paused`.
 3. When `status` is set to `paused`, `pause_reason` must be one of `rate_limit`, `manual_action`, or `error` (never empty).
 4. When `status` is set to `running` after a pause, `resume_attempts` must be incremented.
-4. `current_round` starts at 1 when the contract is AGREED and increments each time the evaluator returns FAIL (i.e., at the start of each new generator round).
-5. When `current_round` exceeds `max_rounds` the evaluator triggers the `max_rounds` event, writes a forced judgment, and transitions to `admob`.
-6. `completed` status is set only after the final phase (submit) exits cleanly.
-7. `pause_reason` is set only by the rate-limit hook / error path, and is cleared (set to `""`) by `flame-harness-resume` when it returns `status` to `running`. Forward-flow phase skills do not need to touch `pause_reason`.
+5. `current_round` starts at 1 when the contract is AGREED and increments each time the evaluator returns FAIL (i.e., at the start of each new generator round).
+6. When `current_round` exceeds `max_rounds` the evaluator triggers the `max_rounds` event, writes a forced judgment, and transitions to `admob`.
+7. `completed` status is set only after the final phase (submit) exits cleanly.
+8. `pause_reason` is set only by the rate-limit hook / error path, and is cleared (set to `""`) by `flame-harness-resume` when it returns `status` to `running`. Forward-flow phase skills do not need to touch `pause_reason`.

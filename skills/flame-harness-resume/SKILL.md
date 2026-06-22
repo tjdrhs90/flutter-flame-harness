@@ -158,7 +158,7 @@ Then abort without modifying any files.
 Reached only after the appropriate branch above confirms it is safe to continue.
 
 Per `docs/harness-protocol.md` §7 rule 4: when `status` is set back to `running`,
-`resume_attempts` must be incremented, and per §7 rule 7: `pause_reason` must be cleared
+`resume_attempts` must be incremented, and per §7 rule 8: `pause_reason` must be cleared
 to `""` by this skill.
 
 ### 1. Update state.md

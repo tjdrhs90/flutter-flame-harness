@@ -36,7 +36,7 @@ take the first). Abort with a clear message if none exists.
 
 ### 3. Read the design doc
 
-Find the most recent file matching `docs/harness/designs/*-design.md` (sort by filename
+Find the most recent file matching `docs/harness/plans/*-design.md` (sort by filename
 descending, take the first). Abort if none exists.
 
 ---
@@ -117,23 +117,27 @@ When `strict_mode` is `false` or absent:
 4. Generator marks the contract `## Status: AGREED` in the same pass.
 5. Generator updates `state.md` and hands off to the generator phase.
 
-### --strict mode (multi-round negotiation)
+### --strict mode (rigorous self-review)
 
 When `strict_mode: true` in `config.md`, or when the skill is invoked with `--strict`:
 
 1. Generator writes the initial `contract.md` (same as default, steps 1–3 above).
-2. Generator does **not** self-mark AGREED. Instead it writes `## Status: PENDING` and hands
-   off to the Evaluator.
-3. Evaluator (flame-harness-evaluator) reviews every Functional Criterion for:
-   - Specificity — is the verification method unambiguous?
-   - Completeness — does it cover all PRD requirements?
-   - Feasibility — can it realistically be verified in CI or on a device?
-4. Evaluator either:
-   - Approves: marks `## Status: AGREED` and hands off to the generator phase.
-   - Requests revision: writes specific, numbered revision requests back into `contract.md`
-     under a `## Revision Requests` section, increments `current_round`, and hands back to the
-     Generator.
-5. Rounds continue until AGREED or `max_rounds` is exceeded (see `docs/harness-protocol.md` §7).
+2. Generator performs a **second self-review pass** over every Functional Criterion, checking
+   each one against all three of the following gates:
+   - **Concrete verification method** — does the criterion name a specific shell command (with
+     expected exit code or output), a labelled screenshot, or a named file + method + test?
+     Vague language like "works correctly" or "looks good" must be rewritten with a measurable
+     check.
+   - **Concrete numbers** — every timing, count, or threshold must cite a real value (e.g.
+     "responds within 100 ms", "≥ 3 enemy types", "score increments by 10 per obstacle").
+     Relative terms ("quickly", "several", "enough") must be replaced.
+   - **Full PRD coverage** — confirm that every core loop step, mechanic, win/lose condition,
+     and content metric from the PRD has at least one corresponding Functional Criterion.
+3. If any criterion fails the second-pass check, revise it in-place before proceeding.
+4. Generator self-marks `## Status: AGREED` and proceeds (same `state.md` write as default mode).
+
+> **Phase B note:** Phase B may reintroduce Evaluator-side contract negotiation with a
+> Generator↔Evaluator round-trip; Phase A uses rigorous self-review only.
 
 In both modes the contract file must contain `## Status: AGREED` before the generator phase
 begins coding.
@@ -207,5 +211,6 @@ Append one row to `docs/harness/pipeline-log.md` per the schema in `docs/harness
 - If the design doc is missing, abort with a clear message and set `state.md` to
   `status: paused`, `pause_reason: manual_action`.
 - If `config.md` cannot be read, abort immediately (do not write partial output).
-- In `--strict` mode, if `max_rounds` is exceeded without AGREED, write a forced judgment per
-  `docs/harness-protocol.md` §7 and transition to the `admob` phase.
+- In `--strict` mode, the Generator self-marks AGREED after the rigorous second-pass review;
+  there is no multi-round Evaluator loop in Phase A. `max_rounds` applies only to the
+  generator→evaluator cycle (Phase 5–6), not to contract negotiation.
