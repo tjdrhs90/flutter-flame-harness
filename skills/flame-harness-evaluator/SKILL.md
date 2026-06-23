@@ -326,6 +326,13 @@ Append one row to `docs/harness/pipeline-log.md` per protocol §6:
 | <ISO-8601 UTC now> | PASS/FAIL | evaluator | round <N>; next: admob|build/generator |
 ```
 
+When the PASS path pauses for the human-review gate (default, `auto_deploy: false`), additionally
+append a `pause` event row so `flame-harness-resume` can show the user what they are approving:
+
+```
+| <ISO-8601 UTC now> | pause | evaluator | manual_action: play/approve the built game before deploy; next: admob|build |
+```
+
 ---
 
 ## Error Handling

@@ -274,7 +274,7 @@ The state machine governing `current_phase`, `next_role`, and `status` transitio
 | generator | handoff | evaluator |
 | evaluator | PASS | paused (manual_action, human review) unless `auto_deploy: true` → resume dispatches admob (or `build` if `skip_admob: true`) |
 | evaluator | FAIL | generator (current_round+1) |
-| evaluator | max_rounds | forced judgment, then admob |
+| evaluator | max_rounds | forced judgment, then the same human-review gate as PASS (paused unless `auto_deploy: true`) → admob/build |
 | admob      | complete       | build                                    |
 | build      | complete       | screenshot                               |
 | screenshot | complete       | submit                                   |
@@ -290,8 +290,8 @@ The state machine governing `current_phase`, `next_role`, and `status` transitio
 3. When `status` is set to `paused`, `pause_reason` must be one of `rate_limit`, `manual_action`, or `error` (never empty).
 4. When `status` is set to `running` after a pause, `resume_attempts` must be incremented.
 5. `current_round` starts at 1 when the contract is AGREED and increments each time the evaluator returns FAIL (i.e., at the start of each new generator round).
-6. When `current_round` exceeds `max_rounds` the evaluator triggers the `max_rounds` event, writes a forced judgment, and transitions to `admob`.
+6. When `current_round` exceeds `max_rounds` the evaluator triggers the `max_rounds` event, writes a forced judgment, and then follows the same PASS path — pausing for human review before deploy unless `auto_deploy: true` (see rule 10) — before transitioning to `admob`/`build`.
 7. `completed` status is set only after the final phase (`retro`) exits cleanly.
-8. `pause_reason` is set only by the rate-limit hook / error path, and is cleared (set to `""`) by `flame-harness-resume` when it returns `status` to `running`. Forward-flow phase skills do not need to touch `pause_reason`.
+8. `pause_reason` is set by the rate-limit hook, the error path, or a forward-flow skill that intentionally pauses for a `manual_action` (the `submit` store steps and the `evaluator` post-QA review gate). It is cleared (set to `""`) by `flame-harness-resume` when it returns `status` to `running`. Forward-flow skills that do NOT pause leave `pause_reason` unchanged.
 9. If `config.md` `skip_admob: true`, the evaluator's PASS sets `next_role: build` (admob is skipped).
 10. By default a PASS PAUSES for human review before deploy: the evaluator sets `status: paused`, `pause_reason: manual_action`, and the deploy `next_role` (admob/build). The user plays/approves the built game, then `--resume` dispatches that `next_role`. If `config.md` `auto_deploy: true`, PASS instead sets `status: running` and continues straight to deploy with no pause.
