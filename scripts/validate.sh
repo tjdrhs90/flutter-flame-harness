@@ -84,6 +84,7 @@ if [ -f "$EVA" ]; then
   require_section "$EVA" "stub.*FAIL\|스텁.*FAIL\|automatic FAIL" "stub auto-fail"
   require_section "$EVA" "max_rounds" "forced judgment"
   require_section "$EVA" "strict" "strict-mode phases"
+  require_section "$EVA" "auto_deploy\|human-approval\|human review\|review gate" "post-QA review gate"
 fi
 
 STA="$ROOT/skills/flame-harness-status/SKILL.md"

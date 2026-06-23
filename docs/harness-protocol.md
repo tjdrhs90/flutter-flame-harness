@@ -21,6 +21,7 @@ max_rounds: 3              # default; generator/evaluator loop limit
 skip_research: false       # set true to skip Phase A research skill
 skip_admob: false          # set true to skip AdMob integration phase
 auto_idea: false           # true => research auto-selects the best concept without asking
+auto_deploy: false         # true => skip the post-QA human-review pause; PASS continues straight to deploy
 
 developer:
   company: gonigon
@@ -271,7 +272,7 @@ The state machine governing `current_phase`, `next_role`, and `status` transitio
 | design | complete | contract |
 | contract | AGREED | generator (current_round=1) |
 | generator | handoff | evaluator |
-| evaluator | PASS | admob (or `build` if `skip_admob: true`) |
+| evaluator | PASS | paused (manual_action, human review) unless `auto_deploy: true` → resume dispatches admob (or `build` if `skip_admob: true`) |
 | evaluator | FAIL | generator (current_round+1) |
 | evaluator | max_rounds | forced judgment, then admob |
 | admob      | complete       | build                                    |
@@ -293,3 +294,4 @@ The state machine governing `current_phase`, `next_role`, and `status` transitio
 7. `completed` status is set only after the final phase (`retro`) exits cleanly.
 8. `pause_reason` is set only by the rate-limit hook / error path, and is cleared (set to `""`) by `flame-harness-resume` when it returns `status` to `running`. Forward-flow phase skills do not need to touch `pause_reason`.
 9. If `config.md` `skip_admob: true`, the evaluator's PASS sets `next_role: build` (admob is skipped).
+10. By default a PASS PAUSES for human review before deploy: the evaluator sets `status: paused`, `pause_reason: manual_action`, and the deploy `next_role` (admob/build). The user plays/approves the built game, then `--resume` dispatches that `next_role`. If `config.md` `auto_deploy: true`, PASS instead sets `status: running` and continues straight to deploy with no pause.

@@ -75,7 +75,9 @@ flame-harness-resume: pipeline is already completed. Nothing to resume.
 ### manual_action
 
 `pause_reason: manual_action` means the pipeline requires a manual step from the user before
-it can continue (e.g. uploading a keystore, configuring a device).
+it can continue (e.g. **playing/approving the built game at the post-QA review gate**, completing
+App Store / Play Console submission steps, uploading a keystore, or configuring a device). The
+specific action is recorded in the `pause` event row of `pipeline-log.md`.
 
 **Procedure:**
 

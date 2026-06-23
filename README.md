@@ -43,8 +43,14 @@ Flags:
 | `--rounds N` | 3 | Maximum generator–evaluator negotiation rounds |
 | `--skip-research` | off | Skip the market-research phase |
 | `--skip-admob` | off | Skip the AdMob phase |
-| `--auto-idea` | off | Research scores its generated concepts and auto-picks the best — no pick prompt (fully hands-off) |
+| `--auto-idea` | off | Research scores its generated concepts and auto-picks the best — no pick prompt |
+| `--auto-deploy` | off | Skip the post-QA human-review pause; PASS continues straight to deploy |
 | `--resume` | — | Resume a paused run |
+
+By default, after the build passes QA the harness **pauses for you to play and approve the game**
+(`cd <slug> && flutter run`) before any deploy work; `/flame-harness --resume` continues to
+admob→build→screenshot→submit. `--auto-deploy` skips this gate, and `--auto-idea --auto-deploy`
+together run fully hands-off from idea to deploy.
 
 ## Phase A Skills
 

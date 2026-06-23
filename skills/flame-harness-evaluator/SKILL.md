@@ -250,14 +250,38 @@ as evidence.
 
 ### Update state.md (PASS)
 
-On PASS (or forced advance at max_rounds), update `docs/harness/state.md` per protocol §2 and
-the `evaluator → admob / evaluator → build` transition in §7 (rule 9: if `skip_admob: true` in
-`config.md`, route to `build`; otherwise route to `admob`). Set `status: running` in the same
-atomic write (protocol §7 rule 2).
+On PASS (or forced advance at max_rounds), the game has been built and has passed QA — but before
+any deploy work (admob/build/screenshot/submit), there is a **human-approval gate** by default so
+the user can actually play and approve the game.
 
-Read `skip_admob` from `docs/harness/config.md`:
-- if `skip_admob: true` → write `next_role: build`
-- otherwise → write `next_role: admob`
+First read `skip_admob` and `auto_deploy` from `docs/harness/config.md`, and decide `next_role`:
+- if `skip_admob: true` → `next_role: build`
+- otherwise → `next_role: admob`
+
+Then branch on `auto_deploy`:
+
+**Default (`auto_deploy: false`) — PAUSE for human review.**
+Write `state.md` with `status: paused`, `pause_reason: manual_action`, and the `next_role`
+decided above (per protocol §7 rule 2). Append a `pipeline-log.md` row and PRINT a review
+checklist for the user:
+
+> 게임 빌드 + QA 통과. **배포 전 직접 확인하세요:** `cd <app_slug> && flutter run` 으로 플레이하고,
+> `docs/harness/screenshots/` 의 QA 스크린샷과 `docs/harness/feedback/round-<N>-qa.md` 를 확인.
+> 만족하면 `/flame-harness --resume` 로 배포(admob→build→screenshot→submit)를 진행합니다.
+
+```yaml
+status: paused
+current_phase: evaluator
+next_role: admob   # or "build" if skip_admob: true
+pause_reason: manual_action
+updated_at: "<ISO-8601 UTC now>"
+```
+
+The orchestrator halts on `status: paused`; on `--resume`, `flame-harness-resume` confirms the
+user approved and dispatches the stored `next_role`.
+
+**`auto_deploy: true` — no pause, continue straight to deploy.**
+Write `status: running` with the same `next_role` so the orchestrator auto-continues:
 
 ```yaml
 status: running
@@ -266,7 +290,9 @@ next_role: admob   # or "build" if skip_admob: true
 updated_at: "<ISO-8601 UTC now>"
 ```
 
-Leave `current_round`, `created_at`, `resume_attempts`, and `pause_reason` unchanged.
+Leave `current_round`, `created_at`, and `resume_attempts` unchanged. (In the `auto_deploy: false`
+case you set `pause_reason: manual_action`; in the `auto_deploy: true` case leave `pause_reason`
+unchanged.)
 
 ### Update state.md (FAIL)
 
