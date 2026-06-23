@@ -58,6 +58,19 @@ gracefully (silent audio, no-op haptic, fallback rectangle) — the game stays p
   foreground) → UMP consent → `MobileAds.initialize()` → preload audio → `runApp()`. Ads must not be
   requested before consent completes; ATT must be requested while foregrounded (use a post-frame
   callback), or the prompt is dismissed unanswered (App Store policy issue).
+- **Android hardware back button**: wrap the app in `PopScope` — back closes an open overlay, else
+  pauses, else double-tap-to-exit (don't let a single back kill the app mid-run).
+- **Reset all run state on a new run** — clear score/effects/spawns/timers so nothing leaks from the
+  previous run into the next (a common source of "weird state on retry").
+
+## Input & UI
+
+- **iOS edge-gesture conflict**: full-screen drag/joystick games trigger the iOS system swipe. Defer
+  it with `SystemChrome.setEnabledSystemUIMode` / `preferredScreenEdgesDeferringSystemGestures` so a
+  player's swipe near the edge doesn't pull down Control Center or trigger back.
+- **SafeArea + responsive HUD**: wrap every overlay/HUD in `SafeArea`; cap bar/dialog widths with
+  `LayoutBuilder`/max-width so notches and landscape don't clip or stretch the UI.
+- **Block input during splash/transitions** so a stray tap doesn't fall through into gameplay.
 
 ## Performance
 
@@ -76,8 +89,29 @@ gracefully (silent audio, no-op haptic, fallback rectangle) — the game stays p
   `pod install` fails.
 - **`Info.plist`**: `NSUserTrackingUsageDescription` (ATT) and `SKAdNetworkItems` (Google's list) are
   required for an ads build to pass App Store review.
+- **iOS `PrivacyInfo.xcprivacy` (iOS 17+)**: ship a Privacy Manifest and register it in the Xcode
+  project, or App Store Connect rejects the upload. Declare reasons for any required-reason APIs
+  (UserDefaults, file timestamps, etc.).
+- **Android core library desugaring**: enable `coreLibraryDesugaring` in
+  `android/app/build.gradle.kts` (some plugins, e.g. notifications, require it) or the build fails.
+- **Localized app display name**: set the store/home-screen name per locale — iOS
+  `<locale>.lproj/InfoPlist.strings` (`CFBundleDisplayName`), Android per-locale `strings.xml`.
 - **Asset paths lowercase**: Android/Linux are case-sensitive; keep `assets/**` names lowercase and
   declare directories (trailing slash) in `pubspec.yaml`.
+
+## Ads (init coordination — see also the admob skill)
+
+- **Gate the ad SDK to mobile only**: don't init `MobileAds`/load ads on web/desktop; guard on
+  `!kIsWeb && (Platform.isIOS || Platform.isAndroid)`, or you get silent no-ops/errors.
+- **Coordinate the ad manager with `MobileAds.initialize()`** — don't request an ad before init
+  completes (silent no-ops). Test IDs in debug, real IDs (from config) on release.
+
+## Store screenshots
+
+- **Screenshot mode flag** (`--dart-define=screenshots=true`): disables ads, the ATT prompt, and
+  audio during capture so frames are clean.
+- **Android: convert the Flutter surface to an image once** (not per shot) or multi-shot capture
+  fails after the first frame.
 
 ## Persistence
 

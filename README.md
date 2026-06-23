@@ -4,6 +4,10 @@
 
 A Claude Code plugin that takes a Flutter/Flame game from raw idea all the way to the app stores. The harness orchestrates a structured pipeline of skills — research, planning, design, contract negotiation, and a generator–evaluator build loop — so every stage produces a verified, hand-off-ready artifact before the next one begins.
 
+## Why
+
+AI coding tools usually skip the boring parts — they code before pinning requirements, skip tests, and stop while it's half-done. This harness **delegates the process, not just the code**: guardrails → plan → a generator↔evaluator build loop with a *skeptical QA that runs the game before judging* → human review. And it isn't theory — the **fixes earned shipping real Flame games** (audio pooling, haptics, app-lifecycle, performance, store/build pitfalls) are baked in, so a generated game doesn't re-walk the same traps.
+
 ## Phases
 
 **Phase A (complete): research → plan → design → contract → generator ↔ evaluator → playable game**

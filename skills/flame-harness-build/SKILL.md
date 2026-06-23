@@ -152,6 +152,13 @@ After substitution, verify with `grep '__' <game>/ios/fastlane/Appfile <game>/io
 
 Run all build commands from the game root (`/Users/ssg/AndroidStudioProjects/<app_slug>/`).
 
+### Pre-build platform requirements
+
+Before building, ensure the platform items in `docs/game-gotchas.md` (Build/platform) are in place —
+these are submit-blockers if missing: iOS `PrivacyInfo.xcprivacy` registered (iOS 17+), Android
+`minSdk = 23` + core-library desugaring, iOS `Podfile` platform bumped, `Info.plist`
+ATT + `SKAdNetworkItems`.
+
 ### iOS — Signed IPA → TestFlight
 
 ```bash
