@@ -1,6 +1,6 @@
 ---
 name: flame-harness-plan
-description: Phase 2 — write a Korean game PRD (core loop, mechanics, content metrics, win/lose, scope guard), map the lib/ structure, and assign app name, slug, and bundle id.
+description: Phase 2 — write the game PRD in the project's default_language (core loop, mechanics, content metrics, win/lose, scope guard), map the lib/ structure, and assign app name, slug, and bundle id.
 argument-hint: ""
 allowed-tools: [Agent, Read, Write, Edit, Bash]
 ---
@@ -8,7 +8,7 @@ allowed-tools: [Agent, Read, Write, Edit, Bash]
 # flame-harness-plan
 
 Phase 2 of the flutter-flame-harness pipeline. Reads the research spec and `config.md`, then
-produces a comprehensive Korean game PRD, maps the `lib/` directory structure, assigns the app
+produces a comprehensive game PRD in the project's `default_language`, maps the `lib/` directory structure, assigns the app
 identity (`app_name`, `app_slug`, `bundle_id`), and advances the pipeline state to `design`.
 
 All file schemas (`config.md`, `state.md`, `pipeline-log.md`) are defined in
@@ -29,7 +29,7 @@ Extract:
 | `app_name` | Display name (may be blank — set it here if so) |
 | `app_slug` | Kebab-case identifier (may be blank — derive it here if so) |
 | `bundle_id` | App bundle ID (may be blank — set it here) |
-| `default_language` | Should be `ko`; confirm before writing the PRD |
+| `default_language` | The user's conversation language (set by the orchestrator); the PRD and all copy are written in it |
 
 If `config.md` does not exist, abort with:
 `flame-harness-plan: docs/harness/config.md not found — run the orchestrator to bootstrap first.`
@@ -98,9 +98,12 @@ Make targeted edits — do not rewrite the entire file.
 
 ## PRD content
 
-Write the PRD **entirely in Korean** (한국어). The only exceptions are:
-- Code identifiers, file paths, class names, and technical terms that have no Korean equivalent.
-- Section headings may include the English technical term in parentheses after the Korean heading.
+Write the PRD **entirely in `default_language`** (the language the user is conversing in). Headings
+and body in that language. The template below shows Korean headings as an example for a Korean
+project — translate the headings to `default_language` (e.g. English) when the project language is
+not Korean. The only exceptions are:
+- Code identifiers, file paths, class names, and technical terms that have no local equivalent.
+- Section headings may include the English technical term in parentheses after the localized heading.
 
 Use the following structure verbatim. A fresh Claude must be able to fill every section from the
 research spec alone — no guessing required.
@@ -282,7 +285,7 @@ Create `docs/harness/plans/<YYYY-MM-DD>-prd.md` (use today's UTC date).
 
 If `docs/harness/plans/` does not exist, create it before writing.
 
-Write the full Korean PRD using the structure defined in the **PRD content** section above,
+Write the full PRD in `default_language` using the structure defined in the **PRD content** section above,
 filling every section from the research spec and `config.md`.
 
 ### 2. Update `config.md`

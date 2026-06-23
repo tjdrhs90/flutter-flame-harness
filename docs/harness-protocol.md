@@ -15,7 +15,7 @@ app_idea: ""  # blank => research generates & recommends concepts; populated aft
 app_name: "<display name>"
 app_slug: "<kebab-case identifier>"
 bundle_id: "com.gonigon.<id>"  # <id> = app_slug with hyphens/underscores stripped (segments must be [a-z0-9]+)
-default_language: ko
+default_language: en      # the language the user converses in; orchestrator sets this at bootstrap (e.g. ko, en)
 strict_mode: true          # if false, QA verdicts are advisory only
 max_rounds: 3              # default; generator/evaluator loop limit
 skip_research: false       # set true to skip Phase A research skill
@@ -107,7 +107,7 @@ regardless of other passing criteria.
 3. No TODO, stub, or placeholder in game logic (grep-checkable).
 4. All tuning constants centralized in `game_config.dart` — no magic numbers in gameplay code.
 5. Game content (enemies / levels / waves) is defined as data, not hardcoded.
-6. KO + EN localization complete — no missing l10n keys.
+6. Localization complete for all configured locales — `default_language`, plus English when `default_language` ≠ `en` — no missing l10n keys.
 7. Core loop works end to end: start → play → win/lose → restart.
 8. Runs on a simulator/emulator with zero crashes and zero console errors.
 

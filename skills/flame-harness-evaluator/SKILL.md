@@ -96,16 +96,19 @@ cd /Users/ssg/AndroidStudioProjects/<app_slug>
 flutter gen-l10n
 ```
 
-Then confirm that `lib/l10n/app_ko.arb` and `lib/l10n/app_en.arb` contain identical key sets:
+Then confirm that every configured `lib/l10n/app_<locale>.arb` (the project's `default_language`,
+plus `app_en.arb` when `default_language` ≠ `en`) contains identical key sets:
 
 ```bash
 python3 -c "
-import json
-ko = set(json.load(open('lib/l10n/app_ko.arb')))
-en = set(json.load(open('lib/l10n/app_en.arb')))
-missing = (ko - en) | (en - ko)
-if missing: print('MISSING KEYS:', missing); exit(1)
-print('l10n OK')
+import glob, json
+arbs = glob.glob('lib/l10n/app_*.arb')
+keysets = {f: set(json.load(open(f))) for f in arbs}
+allkeys = set().union(*keysets.values()) if keysets else set()
+bad = {f: sorted(allkeys - ks) for f, ks in keysets.items() if allkeys - ks}
+if len(arbs) < 1: print('NO ARB FILES'); exit(1)
+if bad: print('MISSING KEYS:', bad); exit(1)
+print('l10n OK', list(keysets))
 "
 ```
 

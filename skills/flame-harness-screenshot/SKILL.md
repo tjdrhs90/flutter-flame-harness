@@ -1,6 +1,6 @@
 ---
 name: flame-harness-screenshot
-description: Phase 9 — capture KO+EN store screenshots via integration_test (ads hidden), fill ASO keywords, and upload via fastlane.
+description: Phase 9 — capture store screenshots in the game's configured locales via integration_test (ads hidden), fill ASO keywords, and upload via fastlane.
 argument-hint: ""
 allowed-tools: [Read, Write, Edit, Bash, Glob]
 ---
@@ -274,7 +274,7 @@ Leave `current_round`, `created_at`, `resume_attempts`, and `pause_reason` uncha
 Append one row to `docs/harness/pipeline-log.md` (per protocol §6):
 
 ```
-| <ISO-8601 UTC now> | complete | screenshot | KO+EN screenshots captured and uploaded; ASO metadata written; next: submit |
+| <ISO-8601 UTC now> | complete | screenshot | locale screenshots captured and uploaded; ASO metadata written; next: submit |
 ```
 
 ---

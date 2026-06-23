@@ -30,7 +30,7 @@ Extract:
 | `app_idea` | Informs visual tone (action vs. casual vs. puzzle) |
 | `app_name` | Used in splash screen heading and icon badge |
 | `app_slug` | Used to derive asset directory naming conventions |
-| `default_language` | Should be `ko`; confirm before writing copy samples |
+| `default_language` | The user's conversation language; write copy samples in it |
 
 If `config.md` does not exist, abort with:
 `flame-harness-design: docs/harness/config.md not found — run the orchestrator to bootstrap first.`

@@ -412,7 +412,7 @@ All sizes and colours use `DesignTokens` constants.
 
 Create ARB files:
 
-- `lib/l10n/app_ko.arb` — Korean strings (primary language).
+- `lib/l10n/app_<default_language>.arb` — primary-language strings (`default_language`); add `app_en.arb` as a secondary locale when `default_language` ≠ `en`.
 - `lib/l10n/app_en.arb` — English strings.
 
 Every user-visible string in every screen and overlay must have an ARB entry. No string
@@ -469,7 +469,7 @@ Add or expand tests to cover:
 
 - Main menu renders without throwing.
 - Game-over screen shows the correct score.
-- Localisation: all required ARB keys are present in both `app_ko.arb` and `app_en.arb`.
+- Localisation: all required ARB keys are present in every configured `app_<locale>.arb` (`default_language`, plus `app_en.arb` when `default_language` ≠ `en`).
 - `PreferencesService` read/write round-trip (use a mock `SharedPreferences`).
 
 ### 5c HARD GATE
@@ -514,7 +514,7 @@ defined in `docs/harness-protocol.md` §4:
 | No TODO/stub in game logic           | DONE / PARTIAL / FAIL | … |
 | game_config.dart for all tuning      | DONE / PARTIAL / FAIL | … |
 | Content defined as data              | DONE / PARTIAL / FAIL | … |
-| KO + EN l10n complete                | DONE / PARTIAL / FAIL | … |
+| l10n complete (all configured locales) | DONE / PARTIAL / FAIL | … |
 | Core loop end-to-end                 | DONE / PARTIAL / FAIL | … |
 | Zero crashes on simulator            | DONE / PARTIAL / FAIL | … |
 | <game-specific criterion>            | DONE / PARTIAL / FAIL | … |

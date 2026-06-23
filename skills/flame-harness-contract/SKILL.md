@@ -54,7 +54,7 @@ any one results in an immediate FAIL verdict, regardless of other passing criter
 3. No TODO, stub, or placeholder in game logic (grep-checkable).
 4. All tuning constants centralized in `game_config.dart` — no magic numbers in gameplay code.
 5. Game content (enemies / levels / waves) is defined as data, not hardcoded.
-6. KO + EN localization complete — no missing l10n keys.
+6. Localization complete for all configured locales — `default_language`, plus English when `default_language` ≠ `en` — no missing l10n keys.
 7. Core loop works end to end: start → play → win/lose → restart.
 8. Runs on a simulator/emulator with zero crashes and zero console errors.
 
@@ -163,7 +163,7 @@ regardless of other passing criteria.
 3. No TODO, stub, or placeholder in game logic (grep-checkable).
 4. All tuning constants centralized in `game_config.dart` — no magic numbers in gameplay code.
 5. Game content (enemies / levels / waves) is defined as data, not hardcoded.
-6. KO + EN localization complete — no missing l10n keys.
+6. Localization complete for all configured locales — `default_language`, plus English when `default_language` ≠ `en` — no missing l10n keys.
 7. Core loop works end to end: start → play → win/lose → restart.
 8. Runs on a simulator/emulator with zero crashes and zero console errors.
 

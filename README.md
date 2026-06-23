@@ -1,5 +1,7 @@
 # flutter-flame-harness
 
+**English** | [한국어](README.ko.md)
+
 A Claude Code plugin that takes a Flutter/Flame game from raw idea all the way to the app stores. The harness orchestrates a structured pipeline of skills — research, planning, design, contract negotiation, and a generator–evaluator build loop — so every stage produces a verified, hand-off-ready artifact before the next one begins.
 
 ## Phases
@@ -57,7 +59,7 @@ together run fully hands-off from idea to deploy.
 | Skill | Trigger command | Purpose |
 |-------|----------------|---------|
 | `flame-harness-research` | `/flame-harness-research` | Market research and genre analysis |
-| `flame-harness-plan` | `/flame-harness-plan` | PRD, Flame component map, Riverpod state design |
+| `flame-harness-plan` | `/flame-harness-plan` | PRD (in your language), Flame component map, lib/ structure |
 | `flame-harness-design` | `/flame-harness-design` | Visual style system and component specs |
 | `flame-harness-contract` | `/flame-harness-contract` | Generator/evaluator negotiate completion criteria |
 | `flame-harness-generator` | `/flame-harness-generator` | Build the Flutter/Flame project in 3 sub-phases |
@@ -69,7 +71,7 @@ together run fully hands-off from idea to deploy.
 |-------|----------------|---------|
 | `flame-harness-admob` | `/flame-harness-admob` | Rewarded-ad strategy, guided AdMob unit creation, ATT/UMP code injection |
 | `flame-harness-build` | `/flame-harness-build` | Credential bootstrap, fastlane config generation, IPA → TestFlight, AAB → internal track |
-| `flame-harness-screenshot` | `/flame-harness-screenshot` | KO+EN store screenshots via integration_test, ASO metadata, fastlane upload |
+| `flame-harness-screenshot` | `/flame-harness-screenshot` | Store screenshots (game's locales) via integration_test, ASO metadata, fastlane upload |
 | `flame-harness-submit` | `/flame-harness-submit` | Upload store text metadata + categories via fastlane, then pause for manual review submission |
 | `flame-harness-retro` | `/flame-harness-retro` | Score the completed pipeline against 9 harness principles, write retrospective |
 

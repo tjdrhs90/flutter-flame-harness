@@ -1,5 +1,7 @@
 # flutter-flame-harness — Development Guide
 
+> 한국어 소개는 [README.ko.md](README.ko.md) 를 참고하세요.
+
 This guide is for **developing/contributing to this plugin repo itself** — the `skills/`,
 `docs/`, `scripts/`, and `templates/` that make up the plugin, not the games it generates.
 
