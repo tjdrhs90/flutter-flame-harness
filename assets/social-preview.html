@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>flutter-flame-harness — social preview</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { background: #0d1117; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+  .card {
+    width: 1280px; height: 640px;
+    background:
+      radial-gradient(1100px 520px at 18% -10%, rgba(41,121,255,.20), transparent 60%),
+      radial-gradient(900px 520px at 100% 120%, rgba(255,138,0,.18), transparent 55%),
+      linear-gradient(160deg, #0d1117 0%, #11161f 60%, #0b0f15 100%);
+    color: #e6edf3;
+    font-family: -apple-system, "Segoe UI", "Helvetica Neue", system-ui, sans-serif;
+    position: relative; overflow: hidden;
+    padding: 72px 80px; display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .badge { font: 600 22px/1 ui-monospace, "SF Mono", Menlo, monospace; color: #7ee787; letter-spacing: .04em; }
+  .badge .dim { color: #6e7681; }
+  h1 { font-size: 92px; font-weight: 800; letter-spacing: -.02em; line-height: .98; margin-top: 18px; }
+  h1 .flutter { color: #4aa8ff; }
+  h1 .flame { color: #ff8a3d; }
+  .tag { font-size: 33px; font-weight: 500; color: #c9d4e0; margin-top: 22px; max-width: 1000px; line-height: 1.25; }
+  .pipe { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; margin-top: 8px;
+          font: 600 19px/1 ui-monospace, "SF Mono", Menlo, monospace; white-space: nowrap; }
+  .pipe span { background: #161b22; border: 1px solid #2b3340; border-radius: 9px; padding: 11px 13px; color: #cdd9e5; }
+  .pipe .arr { background: none; border: none; color: #ff8a3d; padding: 0 1px; font-size: 18px; }
+  .pipe .star { background: #1b2330; border-color: #3a4757; color: #7ee787; }
+  .hooks { display: flex; gap: 18px; }
+  .hook { flex: 1; background: rgba(255,255,255,.03); border: 1px solid #232a35; border-radius: 14px; padding: 22px 24px; }
+  .hook b { display: block; font-size: 25px; color: #f0f6fc; margin-bottom: 7px; }
+  .hook p { font-size: 19px; color: #8b97a6; line-height: 1.35; }
+  .foot { display: flex; justify-content: space-between; align-items: center; font-size: 22px; color: #6e7681; }
+  .foot .repo { font-family: ui-monospace, "SF Mono", Menlo, monospace; color: #58a6ff; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div>
+      <div class="badge">Claude Code plugin <span class="dim">· open source · MIT</span></div>
+      <h1><span class="flutter">flutter</span>-<span class="flame">flame</span>-harness</h1>
+      <div class="tag">Flutter/Flame 게임을 <b>아이디어부터 앱스토어까지</b> 끌고 가는 AI 개발 하네스</div>
+    </div>
+
+    <div class="pipe">
+      <span>아이디어</span><span class="arr">→</span>
+      <span>계획</span><span class="arr">→</span>
+      <span>디자인</span><span class="arr">→</span>
+      <span>계약</span><span class="arr">→</span>
+      <span class="star">generator ↔ evaluator</span><span class="arr">→</span>
+      <span>사람 검수</span><span class="arr">→</span>
+      <span>배포</span>
+    </div>
+
+    <div class="hooks">
+      <div class="hook">
+        <b>절차를 AI에 위임</b>
+        <p>가드레일 → 계획 → 빌드 루프 → 검수. 바이브 코딩이 아니라 규율.</p>
+      </div>
+      <div class="hook">
+        <b>회의적 평가자</b>
+        <p>코드만 보고 통과 금지 — 게임을 실제로 띄워보고 판정.</p>
+      </div>
+      <div class="hook">
+        <b>실전 픽스 내장</b>
+        <p>출시한 게임 7종의 오디오·햅틱·생명주기 해결책을 그대로.</p>
+      </div>
+    </div>
+
+    <div class="foot">
+      <span>Anthropic harness design 적용 · 한국어/English</span>
+      <span class="repo">github.com/tjdrhs90/flutter-flame-harness</span>
+    </div>
+  </div>
+</body>
+</html>
