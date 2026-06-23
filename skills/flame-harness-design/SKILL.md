@@ -255,8 +255,14 @@ Recommended free sources: `freesound.org` (CC0 filter), `opengameart.org` audio 
 Audio files go in `assets/audio/`. Add `assets/audio/` as a top-level assets entry in
 `pubspec.yaml`.
 
-Package: `flame_audio` (wraps `audioplayers`). BGM uses `FlameAudio.bgm.play()`; SFX
-uses `FlameAudio.play()`.
+Package: `flame_audio` (wraps `audioplayers`). BGM uses `FlameAudio.bgm.play()`; frequent SFX use an
+`AudioPool` (see the **Audio** patterns in `docs/game-gotchas.md`).
+
+Audio plan requirements (per `docs/game-gotchas.md`):
+- **iOS format**: bundle **WAV** (22 kHz mono 16-bit). iOS does not reliably play OGG — convert
+  OGG/MP3 with `ffmpeg -i in.ogg -ac 1 -ar 22050 -sample_fmt s16 out.wav`.
+- **Volume caps**: specify safe per-channel caps (e.g. BGM ≤ 0.2, SFX ≤ 0.7) that become the
+  `GameConfig` defaults; the user slider is a fraction of the cap.
 
 ### flutter_launcher_icons
 

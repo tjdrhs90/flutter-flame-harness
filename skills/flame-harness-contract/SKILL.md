@@ -61,6 +61,20 @@ any one results in an immediate FAIL verdict, regardless of other passing criter
 Copy these 8 lines verbatim into the `## Mandatory Hard Gates` section of `contract.md`. Do not
 paraphrase, reorder, or omit any gate.
 
+## Platform-Robustness Gates
+
+In addition to the 8 core gates above, every contract includes a `## Platform-Robustness Gates`
+section requiring the patterns in `docs/game-gotchas.md` (cite it). These are mandatory:
+
+- **R1 Audio safe**: all audio calls in try/catch (missing asset never crashes); frequent SFX use an
+  `AudioPool` (not per-call `FlameAudio.play()`); BGM stops on game-over, app-background, and teardown.
+- **R2 Haptics safe** (if the game uses haptics): a `Haptics` helper with platform guard + throttle +
+  `enabled` toggle + try/catch; gameplay never calls `HapticFeedback.*` raw.
+- **R3 Lifecycle**: app host implements `WidgetsBindingObserver`; on background → `pauseEngine()` +
+  BGM pause; resume reverses; teardown cleans up audio/timers.
+- **R4 Performance**: no per-frame `world.children.whereType<...>()` in a hot path (cache once per
+  frame); `Paint`/shaders not recreated per frame.
+
 ---
 
 ## Functional Criteria

@@ -114,6 +114,28 @@ print('l10n OK', list(keysets))
 
 Missing keys in either locale are a Hard Gate failure (protocol §3 Hard Gate 6).
 
+### Step 5a — Platform-robustness gates
+
+Verify the `## Platform-Robustness Gates` (R1–R4) from `contract.md` / `docs/game-gotchas.md`:
+
+```bash
+# R1 audio: frequent SFX pooled + audio calls guarded; BGM stop on teardown
+grep -rn "AudioPool" lib/ || echo "WARN: no AudioPool — frequent SFX may stutter"
+grep -rn "FlameAudio\|AudioPool\|\.bgm" lib/ | grep -i "try\|catch" >/dev/null || echo "CHECK: audio not in try/catch"
+grep -rn "bgm.stop\|\.stop()" lib/ || echo "CHECK: BGM stop on teardown/background"
+# R2 haptics (if used)
+ls lib/systems/haptics.dart 2>/dev/null && grep -nE "kIsWeb|isIOS|isAndroid|enabled|Stopwatch|elapsed" lib/systems/haptics.dart
+# R3 lifecycle
+grep -rn "WidgetsBindingObserver\|didChangeAppLifecycleState\|pauseEngine" lib/ || echo "FAIL: no lifecycle pause"
+# R4 performance: no per-frame whereType in update hot paths
+grep -rn "whereType" lib/ | grep -i "update" && echo "CHECK: whereType inside update — verify it's cached, not per-frame"
+```
+
+Judge results against `docs/game-gotchas.md`: missing lifecycle pause (R3) or unguarded audio that
+can crash on a missing asset (R1) is a FAIL. A per-frame `whereType` in a hot `update` path, or
+raw `HapticFeedback.*` in gameplay without the guarded helper, is a FAIL when the game relies on it.
+Also confirm the game does **not crash when an audio/image asset is missing** (it should degrade).
+
 ### Step 6 — Contract criteria evidence
 
 For each criterion in `contract.md` §§ "Mandatory Hard Gates" and "Functional Criteria", record

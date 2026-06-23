@@ -4,6 +4,10 @@ This file is the single source of truth for all file schemas, state keys, and th
 state machine used by every phase skill (Tasks 3–10). Skills cite this document rather than
 redefining schemas (DRY principle).
 
+Companion source: [`docs/game-gotchas.md`](game-gotchas.md) — the required robustness patterns
+(audio, haptics, lifecycle, performance, build/platform) the generator emits and the
+contract/evaluator enforce. Cite it the same way; do not restate it.
+
 ---
 
 ## 1. `config.md` Schema

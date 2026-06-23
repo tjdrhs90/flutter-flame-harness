@@ -206,8 +206,12 @@ handled via `TapCallbacks` on individual components (see §5a.8). It must:
 - Declare `GameState _state = GameState.menu;` and a getter `GameState get state`.
 - Expose `void startGame()`, `void pauseGame()`, `void resumeGame()`, `void gameOver()` methods
   that transition `_state` and show/hide Flutter overlays by name.
-- Override `onLoad()` to load assets and add the background component.
+- Override `onLoad()` to load assets and add the background component (call `super.onLoad()` first).
 - Register all overlay names needed by screens (e.g. `'menu'`, `'hud'`, `'pause'`, `'gameOver'`).
+- **Performance (see `docs/game-gotchas.md`):** if components need to query peers each frame,
+  compute the active lists **once** in the game root's `update(dt)` and have components read that
+  cache — never call `world.children.whereType<X>()` per-component per-frame. Reuse
+  `static final Paint` objects; don't recreate `Paint`/shaders/blur every frame.
 
 ### 5a.8 Input handling
 
@@ -238,6 +242,16 @@ void main() async {
 ```
 
 Replace `<AppSlugGame>` with the actual class name.
+
+**Startup order & lifecycle (required — see the Lifecycle patterns in `docs/game-gotchas.md`).**
+`main()` must run in this order: `WidgetsFlutterBinding.ensureInitialized()` →
+`await SharedPreferences.getInstance()` (so synchronous prefs reads later work) → orientation →
+(if ads) ATT-after-first-frame → UMP consent → `MobileAds.initialize()` → `runApp(...)`.
+
+Host the `GameWidget` in a `StatefulWidget` that implements `WidgetsBindingObserver`:
+`didChangeAppLifecycleState` on `paused`/`inactive` → `game.pauseEngine()` + BGM pause; on
+`resumed` → resume. Clean up (stop audio, dispose pools, cancel timers) on the game's
+`onDetach()`/`onRemove()`. Gate stale input on resume with a `_canInput` flag.
 
 ### 5a.10 Minimal passing test
 
@@ -326,12 +340,32 @@ Create `lib/game/systems/score_system.dart`. This system:
 
 ### 5b.6 Audio system
 
-Create `lib/game/systems/audio_system.dart`. This system:
+Create `lib/game/systems/audio_system.dart`. Follow the **Audio** patterns in
+`docs/game-gotchas.md` (cite it; do not restate). Concretely this system:
 
-- Initialises `FlameAudio.bgm` in `onLoad()`.
-- Plays background music with `FlameAudio.bgm.play('bgm.mp3', volume: GameConfig.bgmVolume)`.
-- Exposes `void playSfx(String name)` that calls `FlameAudio.play(name, volume: GameConfig.sfxVolume)`.
-- Respects mute toggles stored in `shared_preferences` (keys: `bgmEnabled`, `sfxEnabled`).
+- Pre-warms an `AudioPool` for each **frequent** SFX in `onLoad()` (1–3 players); `playSfx(name)`
+  calls `pool.start()`. Rare one-offs may use `FlameAudio.play()`.
+- Throttles repeated SFX (~70 ms per key) to avoid burst stutter.
+- Wraps pool creation and every play/BGM call in **try/catch** with `debugPrint` — a missing or
+  bad audio asset must never crash; playback is skipped silently.
+- BGM: `FlameAudio.bgm.play(...)` only in the `playing` state; `FlameAudio.bgm.stop()` on game-over,
+  on app-background, and in `onRemove()`/`onDetach()`.
+- Applies per-channel volume caps from `GameConfig` (e.g. `bgmVolume`, `sfxVolume` are safe caps;
+  user slider is a fraction of the cap), and respects mute toggles in `shared_preferences`
+  (`bgmEnabled`, `sfxEnabled`).
+
+### 5b.6a Haptics system
+
+Create `lib/systems/haptics.dart` — a pure-Dart haptics helper per the **Haptics** patterns in
+`docs/game-gotchas.md`. Gameplay never calls `HapticFeedback.*` directly. The helper:
+
+- No-ops unless `!kIsWeb && (Platform.isIOS || Platform.isAndroid)`.
+- Enforces a global throttle (~60 ms minimum gap) so bursts don't machine-gun the motor.
+- Has a persisted `Haptics.enabled` toggle, and wraps every call in try/catch.
+- Exposes intent methods (e.g. `light()`, `medium()`, `heavy()`) over `HapticFeedback`.
+
+(Optional, for haptic-heavy games: a native iOS `UIImpactFeedbackGenerator` MethodChannel — see
+`docs/game-gotchas.md`. Baseline Dart is sufficient otherwise.)
 
 ### 5b.7 Difficulty system
 

@@ -136,4 +136,17 @@ if [ -f "$RET" ]; then
   require_section "$RET" "completed" "completion state"
 fi
 
+# Robustness knowledge doc + its propagation into skills
+GOTCHAS="$ROOT/docs/game-gotchas.md"
+[ -f "$GOTCHAS" ] || err "missing docs/game-gotchas.md"
+GEN="$ROOT/skills/flame-harness-generator/SKILL.md"
+if [ -f "$GEN" ]; then
+  require_section "$GEN" "game-gotchas" "generator cites gotchas"
+  require_section "$GEN" "AudioPool" "audio pool guidance"
+  require_section "$GEN" "haptics" "haptics system"
+  require_section "$GEN" "WidgetsBindingObserver" "lifecycle observer"
+fi
+CON2="$ROOT/skills/flame-harness-contract/SKILL.md"
+[ -f "$CON2" ] && require_section "$CON2" "Platform-Robustness Gates" "robustness gates block"
+
 [ "$fail" -eq 0 ] && echo "validate: OK" || exit 1

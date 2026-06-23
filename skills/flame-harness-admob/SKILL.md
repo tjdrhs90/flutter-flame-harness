@@ -180,9 +180,14 @@ Add the iOS AdMob App ID:
 <string>ca-app-pub-XXXX~YYYY</string>
 ```
 
-### 3. Android — AndroidManifest.xml
+Also add `SKAdNetworkItems` (Google's SKAdNetwork IDs from the official `google_mobile_ads` docs) to
+`Info.plist` — required for an ads build to pass App Store review (see `docs/game-gotchas.md`).
 
-Add to `android/app/src/main/AndroidManifest.xml` inside `<application>`:
+### 3. Android — AndroidManifest.xml + minSdk
+
+Set `minSdk = 23` in `android/app/build.gradle.kts` — `google_mobile_ads` requires API 23+ and a
+lower value crashes at startup (`docs/game-gotchas.md`). Then add to
+`android/app/src/main/AndroidManifest.xml` inside `<application>`:
 
 ```xml
 <meta-data
