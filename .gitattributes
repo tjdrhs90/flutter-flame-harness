@@ -1,0 +1,3 @@
+# Keep the GitHub "Languages" bar accurate: the only HTML here is the social
+# preview banner source (rendered to a PNG), not project code — exclude it.
+assets/*.html linguist-vendored
