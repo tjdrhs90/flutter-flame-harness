@@ -274,9 +274,14 @@ void main() {
 }
 ```
 
+### 5a.11 CI workflow
+
+Copy `templates/ci.yml.template` → `.github/workflows/ci.yml` (GitHub Actions running
+`flutter analyze --no-fatal-infos` + `flutter test` on push/PR), mirroring the shipped games' CI.
+
 ### 5a HARD GATE
 
-After completing steps 5a.1–5a.10, run both commands and confirm both exit 0 before
+After completing steps 5a.1–5a.11, run both commands and confirm both exit 0 before
 proceeding to Sub-phase 5b:
 
 ```bash
@@ -342,6 +347,12 @@ Create `lib/game/systems/score_system.dart`. This system:
 - Persists the high score via `shared_preferences` (key: `highScore`).
 
 ### 5b.6 Audio system
+
+**Audio assets (default = code-synthesized, so the game always ships with sound).** Copy
+`templates/build_audio.dart.template` → `tool/build_audio.dart`, tune its notes/tempo to the game's
+mood, and `dart run tool/build_audio.dart` to write `assets/audio/*.wav` (22 kHz mono 16-bit,
+iOS-safe). If the design asset plan sourced real audio instead, use it (convert to WAV per
+`docs/game-gotchas.md`). Either way the game must reference only audio files that exist.
 
 Create `lib/game/systems/audio_system.dart`. Follow the **Audio** patterns in
 `docs/game-gotchas.md` (cite it; do not restate). Concretely this system:
@@ -553,9 +564,20 @@ Apply per `docs/game-gotchas.md` (Build/platform + Store rejections):
    "Press back again to exit", localized) and only exit on a second back within ~2 s. (In-game, back
    = pause — see game-gotchas.)
 
+### 5c.11 Game assets (visuals)
+
+Default: **code-drawn visuals** — render players/enemies/UI with `CustomPainter` / Flame shapes using
+the `design_tokens` palette (zero external image files, always renders). Only if the design asset plan
+chose **sprite art** (AI-generated or a free/CC0 pack): obtain the images, then run
+`tool/strip_bg.dart` (copy from `templates/strip_bg.dart.template`) to flood-fill the background to
+alpha, and place the cleaned PNGs under `assets/images/`. **Every asset path referenced in code or
+declared in `pubspec.yaml` must exist on disk** — no dangling references (a missing asset is a
+runtime crash / blank). The harness never depends on un-sourced art: if nothing was sourced, the game
+ships fully code-drawn.
+
 ### 5c HARD GATE
 
-After completing steps 5c.1–5c.10, run:
+After completing steps 5c.1–5c.11, run:
 
 ```bash
 cd /Users/ssg/AndroidStudioProjects/<app_slug>
@@ -568,6 +590,9 @@ branding (5c.9): a **custom** icon + splash were generated (not the default Flut
 **opaque (no alpha)**, and the native display name equals `app_name` (not "Runner"/slug). And native
 config (5c.10): orientation locked natively to `config.orientation` (unused one removed), iPhone-only
 (`TARGETED_DEVICE_FAMILY = 1`), `ITSAppUsesNonExemptEncryption = false`, root back-button SnackBar.
+And assets/CI (5b.6 / 5c.11 / 5a.11): the game ships with **synthesized (or sourced) audio** and
+**code-drawn (or cleaned-sprite) visuals**, **no missing-asset references**, and a
+`.github/workflows/ci.yml` is present.
 
 **This is the final gate. Do not write the handoff until both commands pass. If either fails,
 fix all reported issues and re-run both commands.**

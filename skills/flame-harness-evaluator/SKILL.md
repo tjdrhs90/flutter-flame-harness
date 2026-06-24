@@ -140,6 +140,25 @@ grep -q "UISupportedInterfaceOrientations" ios/Runner/Info.plist 2>/dev/null && 
 grep -rq "TARGETED_DEVICE_FAMILY = 1" ios/Runner.xcodeproj/project.pbxproj 2>/dev/null || echo "FAIL: not iPhone-only (TARGETED_DEVICE_FAMILY != 1)"
 grep -q "ITSAppUsesNonExemptEncryption" ios/Runner/Info.plist 2>/dev/null || echo "CHECK: export-compliance key missing"
 grep -rq "PopScope" lib/ || echo "CHECK: no root back-button handler"
+# R7 assets & CI: audio present, no missing-asset refs, CI workflow exists
+ls assets/audio/*.wav assets/audio/*.mp3 assets/audio/*.ogg 2>/dev/null | grep -q . || echo "FAIL: no audio assets — game ships silent"
+ls .github/workflows/*.yml .github/workflows/*.yaml 2>/dev/null | grep -q . || echo "FAIL: no CI workflow"
+# every asset path declared in pubspec must exist on disk
+python3 - <<'PY'
+import re,glob,os,sys
+try: txt=open('pubspec.yaml').read()
+except FileNotFoundError: sys.exit(0)
+m=re.search(r'\n\s*assets:\s*\n((?:\s*-\s.*\n)+)', txt)
+missing=[]
+if m:
+    for line in m.group(1).splitlines():
+        p=line.strip().lstrip('- ').strip().strip('"\'')
+        if not p: continue
+        if p.endswith('/'):
+            if not (os.path.isdir(p) and os.listdir(p)): missing.append(p)
+        elif not os.path.exists(p): missing.append(p)
+print('MISSING ASSETS:',missing) if missing else print('assets OK')
+PY
 ```
 
 Judge results against `docs/game-gotchas.md`: missing lifecycle pause (R3) or unguarded audio that
@@ -150,6 +169,8 @@ Also confirm the game does **not crash when an audio/image asset is missing** (i
 name is a FAIL — the app must look shipped. **Native config (R6):** the app must open directly in
 `config.orientation` (no rotate flash → orientation locked natively, `~ipad` removed), be iPhone-only,
 have `ITSAppUsesNonExemptEncryption=false`, and handle the root back-button (SnackBar double-exit).
+**Assets & CI (R7):** no audio (game ships silent), any missing declared asset, or a missing CI
+workflow is a FAIL.
 
 ### Step 6 — Contract criteria evidence
 

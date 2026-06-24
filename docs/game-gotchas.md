@@ -113,6 +113,13 @@ gracefully (silent audio, no-op haptic, fallback rectangle) — the game stays p
   opaque (no alpha); `flutter_launcher_icons: remove_alpha_ios: true`.
 - **Asset paths lowercase**: Android/Linux are case-sensitive; keep `assets/**` names lowercase and
   declare directories (trailing slash) in `pubspec.yaml`.
+- **Always ship with assets (no manual sourcing required)**: audio defaults to **code-synthesized**
+  WAV (`tool/build_audio.dart`) so the game is never silent; visuals default to **code-drawn**
+  (`CustomPainter`/Flame shapes). Sourced sprites (CC0/AI) are optional and get their background
+  flood-filled to alpha (`tool/strip_bg.dart`). Every asset referenced in code/`pubspec.yaml` must
+  exist — a dangling reference is a runtime crash/blank.
+- **Ship CI from day one**: `.github/workflows/ci.yml` running `flutter analyze --no-fatal-infos` +
+  `flutter test` on push/PR.
 
 ## Ads (init coordination — see also the admob skill)
 

@@ -221,6 +221,12 @@ Each description maps directly to a Flutter widget in `lib/screens/` or `lib/ui/
 
 ## Asset/audio plan
 
+> **Defaults the generator can always satisfy with no sourcing:** audio = **code-synthesized**
+> (`tool/build_audio.dart` → WAV); visuals = **code-drawn** (`CustomPainter`/Flame shapes from the
+> palette). Specify **sprite art** below only if the concept needs it — choose CC0 pack or AI; the
+> generator cleans sourced art's background with `tool/strip_bg.dart`. The harness never depends on
+> art that isn't sourced, so a game can ship fully code-drawn.
+
 ### Sprite and image assets
 
 State for each visual asset whether it will be:

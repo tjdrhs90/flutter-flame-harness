@@ -1,0 +1,115 @@
+// tool/build_audio.dart — generates placeholder-but-shippable audio so the game
+// ships with sound without sourcing any files. Pure Dart (no deps), writes
+// 22 kHz mono 16-bit PCM WAV (iOS-safe). Run with: `dart run tool/build_audio.dart`.
+//
+// The generator tunes the notes/tempo to the game's mood; replace the WAVs with
+// real audio later if desired. Outputs into assets/audio/.
+
+import 'dart:io';
+import 'dart:math' as math;
+import 'dart:typed_data';
+
+const int kRate = 22050;
+
+void main() {
+  Directory('assets/audio').createSync(recursive: true);
+  // --- SFX ---
+  _write('assets/audio/tap.wav', _blip(660, 880, 0.09));          // UI / jump
+  _write('assets/audio/coin.wav', _arp([880, 1320], 0.12));       // pickup
+  _write('assets/audio/hit.wav', _noise(0.18, decay: 18));        // collision
+  _write('assets/audio/win.wav', _arp([523, 659, 784, 1047], 0.28)); // success
+  // --- BGM: a short seamless loop (square-lead over a simple bass) ---
+  _write('assets/audio/bgm.wav', _bgm());
+  stdout.writeln('build_audio: wrote tap/coin/hit/win.wav + bgm.wav into assets/audio/');
+}
+
+/// Rising blip between two freqs.
+List<double> _blip(double f0, double f1, double dur) {
+  final n = (dur * kRate).round();
+  return List<double>.generate(n, (i) {
+    final t = i / kRate, p = i / n;
+    final f = f0 + (f1 - f0) * p;
+    return _square(f, t) * _env(p) * 0.5;
+  });
+}
+
+/// Arpeggio over the given notes (Hz).
+List<double> _arp(List<double> notes, double dur) {
+  final n = (dur * kRate).round();
+  return List<double>.generate(n, (i) {
+    final p = i / n;
+    final note = notes[(p * notes.length).floor().clamp(0, notes.length - 1)];
+    return _square(note, i / kRate) * _env(p) * 0.5;
+  });
+}
+
+/// White-noise burst with exponential decay (impacts).
+List<double> _noise(double dur, {double decay = 12}) {
+  final rnd = math.Random(7);
+  final n = (dur * kRate).round();
+  return List<double>.generate(
+      n, (i) => (rnd.nextDouble() * 2 - 1) * math.exp(-decay * (i / n)) * 0.5);
+}
+
+/// ~8 s seamless loop: square lead + sine bass over a 4-chord progression.
+List<double> _bgm() {
+  const bpm = 120, beats = 16; // 8 s at 120bpm
+  final spb = 60 / bpm;
+  final total = (beats * spb * kRate).round();
+  const lead = [523.25, 587.33, 659.25, 783.99]; // C D E G
+  const bass = [130.81, 146.83, 164.81, 196.0];
+  final out = List<double>.filled(total, 0);
+  for (var i = 0; i < total; i++) {
+    final t = i / kRate;
+    final beat = (t / spb).floor();
+    final chord = (beat ~/ 4) % 4;
+    final beatP = (t / spb) - beat;
+    out[i] = _square(lead[chord], t) * _env(beatP) * 0.18 +
+        math.sin(2 * math.pi * bass[chord] * t) * 0.12;
+  }
+  // 50 ms fade in/out so the loop point is click-free.
+  final fade = (0.05 * kRate).round();
+  for (var i = 0; i < fade; i++) {
+    out[i] *= i / fade;
+    out[total - 1 - i] *= i / fade;
+  }
+  return out;
+}
+
+double _square(double f, double t) =>
+    math.sin(2 * math.pi * f * t) >= 0 ? 1.0 : -1.0;
+
+/// Short attack + decay envelope (avoids clicks).
+double _env(double p) {
+  const a = 0.06;
+  if (p < a) return p / a;
+  return (1 - (p - a) / (1 - a)).clamp(0.0, 1.0);
+}
+
+void _write(String path, List<double> samples) {
+  final n = samples.length;
+  final bytes = ByteData(44 + n * 2);
+  void tag(int o, String s) {
+    for (var i = 0; i < s.length; i++) {
+      bytes.setUint8(o + i, s.codeUnitAt(i));
+    }
+  }
+  tag(0, 'RIFF');
+  bytes.setUint32(4, 36 + n * 2, Endian.little);
+  tag(8, 'WAVE');
+  tag(12, 'fmt ');
+  bytes.setUint32(16, 16, Endian.little);
+  bytes.setUint16(20, 1, Endian.little); // PCM
+  bytes.setUint16(22, 1, Endian.little); // mono
+  bytes.setUint32(24, kRate, Endian.little);
+  bytes.setUint32(28, kRate * 2, Endian.little);
+  bytes.setUint16(32, 2, Endian.little);
+  bytes.setUint16(34, 16, Endian.little);
+  tag(36, 'data');
+  bytes.setUint32(40, n * 2, Endian.little);
+  for (var i = 0; i < n; i++) {
+    final s = (samples[i].clamp(-1.0, 1.0) * 32767).round();
+    bytes.setInt16(44 + i * 2, s, Endian.little);
+  }
+  File(path).writeAsBytesSync(bytes.buffer.asUint8List());
+}

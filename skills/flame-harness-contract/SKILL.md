@@ -80,6 +80,9 @@ section requiring the patterns in `docs/game-gotchas.md` (cite it). These are ma
 - **R6 Native config**: orientation locked **natively** to `config.orientation` (the unused
   orientation removed — no launch rotate); iPhone-only (`TARGETED_DEVICE_FAMILY = 1`, no iPad);
   `ITSAppUsesNonExemptEncryption = false`; root back-button = SnackBar double-press-to-exit.
+- **R7 Assets & CI**: the game ships with audio (synthesized or sourced) + visuals (code-drawn or
+  cleaned sprites) and **no missing-asset references** (every `pubspec.yaml` asset exists); a
+  `.github/workflows` CI (analyze + test) is present.
 
 ---
 

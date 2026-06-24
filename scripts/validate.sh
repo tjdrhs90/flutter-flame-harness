@@ -152,7 +152,13 @@ if [ -f "$GEN" ]; then
   require_section "$GEN" "TARGETED_DEVICE_FAMILY" "native: iPhone-only"
   require_section "$GEN" "ITSAppUsesNonExemptEncryption" "native: export compliance"
   require_section "$GEN" "PopScope" "native: root back-button"
+  require_section "$GEN" "build_audio" "assets: audio synth"
+  require_section "$GEN" "strip_bg\|code-drawn" "assets: visuals"
+  require_section "$GEN" "workflows/ci.yml\|ci.yml" "ci workflow"
 fi
+for t in build_audio.dart strip_bg.dart ci.yml; do
+  [ -f "$ROOT/templates/$t.template" ] || err "missing templates/$t.template"
+done
 [ -f "$ROOT/templates/gen_icon.dart.template" ] || err "missing templates/gen_icon.dart.template"
 CON2="$ROOT/skills/flame-harness-contract/SKILL.md"
 [ -f "$CON2" ] && require_section "$CON2" "Platform-Robustness Gates" "robustness gates block"

@@ -1,0 +1,77 @@
+// tool/strip_bg.dart — removes a solid/near-solid background from sourced sprites
+// (AI-generated or free packs) by flood-filling from the image borders to alpha.
+// Pure Dart (package:image). Run: `dart run tool/strip_bg.dart <in.png> [out.png]`.
+//
+// Why: AI/free sprites often arrive on a white/gray/beige background; a naive
+// "rgb > 245 → transparent" threshold fails on non-white backgrounds and eats
+// light parts of the subject. This samples the border color and flood-fills
+// connected background pixels within a tolerance — silhouette-safe.
+//
+// Add `image: ^4.0.0` to dev_dependencies.
+
+import 'dart:io';
+import 'dart:math' as math;
+import 'package:image/image.dart' as img;
+
+const int kTolerance = 38; // RGB distance treated as "same as background"
+
+void main(List<String> args) {
+  if (args.isEmpty) {
+    stderr.writeln('usage: dart run tool/strip_bg.dart <in.png> [out.png]');
+    exit(2);
+  }
+  final inPath = args[0];
+  final outPath = args.length > 1 ? args[1] : inPath;
+  final src = img.decodeImage(File(inPath).readAsBytesSync());
+  if (src == null) {
+    stderr.writeln('strip_bg: could not decode $inPath');
+    exit(1);
+  }
+  final im = src.convert(numChannels: 4); // ensure alpha channel
+  final w = im.width, h = im.height;
+
+  // Background color = average of the 4 corners.
+  final corners = [
+    im.getPixel(0, 0), im.getPixel(w - 1, 0),
+    im.getPixel(0, h - 1), im.getPixel(w - 1, h - 1),
+  ];
+  final br = corners.map((p) => p.r).reduce((a, b) => a + b) / 4;
+  final bg = corners.map((p) => p.g).reduce((a, b) => a + b) / 4;
+  final bb = corners.map((p) => p.b).reduce((a, b) => a + b) / 4;
+
+  bool isBg(img.Pixel p) {
+    final d = math.sqrt(math.pow(p.r - br, 2) + math.pow(p.g - bg, 2) + math.pow(p.b - bb, 2));
+    return d <= kTolerance;
+  }
+
+  // BFS flood-fill from every border pixel; only background-colored, connected
+  // pixels become transparent (interior subject pixels are preserved).
+  final visited = List<bool>.filled(w * h, false);
+  final queue = <int>[];
+  void seed(int x, int y) {
+    final idx = y * w + x;
+    if (!visited[idx] && isBg(im.getPixel(x, y))) {
+      visited[idx] = true;
+      queue.add(idx);
+    }
+  }
+  for (var x = 0; x < w; x++) { seed(x, 0); seed(x, h - 1); }
+  for (var y = 0; y < h; y++) { seed(0, y); seed(w - 1, y); }
+
+  var cleared = 0;
+  while (queue.isNotEmpty) {
+    final idx = queue.removeLast();
+    final x = idx % w, y = idx ~/ w;
+    im.setPixelRgba(x, y, 0, 0, 0, 0); // transparent
+    cleared++;
+    for (final d in const [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      final nx = x + d[0], ny = y + d[1];
+      if (nx >= 0 && nx < w && ny >= 0 && ny < h) {
+        seed(nx, ny);
+      }
+    }
+  }
+
+  File(outPath).writeAsBytesSync(img.encodePng(im));
+  stdout.writeln('strip_bg: $inPath → $outPath (cleared $cleared bg px, bg≈$br,$bg,$bb)');
+}
