@@ -29,6 +29,25 @@ See [`docs/SMOKE-TEST-phaseB.md`](docs/SMOKE-TEST-phaseB.md) for the full manual
 /plugin install flutter-flame-harness
 ```
 
+## Updating
+
+The plugin is copied into a cache at install time, so editing the source doesn't take effect until
+you re-sync. After pulling new commits (the version bumps each release):
+
+```bash
+/plugin marketplace update flutter-flame-harness   # re-sync the latest version into the cache
+/reload-plugins                                     # apply it in the current session
+```
+
+Confirm the new version in `/plugin`. If a change doesn't appear, reinstall:
+
+```bash
+/plugin uninstall flutter-flame-harness@flutter-flame-harness
+/plugin install flutter-flame-harness@flutter-flame-harness
+```
+
+(Last resort if the cache is stuck: `rm -rf ~/.claude/plugins/cache`, then restart Claude Code.)
+
 ## Usage
 
 ```
