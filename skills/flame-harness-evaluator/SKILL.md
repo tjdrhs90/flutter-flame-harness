@@ -135,6 +135,11 @@ grep -q "flutter_launcher_icons" pubspec.yaml && grep -q "flutter_native_splash"
 sips -g hasAlpha assets/icons/icon.png 2>/dev/null | grep -qi "hasAlpha: no" || echo "CHECK: icon may have alpha (App Store rejects)"
 grep -rn "CFBundleDisplayName" ios/Runner/Info.plist 2>/dev/null || echo "CHECK: iOS display name not set"
 grep -rn 'android:label' android/app/src/main/AndroidManifest.xml 2>/dev/null | grep -qiv "runner" || echo "CHECK: Android label still default/runner"
+# R6 native config: orientation locked (matches config.orientation, no ~ipad), iPhone-only, export compliance, root back
+grep -q "UISupportedInterfaceOrientations" ios/Runner/Info.plist 2>/dev/null && ! grep -q "UISupportedInterfaceOrientations~ipad" ios/Runner/Info.plist || echo "CHECK: orientation not locked / ~ipad still present"
+grep -rq "TARGETED_DEVICE_FAMILY = 1" ios/Runner.xcodeproj/project.pbxproj 2>/dev/null || echo "FAIL: not iPhone-only (TARGETED_DEVICE_FAMILY != 1)"
+grep -q "ITSAppUsesNonExemptEncryption" ios/Runner/Info.plist 2>/dev/null || echo "CHECK: export-compliance key missing"
+grep -rq "PopScope" lib/ || echo "CHECK: no root back-button handler"
 ```
 
 Judge results against `docs/game-gotchas.md`: missing lifecycle pause (R3) or unguarded audio that
@@ -142,7 +147,9 @@ can crash on a missing asset (R1) is a FAIL. A per-frame `whereType` in a hot `u
 raw `HapticFeedback.*` in gameplay without the guarded helper, is a FAIL when the game relies on it.
 Also confirm the game does **not crash when an audio/image asset is missing** (it should degrade).
 **Branding (R5):** default Flutter icon/splash, an alpha-channel icon, or a "Runner"/slug display
-name is a FAIL — the app must look shipped.
+name is a FAIL — the app must look shipped. **Native config (R6):** the app must open directly in
+`config.orientation` (no rotate flash → orientation locked natively, `~ipad` removed), be iPhone-only,
+have `ITSAppUsesNonExemptEncryption=false`, and handle the root back-button (SnackBar double-exit).
 
 ### Step 6 — Contract criteria evidence
 

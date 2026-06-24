@@ -82,14 +82,22 @@ Example: if `app_slug` is `space-hop`, then `bundle_id` is `com.gonigon.spacehop
 The format `com.gonigon.<id>` is mandated by `docs/harness-protocol.md` §1. Never emit a hyphen or
 underscore in the bundle id.
 
+### orientation
+
+Decide the game's **single** locked orientation from the concept and record it in the PRD:
+`portrait` (default — most casual/one-hand games) or `landscape` (inherently wide play: side-scroll
+platformers, twin-stick, landscape racers). The game ships locked to this one orientation (the
+generator removes the other natively — no rotate-on-launch).
+
 ### Write to `config.md`
 
-Use `Edit` to update `config.md` with the three identity keys:
+Use `Edit` to update `config.md` with the identity keys + orientation:
 
 ```yaml
 app_name: "<display name>"
 app_slug: "<kebab-case-slug>"
 bundle_id: "com.gonigon.<id>"   # <id> = app_slug with hyphens/underscores removed
+orientation: portrait            # or "landscape"
 ```
 
 Make targeted edits — do not rewrite the entire file.

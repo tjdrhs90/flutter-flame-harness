@@ -65,7 +65,13 @@ gracefully (silent audio, no-op haptic, fallback rectangle) — the game stays p
   post-frame callback, awaited **before** ads init. Localize the prompt text (per-locale
   `InfoPlist.strings`).
 - **Android hardware back button**: wrap the app in `PopScope` — back closes an open overlay, else
-  pauses, else double-tap-to-exit (don't let a single back kill the app mid-run).
+  (in-game) pauses, else (on the **root/menu**) shows a Flutter `SnackBar` ("press back again to
+  exit") and only exits on a second back within ~2 s. Never let a single back kill the app mid-run.
+- **Lock to one orientation natively** — decide portrait *or* landscape and lock it in
+  `Info.plist` `UISupportedInterfaceOrientations` (remove the `~ipad` variant) + Android
+  `android:screenOrientation`. `SystemChrome.setPreferredOrientations` alone still lets the app open
+  in the wrong orientation and rotate (a visible launch flash); removing the unused orientation
+  natively prevents it.
 - **Reset all run state on a new run** — clear score/effects/spawns/timers so nothing leaks from the
   previous run into the next (a common source of "weird state on retry").
 

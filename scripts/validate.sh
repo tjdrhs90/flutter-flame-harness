@@ -148,6 +148,10 @@ if [ -f "$GEN" ]; then
   require_section "$GEN" "flutter_launcher_icons" "branding: launcher icons"
   require_section "$GEN" "flutter_native_splash" "branding: native splash"
   require_section "$GEN" "CFBundleDisplayName\|android:label" "branding: display name"
+  require_section "$GEN" "UISupportedInterfaceOrientations" "native: orientation lock"
+  require_section "$GEN" "TARGETED_DEVICE_FAMILY" "native: iPhone-only"
+  require_section "$GEN" "ITSAppUsesNonExemptEncryption" "native: export compliance"
+  require_section "$GEN" "PopScope" "native: root back-button"
 fi
 [ -f "$ROOT/templates/gen_icon.dart.template" ] || err "missing templates/gen_icon.dart.template"
 CON2="$ROOT/skills/flame-harness-contract/SKILL.md"

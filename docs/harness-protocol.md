@@ -20,6 +20,7 @@ app_name: "<display name>"
 app_slug: "<kebab-case identifier>"
 bundle_id: "com.gonigon.<id>"  # <id> = app_slug with hyphens/underscores stripped (segments must be [a-z0-9]+)
 default_language: en      # the language the user converses in; orchestrator sets this at bootstrap (e.g. ko, en)
+orientation: portrait     # portrait | landscape — the game's single locked orientation (set by plan)
 strict_mode: true          # if false, QA verdicts are advisory only
 max_rounds: 3              # default; generator/evaluator loop limit
 skip_research: false       # set true to skip Phase A research skill

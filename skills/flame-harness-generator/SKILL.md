@@ -234,8 +234,11 @@ import 'game/<app_slug>_game.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Lock to config.md `orientation` — portrait OR landscape, never both.
+  // (Native lock is also set in §5c.10 so there is no rotate-on-launch flash.)
   await SystemChrome.setPreferredOrientations(
-    [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown],
+    // portrait → [portraitUp, portraitDown]; landscape → [landscapeLeft, landscapeRight]
+    <DeviceOrientation>[/* fill from config.orientation */],
   );
   runApp(GameWidget(game: <AppSlugGame>()));
 }
@@ -529,9 +532,30 @@ the **Build/platform** + **Store rejections** patterns in `docs/game-gotchas.md`
    Android `android:label="@string/app_name"` + `values/strings.xml` (+ `values-<locale>/strings.xml`)
    for `default_language` and English. Not "Runner" / not the slug.
 
+### 5c.10 Native platform config
+
+Apply per `docs/game-gotchas.md` (Build/platform + Store rejections):
+
+1. **Orientation lock (native — remove the unused orientation).** Read `config.orientation`.
+   - iOS `Info.plist` `UISupportedInterfaceOrientations` = only the chosen set (portrait →
+     `UIInterfaceOrientationPortrait`; landscape → `…LandscapeLeft` + `…LandscapeRight`), and **remove**
+     `UISupportedInterfaceOrientations~ipad`.
+   - Android: on the main `<activity>` set `android:screenOrientation="portrait"` (or
+     `"sensorLandscape"` for landscape).
+   This removes the other orientation entirely, so the app opens directly in its orientation with no
+   rotate-on-launch flash (`setPreferredOrientations` in `main.dart` alone is not enough).
+2. **Remove iPadOS.** Set `TARGETED_DEVICE_FAMILY = 1` (iPhone-only) in `ios/Runner.xcodeproj`
+   (both build configs).
+3. **Export compliance.** Add `ITSAppUsesNonExemptEncryption = false` to `ios/Runner/Info.plist`
+   (skips the per-upload export-compliance prompt).
+4. **Root back-button (Android).** Wrap the root/menu screen in `PopScope(canPop: false, ...)`: if an
+   overlay is open, close it; otherwise show a Flutter `SnackBar` ("뒤로 한 번 더 누르면 종료" /
+   "Press back again to exit", localized) and only exit on a second back within ~2 s. (In-game, back
+   = pause — see game-gotchas.)
+
 ### 5c HARD GATE
 
-After completing steps 5c.1–5c.9, run:
+After completing steps 5c.1–5c.10, run:
 
 ```bash
 cd /Users/ssg/AndroidStudioProjects/<app_slug>
@@ -541,7 +565,9 @@ flutter test
 
 `flutter analyze` must report **0 issues**. `flutter test` must report **0 failures**. Also confirm
 branding (5c.9): a **custom** icon + splash were generated (not the default Flutter art), the icon is
-**opaque (no alpha)**, and the native display name equals `app_name` (not "Runner"/slug).
+**opaque (no alpha)**, and the native display name equals `app_name` (not "Runner"/slug). And native
+config (5c.10): orientation locked natively to `config.orientation` (unused one removed), iPhone-only
+(`TARGETED_DEVICE_FAMILY = 1`), `ITSAppUsesNonExemptEncryption = false`, root back-button SnackBar.
 
 **This is the final gate. Do not write the handoff until both commands pass. If either fails,
 fix all reported issues and re-run both commands.**
