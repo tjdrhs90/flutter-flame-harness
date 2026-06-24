@@ -88,7 +88,12 @@ Run `flutter devices` to identify the device ID. Use the `-d` flag to target the
 
 Pass `--dart-define=screenshots=true` to every `flutter drive` invocation. The game's ad helper
 must check this flag and suppress all ad units (banner, interstitial, rewarded) during capture so
-no ad overlays appear in store screenshots.
+no ad overlays appear in store screenshots. Screenshot mode should also skip the ATT prompt and
+mute audio (native prompts/sound break automated capture).
+
+**No alpha channel** (App Store rejection): store screenshots — and the iOS app icon — must be
+flattened to opaque RGB. Strip any transparency before upload (e.g. `sips -s format png` onto an
+opaque background, or export without alpha). See `docs/game-gotchas.md` → Store rejections.
 
 ```dart
 // In the ad helper (example):

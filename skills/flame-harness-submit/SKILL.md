@@ -84,6 +84,17 @@ If any fastlane lane exits non-zero, do NOT proceed to the pause step. Instead w
 After both upload sequences complete successfully, the pipeline must pause so the developer can
 perform the final submission actions that cannot be automated.
 
+**Pre-submit rejection checklist** (print this with the manual steps — these are the rejections
+already hit; see `docs/game-gotchas.md` → Store rejections):
+- **ATT (2.1):** attach a **screen recording from a physical device** to App Review Information →
+  Notes, showing fresh-install → ATT prompt appears before any tracking → following flow. (The app
+  must use the wait-for-resumed ATT pattern, or the prompt won't show on the latest iOS.)
+- **No alpha** in the iOS icon or any screenshot.
+- **Build number** incremented (ASC rejects duplicates).
+- **Export compliance** set (`ITSAppUsesNonExemptEncryption=false`) so no per-upload prompt.
+- **Privacy:** declare tracking accurately in App Privacy; `PrivacyInfo.xcprivacy` present.
+- **Android:** Content Rating, Data Safety, Target Audience questionnaires completed.
+
 ### Pre-pause state write
 
 Per `docs/harness-protocol.md` §7 (`submit → metadata-done` event row) and §7 rule 3 (when

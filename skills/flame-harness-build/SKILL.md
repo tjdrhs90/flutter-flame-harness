@@ -154,10 +154,12 @@ Run all build commands from the game root (`/Users/ssg/AndroidStudioProjects/<ap
 
 ### Pre-build platform requirements
 
-Before building, ensure the platform items in `docs/game-gotchas.md` (Build/platform) are in place —
-these are submit-blockers if missing: iOS `PrivacyInfo.xcprivacy` registered (iOS 17+), Android
-`minSdk = 23` + core-library desugaring, iOS `Podfile` platform bumped, `Info.plist`
-ATT + `SKAdNetworkItems`.
+Before building, ensure the platform items in `docs/game-gotchas.md` (Build/platform + Store
+rejections) are in place — these are submit-blockers if missing: iOS `PrivacyInfo.xcprivacy`
+registered (iOS 17+), Android `minSdk = 23` + core-library desugaring, iOS `Podfile` platform
+bumped, `Info.plist` ATT + `SKAdNetworkItems`, and `ITSAppUsesNonExemptEncryption = false` (skip the
+export-compliance prompt). **Bump the build number on every upload** — App Store Connect rejects a
+duplicate build number, so increment it (don't reuse `1`).
 
 ### iOS — Signed IPA → TestFlight
 

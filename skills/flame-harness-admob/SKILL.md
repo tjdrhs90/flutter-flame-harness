@@ -201,20 +201,44 @@ Create `lib/admob/att_helper.dart`:
 
 ```dart
 import 'dart:io';
+import 'package:flutter/widgets.dart';
 import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 
-/// Requests iOS App Tracking Transparency permission.
-/// No-op on Android (ATT is iOS-only).
+/// Requests iOS App Tracking Transparency permission. No-op on Android.
+///
+/// CRITICAL — App Store Guideline 2.1: the ATT system dialog ONLY presents
+/// while the app is active/foregrounded. On a fresh launch the app may not be
+/// `resumed` yet, so requesting too early silently no-ops and the prompt never
+/// appears — the exact cause of the "NSUserTrackingUsageDescription present but
+/// the ATT alert never appears" 2.1 rejection on the latest iOS. So: wait until
+/// resumed, add a small settle delay, and only request when notDetermined.
 Future<void> requestATT() async {
   if (!Platform.isIOS) return;
-  final status = await AppTrackingTransparency.trackingAuthorizationStatus;
-  if (status == TrackingStatus.notDetermined) {
-    await AppTrackingTransparency.requestTrackingAuthorization();
+  try {
+    await _waitUntilResumed();
+    final status = await AppTrackingTransparency.trackingAuthorizationStatus;
+    if (status == TrackingStatus.notDetermined) {
+      await Future<void>.delayed(const Duration(milliseconds: 400));
+      await AppTrackingTransparency.requestTrackingAuthorization();
+    }
+  } catch (e) {
+    debugPrint('ATT request failed: $e');
+  }
+}
+
+/// Wait (up to ~4s) for the app to reach the foreground/active state, which is
+/// required for the ATT prompt to actually present.
+Future<void> _waitUntilResumed() async {
+  for (var i = 0; i < 40; i++) {
+    if (WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed) {
+      return;
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 100));
   }
 }
 ```
 
-Call `requestATT()` from `main()` before `loadConsentForm()` and `MobileAds.instance.initialize()` (see startup sequence in §5).
+Call `requestATT()` from a **post-first-frame callback** (`WidgetsBinding.instance.addPostFrameCallback`), and **await it before** `loadConsentForm()` and `MobileAds.instance.initialize()` so the ATT decision precedes any ad/tracking request (see §5). Never call it synchronously in `main()` before the first frame — that is what triggers the 2.1 rejection.
 
 ### 5. UMP Consent Flow — lib/admob/consent_helper.dart
 

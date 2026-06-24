@@ -56,8 +56,14 @@ gracefully (silent audio, no-op haptic, fallback rectangle) — the game stays p
 - **Startup sequence in `main()`**: `WidgetsFlutterBinding.ensureInitialized()` →
   `await SharedPreferences.getInstance()` (so sync prefs reads work) → ATT (after first frame /
   foreground) → UMP consent → `MobileAds.initialize()` → preload audio → `runApp()`. Ads must not be
-  requested before consent completes; ATT must be requested while foregrounded (use a post-frame
-  callback), or the prompt is dismissed unanswered (App Store policy issue).
+  requested before consent completes.
+- **ATT prompt must actually appear (App Store 2.1)**: the ATT dialog only presents while the app is
+  active/foregrounded. Requesting in `main()` before the first frame silently no-ops on the latest
+  iOS → "NSUserTrackingUsageDescription present but the alert never appears" rejection. Required
+  pattern: **wait until `WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed`** (poll
+  up to ~4s), then a **~400 ms settle delay**, then request **only when `notDetermined`** — from a
+  post-frame callback, awaited **before** ads init. Localize the prompt text (per-locale
+  `InfoPlist.strings`).
 - **Android hardware back button**: wrap the app in `PopScope` — back closes an open overlay, else
   pauses, else double-tap-to-exit (don't let a single back kill the app mid-run).
 - **Reset all run state on a new run** — clear score/effects/spawns/timers so nothing leaks from the
@@ -118,3 +124,24 @@ gracefully (silent audio, no-op haptic, fallback rectangle) — the game stays p
 - **Coins/score persist immediately**: on earn (or at run end, synchronously before any async save)
   write to prefs, so a crash mid-run doesn't lose progress.
 - **Migrate legacy keys** once (e.g. old int `high_score` → new JSON profile) then delete the old key.
+
+## Store rejections (App Review) — real ones already hit
+
+These caused real App Store / Play rejections and were fixed; prevent them up front.
+
+- **2.1 — ATT prompt never appears** (most common here): see the ATT pattern under *Lifecycle*
+  (wait-for-resumed + settle + notDetermined, post-frame, before ads). For the review reply, attach
+  a **screen recording on a physical device** showing a fresh install → the ATT prompt appearing
+  before any tracking → the following flow, and put it in App Review Information → Notes.
+- **App icon / screenshots with an alpha channel are rejected** — flatten to opaque RGB (no
+  transparency) for the iOS icon and all store screenshots.
+- **ASC rejects duplicate build numbers** — bump the build number on every upload (don't reuse `1`).
+- **Export compliance prompt every upload** — set `ITSAppUsesNonExemptEncryption = false` in
+  `Info.plist` if the app uses no non-exempt encryption, to skip the prompt on future builds.
+- **AdMob "Publisher data not found" / no ads** — the ad unit's publisher prefix must match the
+  AdMob app, and the bundle id / package name must exactly match what's registered in AdMob
+  (propagation can take minutes–hours).
+- **4.1 / 4.3 Copycats** — avoid silhouettes/palettes that read as a clone of a famous title
+  (e.g. classic-green pipes + side-scroll = Flappy clone flag); add a distinct visual/mechanic hook.
+- **Don't auto-prompt for notifications** before there's a user-understood reason (Apple/Play
+  discourage cold permission prompts).
