@@ -145,3 +145,76 @@ These caused real App Store / Play rejections and were fixed; prevent them up fr
   (e.g. classic-green pipes + side-scroll = Flappy clone flag); add a distinct visual/mechanic hook.
 - **Don't auto-prompt for notifications** before there's a user-understood reason (Apple/Play
   discourage cold permission prompts).
+- **4.2 Minimum Functionality** — don't ship a thin app. Have enough content (e.g. a meaningful
+  number of levels/modes) plus an in-game tutorial and per-mechanic first-appearance tips, or risk a
+  "minimal app" rejection.
+- **2.3.10 — no other-platform mentions in metadata** — App Store rejects a description that says
+  "Android …". Keep store-specific copy (App Store edition vs Play edition).
+- **ASCII-safe description** — App Store Connect's linter rejects decorative Unicode (box-drawing
+  chars ▌ — × etc.); use plain ASCII headers/punctuation.
+- **iPhone-only target** (`TARGETED_DEVICE_FAMILY = 1`) avoids the iPad screenshot requirement for a
+  phone-only game (and remove `~ipad` orientation keys).
+- **AdMob "Made for kids" = No** in the AdMob app config (unless truly child-directed), or ads won't
+  serve.
+
+---
+
+## Long-tail (full commit-history audit)
+
+Lower-frequency but real, from a full read of all repos' commits + docs.
+
+**Lifecycle / crash**
+- **`LateInitializationError` on early backgrounding** — `didChangeAppLifecycleState` (or a reused
+  component's `launch()`) touches a `late` field before `onLoad` ran. Guard handlers with
+  `if (!game.isLoaded) return;` and prefer nullable fields initialised in `onLoad`.
+- **`OpacityEffect` only works on `OpacityProvider`** — applying it to a plain `TextComponent`
+  throws; animate opacity manually in `update()`.
+- **Snapshot before mutating during iteration** — a hit that kills an enemy which spawns children
+  mid-loop → concurrent-modification crash. Iterate a `.toList()` snapshot.
+
+**Performance (heavy/bullet-hell games)**
+- **Avoid per-frame allocations**: reuse `Vector2` via `setValues`, reuse `static final Paint`, set
+  `paint.filterQuality = FilterQuality.none`, and `canvas.drawRect` for solid fills instead of
+  per-tile sprite loops.
+- **No per-frame `MaskFilter.blur`/`saveLayer`** — replace glows/shadows with flat translucent fills,
+  layered solid discs, or hard offset shadows; offer a "high FX" toggle (default off on weak devices).
+- **Cap per-frame spawns** — mass-kill VFX / floating text / bullets must be capped per frame and
+  pooled (retire oldest past a ceiling); cull off-screen render and throttle off-screen AI.
+
+**Input & UI**
+- **Low-latency action input**: use a raw `Listener` (`onPointerDown/Move/Up`), classify swipes
+  mid-gesture (fire on threshold, latch once per gesture), fire taps on pointer-up; gate on an
+  `_inputActive` flag so taps don't leak to overlays. `GestureDetector`'s arena adds latency.
+- **Wrap Flame overlays in a (transparent) `Material`** — `InkWell`/ripple in a Flame overlay asserts
+  "No Material widget" in debug and shows no ripple; a transparent `Material` parent fixes it.
+- **`MediaQuery.withNoTextScaling`** for pixel-font / tight landscape layouts so OS font-scaling
+  doesn't break the HUD.
+
+**Ads / consent**
+- **5 s timeouts on UMP** (`requestConsentInfoUpdate` + `loadAndShowConsentFormIfRequired`) — a flaky
+  simulator network otherwise hangs forever (no callback).
+- **The UMP form needs a GDPR message created in the AdMob console** (per app, per platform) — code
+  alone won't present a form.
+
+**Build / platform**
+- **iOS Podfile static linkage** — `use_frameworks! :linkage => :static` + `use_modular_headers!`
+  fixes the recurring "Failed to verify code signature (0xe8008014)" with AdMob / secure-storage pods
+  and avoids per-install `flutter clean`.
+- **Run `pod install`** after adding/changing any iOS plugin, or the iOS build fails.
+
+**Persistence**
+- **Batch high-frequency writes** — don't `SharedPreferences.setInt` per kill/event (blocks I/O);
+  mutate memory + set a dirty flag, flush at game-over / teardown. (Critical currency like coins
+  still persists immediately/synchronously at run end.)
+- **Version the save schema** (`save_v1` key + per-field migration defaults) so new fields don't
+  corrupt old saves.
+- **Durable save (optional)** — for survival across uninstall / device transfer: iOS
+  `flutter_secure_storage` Keychain (`first_unlock`) + Android `play_services_block_store`, mirrored
+  to `shared_preferences`; read durable-first, write both, all in try/catch.
+
+**Physics (Forge2D games only)**
+- **Forge2D units are meters, not pixels** — size bodies in ~0.5–2 m and let the camera zoom convert;
+  never mix pixel sizes into physics.
+- **Speed-gate impulses & remove spawn overlaps** — springs/bumpers fire only above a contact-velocity
+  threshold (else resting bodies launch at spawn); strip overlapping bodies at level-gen (Box2D
+  explodes overlaps).
