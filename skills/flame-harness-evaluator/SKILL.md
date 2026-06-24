@@ -129,12 +129,20 @@ ls lib/systems/haptics.dart 2>/dev/null && grep -nE "kIsWeb|isIOS|isAndroid|enab
 grep -rn "WidgetsBindingObserver\|didChangeAppLifecycleState\|pauseEngine" lib/ || echo "FAIL: no lifecycle pause"
 # R4 performance: no per-frame whereType in update hot paths
 grep -rn "whereType" lib/ | grep -i "update" && echo "CHECK: whereType inside update — verify it's cached, not per-frame"
+# R5 branding: custom icon + splash + localized display name (not defaults)
+ls assets/icons/icon.png 2>/dev/null || echo "FAIL: no custom app icon"
+grep -q "flutter_launcher_icons" pubspec.yaml && grep -q "flutter_native_splash" pubspec.yaml || echo "FAIL: launcher-icons/native-splash not configured"
+sips -g hasAlpha assets/icons/icon.png 2>/dev/null | grep -qi "hasAlpha: no" || echo "CHECK: icon may have alpha (App Store rejects)"
+grep -rn "CFBundleDisplayName" ios/Runner/Info.plist 2>/dev/null || echo "CHECK: iOS display name not set"
+grep -rn 'android:label' android/app/src/main/AndroidManifest.xml 2>/dev/null | grep -qiv "runner" || echo "CHECK: Android label still default/runner"
 ```
 
 Judge results against `docs/game-gotchas.md`: missing lifecycle pause (R3) or unguarded audio that
 can crash on a missing asset (R1) is a FAIL. A per-frame `whereType` in a hot `update` path, or
 raw `HapticFeedback.*` in gameplay without the guarded helper, is a FAIL when the game relies on it.
 Also confirm the game does **not crash when an audio/image asset is missing** (it should degrade).
+**Branding (R5):** default Flutter icon/splash, an alpha-channel icon, or a "Runner"/slug display
+name is a FAIL — the app must look shipped.
 
 ### Step 6 — Contract criteria evidence
 

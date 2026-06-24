@@ -266,6 +266,11 @@ Audio plan requirements (per `docs/game-gotchas.md`):
 
 ### flutter_launcher_icons
 
+> Branding art source: by default the generator draws the icon/splash from a shared code painter
+> (`tool/gen_icon.dart`, design-token colors); choose **AI-generated art** here instead if the
+> concept warrants it. Either way the generator (§5c.9) runs `flutter_launcher_icons` /
+> `flutter_native_splash` and sets the localized app display name — design only specifies intent.
+
 Specify the icon intent so the generator can configure `flutter_launcher_icons`:
 
 ```yaml

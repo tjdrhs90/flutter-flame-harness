@@ -102,6 +102,9 @@ gracefully (silent audio, no-op haptic, fallback rectangle) — the game stays p
   `android/app/build.gradle.kts` (some plugins, e.g. notifications, require it) or the build fails.
 - **Localized app display name**: set the store/home-screen name per locale — iOS
   `<locale>.lproj/InfoPlist.strings` (`CFBundleDisplayName`), Android per-locale `strings.xml`.
+- **Icon + splash + in-app logo from one shared painter** for visual consistency; the native splash
+  `color` must match the in-app splash background (else a color blink on launch). iOS icon must be
+  opaque (no alpha); `flutter_launcher_icons: remove_alpha_ios: true`.
 - **Asset paths lowercase**: Android/Linux are case-sensitive; keep `assets/**` names lowercase and
   declare directories (trailing slash) in `pubspec.yaml`.
 

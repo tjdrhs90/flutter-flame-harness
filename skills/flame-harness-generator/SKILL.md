@@ -506,9 +506,32 @@ Add or expand tests to cover:
 - Localisation: all required ARB keys are present in every configured `app_<locale>.arb` (`default_language`, plus `app_en.arb` when `default_language` ≠ `en`).
 - `PreferencesService` read/write round-trip (use a mock `SharedPreferences`).
 
+### 5c.9 App branding — icon · splash · display name
+
+A shipped game must not have the default Flutter icon, default splash, or a slug-ish name. Follow
+the **Build/platform** + **Store rejections** patterns in `docs/game-gotchas.md`.
+
+1. **Icon + splash art.** Default: copy `templates/gen_icon.dart.template` → `tool/gen_icon.dart`,
+   fill its color constants from `design_tokens` (Background / Primary / Accent RGB) and `kGlyph`
+   from the first letter of `app_name`, add `image: ^4.0.0` to `dev_dependencies`, then
+   `dart run tool/gen_icon.dart` → writes `assets/icons/icon.png` (1024×1024, **opaque/no-alpha**) and
+   `assets/images/splash.png`. If the design asset plan chose AI-generated art, use that image
+   instead at `assets/icons/icon.png`, flattened to **opaque** (no alpha).
+2. **Config + run the tools.** Add the `flutter_launcher_icons` (with `remove_alpha_ios: true`,
+   `image_path: assets/icons/icon.png`) and `flutter_native_splash` (`color:` = design Background,
+   `image: assets/images/splash.png`) blocks to `pubspec.yaml` (per the design doc), then run:
+   ```bash
+   dart run flutter_launcher_icons
+   dart run flutter_native_splash:create
+   ```
+3. **Localized display name.** Set `app_name` as the home-screen name: iOS `CFBundleDisplayName`
+   (base `Info.plist` + per-locale `<locale>.lproj/InfoPlist.strings`, register in the Xcode project);
+   Android `android:label="@string/app_name"` + `values/strings.xml` (+ `values-<locale>/strings.xml`)
+   for `default_language` and English. Not "Runner" / not the slug.
+
 ### 5c HARD GATE
 
-After completing steps 5c.1–5c.8, run:
+After completing steps 5c.1–5c.9, run:
 
 ```bash
 cd /Users/ssg/AndroidStudioProjects/<app_slug>
@@ -516,7 +539,9 @@ flutter analyze
 flutter test
 ```
 
-`flutter analyze` must report **0 issues**. `flutter test` must report **0 failures**.
+`flutter analyze` must report **0 issues**. `flutter test` must report **0 failures**. Also confirm
+branding (5c.9): a **custom** icon + splash were generated (not the default Flutter art), the icon is
+**opaque (no alpha)**, and the native display name equals `app_name` (not "Runner"/slug).
 
 **This is the final gate. Do not write the handoff until both commands pass. If either fails,
 fix all reported issues and re-run both commands.**

@@ -74,6 +74,9 @@ section requiring the patterns in `docs/game-gotchas.md` (cite it). These are ma
   BGM pause; resume reverses; teardown cleans up audio/timers.
 - **R4 Performance**: no per-frame `world.children.whereType<...>()` in a hot path (cache once per
   frame); `Paint`/shaders not recreated per frame.
+- **R5 App branding**: a custom icon + splash are generated (not the default Flutter art), the icon
+  is opaque (no alpha), and the localized app display name (`CFBundleDisplayName`/`android:label`) is
+  set to `app_name` — not "Runner"/the slug.
 
 ---
 

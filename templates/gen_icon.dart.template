@@ -1,0 +1,62 @@
+// tool/gen_icon.dart — generates the app icon + splash logo from one shared
+// painter, so the launcher icon, native splash, and in-app logo stay visually
+// consistent. Pure Dart (uses package:image), run with: `dart run tool/gen_icon.dart`.
+//
+// The generator adapts the color/glyph constants below to the project's
+// design_tokens. The ICON is fully OPAQUE (no alpha) — App Store rejects iOS
+// icons with an alpha channel. The SPLASH logo keeps alpha (it's composited on
+// the native-splash background color, which must match design Background).
+//
+// Add `image: ^4.0.0` to dev_dependencies.
+
+import 'dart:io';
+import 'dart:math' as math;
+import 'package:image/image.dart' as img;
+
+// >>> generator fills these from design_tokens (RGB 0–255) and app_name <<<
+const List<int> kBg = [13, 17, 23]; //        __BG_RGB__       (icon background)
+const List<int> kPrimary = [30, 136, 229]; //  __PRIMARY_RGB__  (motif base)
+const List<int> kAccent = [255, 138, 61]; //   __ACCENT_RGB__   (motif accent)
+const String kGlyph = 'S'; //                  __GLYPH__        (first letter of app_name)
+
+img.ColorRgb8 _rgb(List<int> c) => img.ColorRgb8(c[0], c[1], c[2]);
+img.ColorRgba8 _rgba(List<int> c, int a) => img.ColorRgba8(c[0], c[1], c[2], a);
+
+/// Draw the shared motif (a simple layered orb + glyph) centered on [im].
+void _paintMotif(img.Image im, int size) {
+  final cx = size ~/ 2, cy = size ~/ 2;
+  img.fillCircle(im, x: cx, y: cy, radius: (size * 0.34).round(), color: _rgb(kPrimary));
+  img.fillCircle(im, x: cx, y: cy, radius: (size * 0.22).round(), color: _rgb(kAccent));
+  // glyph: scaled bitmap font, centered.
+  final font = img.arial48;
+  final scale = (size * 0.012).clamp(1, 12).toInt();
+  // package:image fonts aren't vector; draw the letter and rely on the orb for
+  // identity. Place near center.
+  img.drawString(im, kGlyph.toUpperCase(),
+      font: font, x: cx - 14 * scale, y: cy - 24 * scale, color: _rgb(kBg));
+}
+
+void main() {
+  // --- App icon: 1024×1024, OPAQUE (numChannels: 3 → no alpha) ---
+  final icon = img.Image(width: 1024, height: 1024, numChannels: 3);
+  img.fill(icon, color: _rgb(kBg));
+  _paintMotif(icon, 1024);
+  Directory('assets/icons').createSync(recursive: true);
+  File('assets/icons/icon.png').writeAsBytesSync(img.encodePng(icon));
+
+  // --- Splash logo: 512×512, transparent (composited on native-splash bg) ---
+  final splash = img.Image(width: 512, height: 512, numChannels: 4);
+  img.fill(splash, color: _rgba(kBg, 0)); // transparent canvas
+  _paintMotif(splash, 512);
+  Directory('assets/images').createSync(recursive: true);
+  File('assets/images/splash.png').writeAsBytesSync(img.encodePng(splash));
+
+  // sanity: confirm the icon has no alpha
+  final check = img.decodePng(File('assets/icons/icon.png').readAsBytesSync())!;
+  stdout.writeln('icon channels=${check.numChannels} (must be 3, no alpha); '
+      'wrote assets/icons/icon.png + assets/images/splash.png');
+  if (check.numChannels != 3) {
+    stderr.writeln('ERROR: icon has an alpha channel — App Store will reject it.');
+    exit(1);
+  }
+}

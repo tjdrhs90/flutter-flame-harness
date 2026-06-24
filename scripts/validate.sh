@@ -145,7 +145,11 @@ if [ -f "$GEN" ]; then
   require_section "$GEN" "AudioPool" "audio pool guidance"
   require_section "$GEN" "haptics" "haptics system"
   require_section "$GEN" "WidgetsBindingObserver" "lifecycle observer"
+  require_section "$GEN" "flutter_launcher_icons" "branding: launcher icons"
+  require_section "$GEN" "flutter_native_splash" "branding: native splash"
+  require_section "$GEN" "CFBundleDisplayName\|android:label" "branding: display name"
 fi
+[ -f "$ROOT/templates/gen_icon.dart.template" ] || err "missing templates/gen_icon.dart.template"
 CON2="$ROOT/skills/flame-harness-contract/SKILL.md"
 [ -f "$CON2" ] && require_section "$CON2" "Platform-Robustness Gates" "robustness gates block"
 
