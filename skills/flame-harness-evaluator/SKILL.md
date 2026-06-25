@@ -140,6 +140,12 @@ grep -q "UISupportedInterfaceOrientations" ios/Runner/Info.plist 2>/dev/null && 
 grep -rq "TARGETED_DEVICE_FAMILY = 1" ios/Runner.xcodeproj/project.pbxproj 2>/dev/null || echo "FAIL: not iPhone-only (TARGETED_DEVICE_FAMILY != 1)"
 grep -q "ITSAppUsesNonExemptEncryption" ios/Runner/Info.plist 2>/dev/null || echo "CHECK: export-compliance key missing"
 grep -rq "PopScope" lib/ || echo "CHECK: no root back-button handler"
+# R6 bundle id identical on both platforms (== config.bundle_id, lowercase no _/-)
+IOSID=$(grep -oE 'PRODUCT_BUNDLE_IDENTIFIER = [A-Za-z0-9._-]+' ios/Runner.xcodeproj/project.pbxproj 2>/dev/null | head -1 | sed 's/.*= //')
+ANDID=$(grep -oE 'applicationId *= *"[^"]+"' android/app/build.gradle.kts 2>/dev/null | head -1 | sed -E 's/.*"([^"]+)"/\1/')
+echo "iOS=$IOSID  Android=$ANDID  (must be byte-identical == config.bundle_id)"
+{ [ -n "$IOSID" ] && [ "$IOSID" = "$ANDID" ]; } || echo "FAIL: iOS and Android bundle id differ (or unset)"
+echo "$IOSID" | grep -qE '^[a-z0-9.]+$' || echo "FAIL: bundle id has uppercase/_/- (must be lowercase [a-z0-9.])"
 # R7 assets & CI: audio present, no missing-asset refs, CI workflow exists
 ls assets/audio/*.wav assets/audio/*.mp3 assets/audio/*.ogg 2>/dev/null | grep -q . || echo "FAIL: no audio assets — game ships silent"
 ls .github/workflows/*.yml .github/workflows/*.yaml 2>/dev/null | grep -q . || echo "FAIL: no CI workflow"

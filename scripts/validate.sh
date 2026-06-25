@@ -152,6 +152,7 @@ if [ -f "$GEN" ]; then
   require_section "$GEN" "TARGETED_DEVICE_FAMILY" "native: iPhone-only"
   require_section "$GEN" "ITSAppUsesNonExemptEncryption" "native: export compliance"
   require_section "$GEN" "PopScope" "native: root back-button"
+  require_section "$GEN" "PRODUCT_BUNDLE_IDENTIFIER.*applicationId\|byte-for-byte\|IDENTICALLY" "bundle id identical both platforms"
   require_section "$GEN" "build_audio" "assets: audio synth"
   require_section "$GEN" "strip_bg\|code-drawn" "assets: visuals"
   require_section "$GEN" "workflows/ci.yml\|ci.yml" "ci workflow"

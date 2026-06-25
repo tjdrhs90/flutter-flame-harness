@@ -96,6 +96,11 @@ gracefully (silent audio, no-op haptic, fallback rectangle) — the game stays p
 
 ## Build / platform
 
+- **Bundle id identical on both platforms** — iOS `PRODUCT_BUNDLE_IDENTIFIER` (all build configs) ==
+  Android `applicationId` + `namespace` == `config.bundle_id`, byte-for-byte (lowercase `[a-z0-9.]`,
+  no `_`/`-`/uppercase). `flutter create` derives the id from the project name and can leave
+  underscores/case or diverge between platforms — set it explicitly on both. AdMob + store records
+  use this exact string.
 - **Android `minSdk = 23`** — `google_mobile_ads` requires API 23+; lower fails at startup.
 - **iOS `Podfile` platform**: bump `platform :ios, '<x>'` to the highest plugin requirement, or
   `pod install` fails.

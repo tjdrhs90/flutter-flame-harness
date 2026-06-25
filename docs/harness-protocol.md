@@ -56,7 +56,7 @@ admob:
 
 ### Key Notes
 
-- `bundle_id` must follow `com.gonigon.<id>`, where `<id>` is `app_slug` with all hyphens and underscores removed (each reverse-DNS segment must match `[a-z0-9]+`; a hyphen/underscore makes the bundle id invalid and breaks iOS/Android signing). E.g. `swing-line` → `com.gonigon.swingline`.
+- `bundle_id` must follow `com.gonigon.<id>`, where `<id>` is `app_slug` with all hyphens and underscores removed, **lowercase** (each reverse-DNS segment must match `[a-z0-9]+`; a hyphen/underscore/uppercase makes the bundle id invalid and breaks iOS/Android signing). E.g. `swing-line` → `com.gonigon.swingline`. It must be **byte-for-byte identical** on both platforms — iOS `PRODUCT_BUNDLE_IDENTIFIER` == Android `applicationId` (+ `namespace`) == this value. Do not let `flutter create` derive divergent ids from the project name.
 - `credentials_dir` is the shared directory for all credential files (keystores, p8 keys, etc.).
 - Skills must not hard-code credential paths; they must read `credentials_dir` from `config.md`.
 - `max_rounds` controls how many generator→evaluator cycles are allowed before a forced judgment.

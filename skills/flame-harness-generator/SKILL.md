@@ -55,14 +55,25 @@ When `current_round` is greater than 1:
 
 ### 5a.1 Create the Flutter project (flutter create)
 
-Run `flutter create` at the project root path derived from `app_slug`:
+Run `flutter create`. The Dart **package name** must be snake_case (lowercase + underscores, no
+hyphens) — convert `app_slug` (e.g. `swing-line` → `swing_line`). This package name is separate from
+the bundle id:
 
 ```bash
-flutter create --org com.gonigon --project-name <app_slug> \
+flutter create --org com.gonigon --project-name <app_slug_snake_case> \
   /Users/ssg/AndroidStudioProjects/<app_slug>
 ```
 
-Replace `<app_slug>` with the value from `config.md`.
+**Bundle id — set it explicitly and IDENTICALLY on both platforms (do not trust the value
+`flutter create` derives from the project name).** `flutter create` builds the bundle id from
+`--org` + project-name, which can leave underscores / case differences and can diverge between iOS
+and Android. Force both to the canonical `config.bundle_id` (`com.gonigon.<id>`, lowercase
+`[a-z0-9]` only — see `docs/harness-protocol.md`):
+- iOS: set `PRODUCT_BUNDLE_IDENTIFIER` = `<bundle_id>` in **all three** build configs
+  (Debug/Release/Profile) in `ios/Runner.xcodeproj/project.pbxproj`.
+- Android: set **both** `applicationId` and `namespace` = `<bundle_id>` in `android/app/build.gradle.kts`.
+- Verify iOS `PRODUCT_BUNDLE_IDENTIFIER` == Android `applicationId` == `config.bundle_id`,
+  **byte-for-byte** (same case, no `_`, no `-`). The AdMob app and store records use this exact id.
 
 **Important (per `docs/harness-protocol.md`):** After `flutter create` succeeds, move the
 `docs/harness/` directory into the game project so all artifacts share one repository:
