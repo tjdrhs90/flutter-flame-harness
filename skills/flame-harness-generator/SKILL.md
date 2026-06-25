@@ -92,6 +92,8 @@ Set the following fields in `pubspec.yaml`:
 - `name`: `<app_slug>` (from `config.md`)
 - `description`: `<app_name>` (from `config.md`)
 - `publish_to: none`
+- `version: 1.0.0+1` — explicit semver `MAJOR.MINOR.PATCH+BUILD` (App Store marketing version =
+  `1.0.0`, not `1.0`; the build phase bumps the `+BUILD` on each upload).
 
 Add to `dependencies` (use the latest compatible versions; minimum versions shown):
 
@@ -103,6 +105,18 @@ dependencies:
   flame_audio: ^2.0.0
   google_mobile_ads: ^5.0.0
   shared_preferences: ^2.0.0
+```
+
+Add to `dev_dependencies` (`image` is used by `tool/gen_icon.dart` + `tool/strip_bg.dart`):
+
+```yaml
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  image: ^4.0.0
+  flutter_launcher_icons: ^0.14.0
+  flutter_native_splash: ^2.4.0
 ```
 
 Add asset directories to `flutter:`:
