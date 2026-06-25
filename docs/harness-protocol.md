@@ -28,11 +28,14 @@ skip_admob: false          # set true to skip AdMob integration phase
 auto_idea: false           # true => research auto-selects the best concept without asking
 auto_deploy: false         # true => skip the post-QA human-review pause; PASS continues straight to deploy
 
-developer:
+developer:                # all values come from credentials/store-metadata.md
   company: gonigon
-  email: tjdrhs90@gmail.com
-  privacy: https://tjdrhs90.github.io/privacy/
-  homepage: https://tjdrhs90.github.io
+  first_name: Seonggon     # App Review contact + Play contact
+  last_name: Sim
+  email: tjdrhs90@gmail.com # support email / App Review contact / Play contact
+  phone: "+82 10-5415-2601" # App Review contact phone
+  privacy: https://tjdrhs90.github.io/privacy/   # privacy policy URL (both stores)
+  homepage: https://tjdrhs90.github.io           # iOS support+marketing URL / Play website
   copyright: "Copyright 2026. Gonigon all rights reserved."
 
 ios:

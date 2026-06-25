@@ -1,0 +1,25 @@
+#!/usr/bin/env ruby
+# android/fastlane/set_contact_details.rb — sets the Play Store listing contact
+# email + website via the Android Publisher API (supply has no field for these).
+# Run: `cd android && ruby fastlane/set_contact_details.rb`.
+# The generator fills __PACKAGE__, __EMAIL__, __WEBSITE__ from config.md.
+require 'google/apis/androidpublisher_v3'
+require 'googleauth'
+
+AP = Google::Apis::AndroidpublisherV3
+PKG = '__PACKAGE__'
+KEY = File.expand_path('play-store-key.json', __dir__)
+
+svc = AP::AndroidPublisherService.new
+svc.authorization = Google::Auth::ServiceAccountCredentials.make_creds(
+  json_key_io: File.open(KEY),
+  scope: 'https://www.googleapis.com/auth/androidpublisher',
+)
+
+edit = svc.insert_edit(PKG)
+details = svc.get_edit_detail(PKG, edit.id)
+details.contact_email = '__EMAIL__'
+details.contact_website = '__WEBSITE__'
+svc.update_edit_detail(PKG, edit.id, details)
+svc.commit_edit(PKG, edit.id)
+puts "OK: contact email=#{details.contact_email} site=#{details.contact_website}"

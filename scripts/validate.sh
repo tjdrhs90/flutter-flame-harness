@@ -126,7 +126,11 @@ if [ -f "$SUB" ]; then
   require_section "$SUB" "manual_action\|paused" "manual pause"
   require_section "$SUB" "Submit for Review\|심사 제출\|production" "manual submit steps"
   require_section "$SUB" "retro" "resume target"
+  require_section "$SUB" "review_information\|review-information" "ios app review contact"
+  require_section "$SUB" "copyright" "copyright metadata"
+  require_section "$SUB" "set_contact_details\|contact_email\|contact email" "android contact details"
 fi
+[ -f "$ROOT/templates/set_contact_details.rb.template" ] || err "missing templates/set_contact_details.rb.template"
 
 RET="$ROOT/skills/flame-harness-retro/SKILL.md"
 if [ -f "$RET" ]; then

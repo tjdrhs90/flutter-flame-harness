@@ -166,6 +166,12 @@ These caused real App Store / Play rejections and were fixed; prevent them up fr
   (e.g. classic-green pipes + side-scroll = Flappy clone flag); add a distinct visual/mechanic hook.
 - **Don't auto-prompt for notifications** before there's a user-understood reason (Apple/Play
   discourage cold permission prompts).
+- **Store-listing + App-Review info must be filled** (from `config.md` developer block): privacy
+  policy URL, support + marketing URLs, copyright, and App Review contact (first/last name, phone,
+  email). iOS: write `ios/fastlane/metadata/{copyright.txt,<locale>/support_url.txt,marketing_url.txt,
+  privacy_url.txt,review_information/*}` so `deliver` uploads them. Android: contact email/website
+  have no `supply` field → set via the Publisher API (`set_contact_details.rb`); privacy URL + Data
+  Safety are manual in the console. Missing review-contact info delays/blocks review.
 - **4.2 Minimum Functionality** — don't ship a thin app. Have enough content (e.g. a meaningful
   number of levels/modes) plus an in-game tutorial and per-mechanic first-appearance tips, or risk a
   "minimal app" rejection.

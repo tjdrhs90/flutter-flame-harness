@@ -38,6 +38,27 @@ Derive the game project root for `<app_slug>` from `config.md` / the harness wor
 
 ---
 
+## Phase 0 — Generate store-info files from config
+
+Before uploading, write the store-listing + App-Review files from the `developer` block in
+`config.md` (sourced from `credentials/store-metadata.md`) so they actually get uploaded — these are
+otherwise empty and the listing/review info would be missing.
+
+**iOS (deliver picks these up automatically):**
+- `ios/fastlane/metadata/copyright.txt` ← `developer.copyright`
+- per locale (`ko`, `en-US`): `support_url.txt` ← `developer.homepage`, `marketing_url.txt` ←
+  `developer.homepage`, `privacy_url.txt` ← `developer.privacy`
+- `ios/fastlane/metadata/review_information/`: `first_name.txt`, `last_name.txt`, `phone_number.txt`,
+  `email_address.txt` ← `developer.*`; `notes.txt` ← reviewer notes (e.g. the ATT screen-recording
+  note for an ads build).
+
+**Android (contact email + website have no `supply` field — set via the Publisher API):**
+- copy `templates/set_contact_details.rb.template` → `android/fastlane/set_contact_details.rb`,
+  fill `__PACKAGE__`=`bundle_id`, `__EMAIL__`=`developer.email`, `__WEBSITE__`=`developer.homepage`,
+  and run `cd android && ruby fastlane/set_contact_details.rb`.
+- The **privacy policy URL** and Data Safety / Content Rating / Target Audience are set in the manual
+  step below (Play console).
+
 ## Phase 1 — Metadata Upload
 
 Run the fastlane metadata and categories lanes for both platforms. These lanes push text metadata
@@ -93,7 +114,8 @@ already hit; see `docs/game-gotchas.md` → Store rejections):
 - **Build number** incremented (ASC rejects duplicates).
 - **Export compliance** set (`ITSAppUsesNonExemptEncryption=false`) so no per-upload prompt.
 - **Privacy:** declare tracking accurately in App Privacy; `PrivacyInfo.xcprivacy` present.
-- **Android:** Content Rating, Data Safety, Target Audience questionnaires completed.
+- **Android:** privacy policy URL set (`developer.privacy`); Content Rating, Data Safety, Target
+  Audience questionnaires completed. (Contact email/website were set in Phase 0 via the API script.)
 
 ### Pre-pause state write
 
