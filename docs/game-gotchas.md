@@ -156,6 +156,10 @@ These caused real App Store / Play rejections and were fixed; prevent them up fr
   before any tracking → the following flow, and put it in App Review Information → Notes.
 - **App icon / screenshots with an alpha channel are rejected** — flatten to opaque RGB (no
   transparency) for the iOS icon and all store screenshots.
+- **Play listing requires a hi-res icon (512×512) + feature graphic (1024×500)** — generate both
+  (opaque) from the shared painter and place at `android/fastlane/metadata/android/<locale>/images/
+  icon.png` + `featureGraphic.png` so `supply` uploads them; without them the Play listing can't be
+  published. (App Store needs no feature graphic.)
 - **ASC rejects duplicate build numbers** — bump the build number on every upload (don't reuse `1`).
 - **Export compliance prompt every upload** — set `ITSAppUsesNonExemptEncryption = false` in
   `Info.plist` if the app uses no non-exempt encryption, to skip the prompt on future builds.

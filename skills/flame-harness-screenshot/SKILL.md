@@ -228,9 +228,29 @@ The `screenshots` lane calls `deliver` (or `upload_to_app_store` with `skip_bina
 to push all locale screenshot directories and metadata files. Ensure the generated
 `<game>/ios/fastlane/Fastfile` contains a `screenshots` lane.
 
+### Android — Play listing graphics (required)
+
+Google Play requires a **hi-res icon (512×512)** and a **feature graphic (1024×500)** in the listing,
+in addition to phone screenshots — without them the listing cannot be published. These are produced
+by `tool/gen_icon.dart` (§5c.9) at `assets/store/play_icon.png` + `assets/store/feature_graphic.png`.
+Place them per locale where `supply` expects them:
+
+```bash
+for loc in ko-KR en-US; do
+  d=<game>/android/fastlane/metadata/android/$loc/images
+  mkdir -p "$d"
+  cp <game>/assets/store/play_icon.png       "$d/icon.png"            # 512×512 hi-res icon
+  cp <game>/assets/store/feature_graphic.png "$d/featureGraphic.png"  # 1024×500 feature graphic
+done
+```
+
+(App Store needs no feature graphic — its icon is embedded in the build; only screenshots upload via
+the iOS `screenshots` lane.)
+
 ### Android — fastlane images lane
 
-Run from the Android fastlane directory to upload screenshots and metadata to Google Play:
+Run from the Android fastlane directory to upload screenshots, the hi-res icon, and the feature
+graphic to Google Play:
 
 ```bash
 cd <game>/android

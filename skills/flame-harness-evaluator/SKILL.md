@@ -149,6 +149,9 @@ echo "$IOSID" | grep -qE '^[a-z0-9.]+$' || echo "FAIL: bundle id has uppercase/_
 # R7 assets & CI: audio present, no missing-asset refs, CI workflow exists
 ls assets/audio/*.wav assets/audio/*.mp3 assets/audio/*.ogg 2>/dev/null | grep -q . || echo "FAIL: no audio assets — game ships silent"
 ls .github/workflows/*.yml .github/workflows/*.yaml 2>/dev/null | grep -q . || echo "FAIL: no CI workflow"
+# R8 Play listing graphics: hi-res icon (512) + feature graphic (1024x500) per locale
+ls android/fastlane/metadata/android/*/images/icon.png 2>/dev/null | grep -q . || echo "FAIL: no Play hi-res icon (512x512)"
+ls android/fastlane/metadata/android/*/images/featureGraphic.png 2>/dev/null | grep -q . || echo "FAIL: no Play feature graphic (1024x500)"
 # every asset path declared in pubspec must exist on disk
 python3 - <<'PY'
 import re,glob,os,sys
@@ -176,7 +179,8 @@ name is a FAIL — the app must look shipped. **Native config (R6):** the app mu
 `config.orientation` (no rotate flash → orientation locked natively, `~ipad` removed), be iPhone-only,
 have `ITSAppUsesNonExemptEncryption=false`, and handle the root back-button (SnackBar double-exit).
 **Assets & CI (R7):** no audio (game ships silent), any missing declared asset, or a missing CI
-workflow is a FAIL.
+workflow is a FAIL. **Store graphics (R8):** a missing Play hi-res icon (512×512) or feature graphic
+(1024×500) is a FAIL — the listing can't publish without them.
 
 ### Step 6 — Contract criteria evidence
 

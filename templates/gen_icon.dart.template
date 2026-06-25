@@ -51,10 +51,26 @@ void main() {
   Directory('assets/images').createSync(recursive: true);
   File('assets/images/splash.png').writeAsBytesSync(img.encodePng(splash));
 
+  Directory('assets/store').createSync(recursive: true);
+  // --- Play hi-res listing icon: 512×512, OPAQUE ---
+  final playIcon = img.Image(width: 512, height: 512, numChannels: 3);
+  img.fill(playIcon, color: _rgb(kBg));
+  _paintMotif(playIcon, 512);
+  File('assets/store/play_icon.png').writeAsBytesSync(img.encodePng(playIcon));
+
+  // --- Play feature graphic: 1024×500, OPAQUE (centered orb motif) ---
+  final feat = img.Image(width: 1024, height: 500, numChannels: 3);
+  img.fill(feat, color: _rgb(kBg));
+  img.fillCircle(feat, x: 512, y: 250, radius: 150, color: _rgb(kPrimary));
+  img.fillCircle(feat, x: 512, y: 250, radius: 95, color: _rgb(kAccent));
+  img.drawString(feat, kGlyph.toUpperCase(), font: img.arial48, x: 492, y: 226, color: _rgb(kBg));
+  File('assets/store/feature_graphic.png').writeAsBytesSync(img.encodePng(feat));
+
   // sanity: confirm the icon has no alpha
   final check = img.decodePng(File('assets/icons/icon.png').readAsBytesSync())!;
-  stdout.writeln('icon channels=${check.numChannels} (must be 3, no alpha); '
-      'wrote assets/icons/icon.png + assets/images/splash.png');
+  stdout.writeln('icon channels=${check.numChannels} (must be 3, no alpha); wrote '
+      'assets/icons/icon.png, assets/images/splash.png, assets/store/play_icon.png (512), '
+      'assets/store/feature_graphic.png (1024x500)');
   if (check.numChannels != 3) {
     stderr.writeln('ERROR: icon has an alpha channel — App Store will reject it.');
     exit(1);

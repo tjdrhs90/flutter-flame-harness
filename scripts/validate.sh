@@ -118,6 +118,8 @@ if [ -f "$SHOT" ]; then
   require_section "$SHOT" "ko\|KO\|en\|EN\|locale" "KO+EN locales"
   require_section "$SHOT" "keywords" "ASO keywords"
   require_section "$SHOT" "screenshots\|images" "fastlane upload"
+  require_section "$SHOT" "featureGraphic" "play feature graphic"
+  require_section "$SHOT" "icon.png\|hi-res icon\|512" "play hi-res icon"
 fi
 
 SUB="$ROOT/skills/flame-harness-submit/SKILL.md"

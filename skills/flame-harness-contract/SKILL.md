@@ -85,6 +85,9 @@ section requiring the patterns in `docs/game-gotchas.md` (cite it). These are ma
 - **R7 Assets & CI**: the game ships with audio (synthesized or sourced) + visuals (code-drawn or
   cleaned sprites) and **no missing-asset references** (every `pubspec.yaml` asset exists); a
   `.github/workflows` CI (analyze + test) is present.
+- **R8 Store graphics**: Android Play listing has the required **hi-res icon (512×512)** and
+  **feature graphic (1024×500)** placed for `supply` (`metadata/android/<locale>/images/icon.png` +
+  `featureGraphic.png`); iOS has localized screenshots.
 
 ---
 

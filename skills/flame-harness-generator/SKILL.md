@@ -553,8 +553,10 @@ the **Build/platform** + **Store rejections** patterns in `docs/game-gotchas.md`
 1. **Icon + splash art.** Default: copy `templates/gen_icon.dart.template` → `tool/gen_icon.dart`,
    fill its color constants from `design_tokens` (Background / Primary / Accent RGB) and `kGlyph`
    from the first letter of `app_name`, add `image: ^4.0.0` to `dev_dependencies`, then
-   `dart run tool/gen_icon.dart` → writes `assets/icons/icon.png` (1024×1024, **opaque/no-alpha**) and
-   `assets/images/splash.png`. If the design asset plan chose AI-generated art, use that image
+   `dart run tool/gen_icon.dart` → writes `assets/icons/icon.png` (1024×1024, **opaque/no-alpha**),
+   `assets/images/splash.png`, **`assets/store/play_icon.png` (512×512 Play hi-res icon)**, and
+   **`assets/store/feature_graphic.png` (1024×500 Play feature graphic)**. The screenshot phase places
+   the last two into the Android listing. If the design asset plan chose AI-generated art, use that image
    instead at `assets/icons/icon.png`, flattened to **opaque** (no alpha).
 2. **Config + run the tools.** Add the `flutter_launcher_icons` (with `remove_alpha_ios: true`,
    `image_path: assets/icons/icon.png`) and `flutter_native_splash` (`color:` = design Background,
