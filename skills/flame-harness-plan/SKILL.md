@@ -72,15 +72,16 @@ Do not use underscores — kebab-case only.
 
 ### bundle_id
 
-Set `bundle_id` to `com.gonigon.<id>` where `<id>` is the `app_slug` with **all hyphens and
-underscores removed** (lowercase alphanumeric only). Bundle IDs are reverse-DNS and each segment
-must match `[a-z0-9]+` — hyphens/underscores are INVALID and will break iOS/Android signing.
+The bundle id is part of the app's identity and is decided **here, up front** (the user sees it in
+the PRD). Format — reverse-DNS **`com.<company>.<appname>`**:
+- `<company>` = `developer.company` from `config.md` (default `gonigon`).
+- `<appname>` = `app_slug` with **all hyphens/underscores removed, lowercase** (each segment must be
+  `[a-z0-9]+`; hyphens/underscores/uppercase are INVALID and break iOS/Android signing).
 
-Example: if `app_slug` is `space-hop`, then `bundle_id` is `com.gonigon.spacehop` (NOT
-`com.gonigon.space-hop`). If `app_slug` is `swing-line`, `bundle_id` is `com.gonigon.swingline`.
-
-The format `com.gonigon.<id>` is mandated by `docs/harness-protocol.md` §1. Never emit a hyphen or
-underscore in the bundle id.
+So `bundle_id` = `com.<company>.<appname>`. Examples: `app_slug: space-hop` →
+**`com.gonigon.spacehop`**; `app_slug: swing-line` → **`com.gonigon.swingline`** (NOT
+`com.gonigon.space-hop`). State the chosen `bundle_id` explicitly in the PRD identity section. It must
+be byte-identical on iOS and Android (`docs/harness-protocol.md` §1).
 
 ### orientation
 
