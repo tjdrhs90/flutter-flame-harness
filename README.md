@@ -2,6 +2,8 @@
 
 **English** | [한국어](README.ko.md)
 
+![flutter-flame-harness — take a Flutter/Flame game from idea to the App Store with an AI build harness](assets/social-preview.png)
+
 A Claude Code plugin that takes a Flutter/Flame game from raw idea all the way to the app stores. The harness orchestrates a structured pipeline of skills — research, planning, design, contract negotiation, and a generator–evaluator build loop — so every stage produces a verified, hand-off-ready artifact before the next one begins.
 
 ## Why
