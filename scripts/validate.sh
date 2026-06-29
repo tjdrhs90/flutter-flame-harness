@@ -162,12 +162,20 @@ if [ -f "$GEN" ]; then
   require_section "$GEN" "build_audio" "assets: audio synth"
   require_section "$GEN" "strip_bg\|code-drawn" "assets: visuals"
   require_section "$GEN" "workflows/ci.yml\|ci.yml" "ci workflow"
+  require_section "$GEN" "save_repository\|SaveRepository" "durable save layer"
+  require_section "$GEN" "flutter_secure_storage" "durable save: iOS Keychain dep"
+  require_section "$GEN" "play_services_block_store" "durable save: Android Block Store dep"
 fi
-for t in build_audio.dart strip_bg.dart ci.yml; do
+for t in build_audio.dart strip_bg.dart ci.yml save_repository.dart; do
   [ -f "$ROOT/templates/$t.template" ] || err "missing templates/$t.template"
 done
 [ -f "$ROOT/templates/gen_icon.dart.template" ] || err "missing templates/gen_icon.dart.template"
 CON2="$ROOT/skills/flame-harness-contract/SKILL.md"
-[ -f "$CON2" ] && require_section "$CON2" "Platform-Robustness Gates" "robustness gates block"
+if [ -f "$CON2" ]; then
+  require_section "$CON2" "Platform-Robustness Gates" "robustness gates block"
+  require_section "$CON2" "R9 Durable save\|R9.*[Dd]urable" "R9 durable save gate"
+fi
+EVA2="$ROOT/skills/flame-harness-evaluator/SKILL.md"
+[ -f "$EVA2" ] && require_section "$EVA2" "play_services_block_store\|SaveRepository" "evaluator R9 durable-save check"
 
 [ "$fail" -eq 0 ] && echo "validate: OK" || exit 1

@@ -1,0 +1,87 @@
+import 'dart:convert';
+import 'dart:io' show Platform;
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:play_services_block_store/play_services_block_store.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+/// Durable, reinstall- and device-transfer-surviving persistence for the save blob.
+///
+/// Strategy (mirrors the shipped games):
+///  - iOS: Keychain via flutter_secure_storage — survives app deletion; with
+///    iCloud Keychain it follows the user to a new device.
+///  - Android: Google Play Block Store — survives uninstall + device transfer
+///    (restored on the same Google account during new-device setup).
+///  - Both: a shared_preferences mirror as a fast local cache and as the
+///    Android Auto Backup payload (belt-and-suspenders).
+///
+/// The blob is a single JSON string (well under Block Store's ~4KB/entry limit).
+/// Every store call is wrapped in try/catch so a backend failure degrades to the
+/// next tier instead of crashing.
+class SaveRepository {
+  SaveRepository._();
+
+  // Replace __SAVE_KEY__ with `<app_slug>_save_v1` (versioned for schema migration).
+  static const _key = '__SAVE_KEY__';
+
+  static const _secure = FlutterSecureStorage(
+    iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
+  );
+
+  /// Read the raw JSON blob, preferring the durable store and falling back to
+  /// the shared_preferences cache. Returns null when nothing is stored yet.
+  static Future<String?> read() async {
+    String? durable;
+    try {
+      if (Platform.isIOS) {
+        durable = await _secure.read(key: _key);
+      } else if (Platform.isAndroid) {
+        durable = await PlayServicesBlockStore.retrieveString(_key);
+      }
+    } catch (e) {
+      debugPrint('SaveRepository durable read failed: $e');
+    }
+    if (durable != null && durable.isNotEmpty) return durable;
+
+    // Fallback to the local cache (also the Android Auto Backup payload).
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString(_key);
+    } catch (e) {
+      debugPrint('SaveRepository cache read failed: $e');
+      return null;
+    }
+  }
+
+  /// Persist the JSON blob to both the durable store and the local cache.
+  static Future<void> write(String json) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_key, json);
+    } catch (e) {
+      debugPrint('SaveRepository cache write failed: $e');
+    }
+    try {
+      if (Platform.isIOS) {
+        await _secure.write(key: _key, value: json);
+      } else if (Platform.isAndroid) {
+        await PlayServicesBlockStore.saveString(_key, json);
+      }
+    } catch (e) {
+      debugPrint('SaveRepository durable write failed: $e');
+    }
+  }
+
+  /// Convenience: read & decode the blob into a map.
+  static Future<Map<String, dynamic>> readMap() async {
+    final raw = await read();
+    if (raw == null || raw.isEmpty) return {};
+    try {
+      final decoded = jsonDecode(raw);
+      return decoded is Map<String, dynamic> ? decoded : {};
+    } catch (_) {
+      return {};
+    }
+  }
+}

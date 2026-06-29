@@ -116,7 +116,7 @@ Missing keys in either locale are a Hard Gate failure (protocol §3 Hard Gate 6)
 
 ### Step 5a — Platform-robustness gates
 
-Verify the `## Platform-Robustness Gates` (R1–R4) from `contract.md` / `docs/game-gotchas.md`:
+Verify the `## Platform-Robustness Gates` (R1–R9) from `contract.md` / `docs/game-gotchas.md`:
 
 ```bash
 # R1 audio: frequent SFX pooled + audio calls guarded; BGM stop on teardown
@@ -152,6 +152,10 @@ ls .github/workflows/*.yml .github/workflows/*.yaml 2>/dev/null | grep -q . || e
 # R8 Play listing graphics: hi-res icon (512) + feature graphic (1024x500) per locale
 ls android/fastlane/metadata/android/*/images/icon.png 2>/dev/null | grep -q . || echo "FAIL: no Play hi-res icon (512x512)"
 ls android/fastlane/metadata/android/*/images/featureGraphic.png 2>/dev/null | grep -q . || echo "FAIL: no Play feature graphic (1024x500)"
+# R9 durable save: SaveRepository mirrors to Keychain + Block Store + prefs; PreferencesService routes through it
+grep -q "flutter_secure_storage" pubspec.yaml && grep -q "play_services_block_store" pubspec.yaml || echo "FAIL: durable-save deps missing (saves won't survive reinstall/device on iOS)"
+ls lib/data/save_repository.dart 2>/dev/null || echo "FAIL: no SaveRepository (durable save layer)"
+grep -q "FlutterSecureStorage" lib/data/save_repository.dart 2>/dev/null && grep -q "PlayServicesBlockStore" lib/data/save_repository.dart 2>/dev/null || echo "FAIL: SaveRepository missing a durable tier (Keychain/Block Store)"
 # every asset path declared in pubspec must exist on disk
 python3 - <<'PY'
 import re,glob,os,sys
@@ -181,6 +185,10 @@ have `ITSAppUsesNonExemptEncryption=false`, and handle the root back-button (Sna
 **Assets & CI (R7):** no audio (game ships silent), any missing declared asset, or a missing CI
 workflow is a FAIL. **Store graphics (R8):** a missing Play hi-res icon (512×512) or feature graphic
 (1024×500) is a FAIL — the listing can't publish without them.
+**Durable save (R9):** persistence on `shared_preferences` alone is a FAIL — iOS drops it on app
+delete, so the player loses progress on reinstall/new device. There must be a `SaveRepository`
+mirroring to iOS Keychain + Android Block Store (durable-first read, all-tier write, try/catch), with
+`PreferencesService` routing through it.
 
 ### Step 6 — Contract criteria evidence
 

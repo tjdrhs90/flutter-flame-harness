@@ -116,6 +116,8 @@ dependencies:
   flame_audio: ^2.0.0
   google_mobile_ads: ^5.0.0
   shared_preferences: ^2.0.0
+  flutter_secure_storage: ^9.0.0      # durable save: iOS Keychain (survives reinstall/device)
+  play_services_block_store: ^0.8.0   # durable save: Android Block Store (survives reinstall/device)
 ```
 
 Add to `dev_dependencies` (`image` is used by `tool/gen_icon.dart` + `tool/strip_bg.dart`):
@@ -510,10 +512,26 @@ cd /Users/ssg/AndroidStudioProjects/<app_slug>
 flutter gen-l10n
 ```
 
-### 5c.5 shared_preferences persistence
+### 5c.5 Persistence — durable, device-transfer-surviving (default ON)
 
 Persist high score, BGM/SFX enabled flags, and any economy totals through a single
 `PreferencesService` class. No raw `SharedPreferences` calls outside that class.
+
+Persistence is **durable by default** — saves survive app reinstall *and* moving to a new device,
+not just `shared_preferences` (which iOS drops on delete). Mirror the shipped games' proven pattern:
+
+1. Copy `templates/save_repository.dart.template` → `lib/data/save_repository.dart`, replacing
+   `__SAVE_KEY__` with `<app_slug>_save_v1`. It stores one JSON blob across three tiers —
+   **iOS Keychain** (`flutter_secure_storage`, `first_unlock`), **Android Block Store**
+   (`play_services_block_store`), and a `shared_preferences` mirror — reading durable-first, writing
+   all tiers, every call in try/catch so a backend failure degrades instead of crashing.
+2. `PreferencesService` is backed by `SaveRepository`: load `readMap()` once at startup into an
+   in-memory map; each setter mutates the map and writes `SaveRepository.write(jsonEncode(map))`.
+   All getters/setters go through it — no raw `SharedPreferences` and no direct `SaveRepository`
+   calls elsewhere.
+
+This is **not** real-time cloud sync — it's last-write-wins restore on a fresh install/device.
+See `docs/game-gotchas.md` (Persistence). Gated **R9**.
 
 ### 5c.6 AdMob wiring (if skip_admob is false in config.md)
 

@@ -88,6 +88,10 @@ section requiring the patterns in `docs/game-gotchas.md` (cite it). These are ma
 - **R8 Store graphics**: Android Play listing has the required **hi-res icon (512×512)** and
   **feature graphic (1024×500)** placed for `supply` (`metadata/android/<locale>/images/icon.png` +
   `featureGraphic.png`); iOS has localized screenshots.
+- **R9 Durable save**: persistence survives reinstall **and** device transfer (not `shared_preferences`
+  alone) — a `SaveRepository` mirrors the save blob to iOS Keychain (`flutter_secure_storage`,
+  `first_unlock`) + Android Block Store (`play_services_block_store`) + a `shared_preferences` cache,
+  reading durable-first and writing all tiers in try/catch; `PreferencesService` routes through it.
 
 ---
 

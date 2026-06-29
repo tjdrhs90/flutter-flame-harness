@@ -239,9 +239,12 @@ Lower-frequency but real, from a full read of all repos' commits + docs.
   still persists immediately/synchronously at run end.)
 - **Version the save schema** (`save_v1` key + per-field migration defaults) so new fields don't
   corrupt old saves.
-- **Durable save (optional)** — for survival across uninstall / device transfer: iOS
-  `flutter_secure_storage` Keychain (`first_unlock`) + Android `play_services_block_store`, mirrored
-  to `shared_preferences`; read durable-first, write both, all in try/catch.
+- **Durable save (default ON, gate R9)** — `shared_preferences` alone is *not enough*: iOS drops it
+  on app delete, so progress is lost on reinstall/new device. Route persistence through a
+  `SaveRepository` that mirrors one JSON blob to **iOS Keychain** (`flutter_secure_storage`,
+  `first_unlock`) + **Android Block Store** (`play_services_block_store`) + a `shared_preferences`
+  cache (also the Android Auto Backup payload); read durable-first, write all tiers, every call in
+  try/catch. This is last-write-wins restore on a fresh install/device, **not** real-time cloud sync.
 
 **Physics (Forge2D games only)**
 - **Forge2D units are meters, not pixels** — size bodies in ~0.5–2 m and let the camera zoom convert;
