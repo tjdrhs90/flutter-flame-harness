@@ -1,0 +1,49 @@
+# <app_name>
+
+<one-line pitch from the PRD>
+
+A mobile game built with [Flutter](https://flutter.dev) and the
+[Flame](https://flame-engine.org) game engine.
+
+## Gameplay
+
+<2-4 sentences: the core loop, the goal, win/lose — from the PRD.>
+
+## Tech stack
+
+- **Flutter** + **Flame** — rendering and game loop
+- **flame_audio** — synthesized BGM/SFX
+- **google_mobile_ads** — rewarded ads (optional)
+- **shared_preferences** + **flutter_secure_storage** + **play_services_block_store** — durable,
+  device-transfer-surviving saves
+- l10n via `flutter_localizations`
+
+## Run
+
+```bash
+flutter pub get
+flutter run
+```
+
+## Test & analyze
+
+```bash
+flutter analyze
+flutter test
+```
+
+## Build (release)
+
+```bash
+flutter build ipa          # iOS
+flutter build appbundle    # Android
+```
+
+## Assets
+
+Audio is code-synthesized and visuals are code-drawn from the design tokens (no external asset
+sourcing) unless noted otherwise.
+
+## License
+
+See [LICENSE](LICENSE).

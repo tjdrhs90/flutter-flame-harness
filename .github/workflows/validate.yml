@@ -1,0 +1,24 @@
+name: validate
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # python3 and ruby are preinstalled on ubuntu-latest runners; the scripts use them
+      # (python3 for JSON/ARB checks, ruby -c for fastlane template syntax).
+      - name: Plugin structure + protocol gates
+        run: bash scripts/validate.sh
+
+      - name: Fastlane template syntax
+        run: bash scripts/validate-fastlane.sh
+
+      - name: Stop-failure hook behavior
+        run: bash scripts/test-hook.sh

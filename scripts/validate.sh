@@ -170,11 +170,22 @@ if [ -f "$GEN" ]; then
   require_section "$GEN" "save_repository\|SaveRepository" "durable save layer"
   require_section "$GEN" "flutter_secure_storage" "durable save: iOS Keychain dep"
   require_section "$GEN" "play_services_block_store" "durable save: Android Block Store dep"
+  require_section "$GEN" "gitignore.template" "generated game uses full gitignore template"
+  require_section "$GEN" "pubspec.lock" "generated game commits pubspec.lock"
+  require_section "$GEN" "README.md.template\|Project README" "generated game README step"
+  require_section "$GEN" "LICENSE.template\|LICENSE" "generated game LICENSE step"
 fi
-for t in build_audio.dart strip_bg.dart ci.yml save_repository.dart; do
+for t in build_audio.dart strip_bg.dart ci.yml save_repository.dart README.md LICENSE; do
   [ -f "$ROOT/templates/$t.template" ] || err "missing templates/$t.template"
 done
 [ -f "$ROOT/templates/gen_icon.dart.template" ] || err "missing templates/gen_icon.dart.template"
+[ -f "$ROOT/templates/gitignore.template" ] || err "missing templates/gitignore.template"
+# Plugin repo runs its own validators in CI + contributor infra present
+[ -f "$ROOT/.github/workflows/validate.yml" ] || err "missing .github/workflows/validate.yml (plugin CI)"
+for f in SECURITY.md CONTRIBUTING.md CHANGELOG.md .github/pull_request_template.md \
+         .github/ISSUE_TEMPLATE/bug_report.md .github/ISSUE_TEMPLATE/feature_request.md; do
+  [ -f "$ROOT/$f" ] || err "missing $f"
+done
 CON2="$ROOT/skills/flame-harness-contract/SKILL.md"
 if [ -f "$CON2" ]; then
   require_section "$CON2" "Platform-Robustness Gates" "robustness gates block"

@@ -311,13 +311,22 @@ Copy `templates/ci.yml.template` → `.github/workflows/ci.yml` (GitHub Actions 
 The generated game is its own git repository — initialize it and commit as the build progresses, so
 the work has atomic history from the start (and the user can diff/revert per sub-phase).
 
+`flutter create` already wrote a complete, standard Flutter `.gitignore` (it ignores `build/`,
+`.dart_tool/`, IDE files, Pods, etc.). **Do not overwrite it** — append the harness's
+credential/secret excludes on top, by appending `templates/gitignore.template` (covers `secrets/`,
+`*.jks`/`*.p8`/`*.p12`, `key.properties`, `play-store-key.json`, `**/google-services.json`,
+`ios/Runner/Runner.entitlements`, `ios/fastlane/certs/`). These guarantee the signing/API key files
+the build phase copies into the game are never committed.
+
 ```bash
 cd <projects-dir>/<app_slug>
 git init -q
-printf '%s\n' 'build/' '.dart_tool/' '*.jks' '*.p8' '*.p12' 'play-store-key.json' \
-  'key.properties' 'ios/fastlane/certs/' >> .gitignore   # never commit key material
+cat <plugin-templates>/gitignore.template >> .gitignore   # harness credential/secret excludes
 git add -A && git commit -q -m "chore: scaffold <app_name> (flame-harness 5a)"
 ```
+
+`<plugin-templates>` is this plugin's `templates/` directory. **`pubspec.lock` is committed** (this is
+an app — reproducible builds), so never add it to `.gitignore`; `git add -A` includes it by design.
 
 Use **Conventional Commits** and **never add AI-authorship trailers** (no `Co-Authored-By`, no
 "Generated with…" line). Make one atomic commit at each sub-phase gate (5a/5b/5c) and one per
@@ -638,6 +647,21 @@ alpha, and place the cleaned PNGs under `assets/images/`. **Every asset path ref
 declared in `pubspec.yaml` must exist on disk** — no dangling references (a missing asset is a
 runtime crash / blank). The harness never depends on un-sourced art: if nothing was sourced, the game
 ships fully code-drawn.
+
+### 5c.12 Project README + LICENSE
+
+A shipped game has a `README.md` and a `LICENSE` (all the reference games do). Create both at the game
+project root:
+
+- **`README.md`** — from `templates/README.md.template`, filling: `<app_name>` (title + one-line pitch
+  from the PRD), a short gameplay summary, the tech stack (Flame + the actual `pubspec.yaml` deps:
+  audio, ads, l10n, durable save), and run/test/build commands. Add one asset-credits line stating the
+  default sourcing (audio = code-synthesized, visuals = code-drawn) — adjust if sprites were sourced.
+  Author it in the project's `default_language` (add an English section when it isn't `en`).
+- **`LICENSE`** — from `templates/LICENSE.template` (MIT), with `Copyright (c) <year> <company>` taken
+  from `config.developer` (`company`, current year). If the user prefers a different license, honour it.
+
+Commit them with the 5c gate commit below.
 
 ### 5c HARD GATE
 
