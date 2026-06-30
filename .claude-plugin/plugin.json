@@ -1,12 +1,22 @@
 {
   "name": "flutter-flame-harness",
-  "version": "0.13.0",
+  "version": "0.13.1",
   "description": "Idea-to-store harness for Flutter/Flame games: research (AI idea recommendation), plan, design, contract, generator-evaluator build loop, AdMob, build, screenshot, submit, retro.",
-  "author": { "name": "Seonggon Sim", "email": "tjdrhs90@gmail.com" },
+  "author": {
+    "name": "Seonggon Sim",
+    "email": "tjdrhs90@gmail.com"
+  },
   "repository": "https://github.com/tjdrhs90/flutter-flame-harness",
   "hooks": {
     "StopFailure": [
-      { "hooks": [ { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/stop-failure-handler.sh" } ] }
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/stop-failure-handler.sh"
+          }
+        ]
+      }
     ]
   }
 }

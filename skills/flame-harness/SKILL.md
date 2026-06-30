@@ -75,7 +75,7 @@ with the full schema from `docs/harness-protocol.md` Section 1.
 
 Populate the game-specific keys from the parsed arguments:
 
-- `default_language` — the language the user is conversing in: detect it from the user's request/messages (Korean request → `ko`, English request → `en`); default to `en` if unclear. The whole pipeline (PRD, copy, l10n primary) is authored in this language. Not fixed to `ko`.
+- `default_language` — the language the user is conversing in: detect it from the user's request/messages (Korean request → `ko`, English request → `en`). If there's no conversational signal yet (e.g. a bare `/flame-harness` with no idea), **fall back to the OS locale** — run `defaults read -g AppleLanguages 2>/dev/null || echo $LANG` and map the first locale (`ko*` → `ko`, otherwise `en`). Only default to `en` if even that is unavailable. The whole pipeline (PRD, copy, l10n primary) is authored in this language. Not fixed to `ko`.
 - `app_idea` — from the positional argument; if no positional argument was given, write `app_idea: ""` (blank is valid — research will generate and recommend concepts). Do NOT abort on an empty idea.
 - `app_name` — derive a short display name from the idea (ask the user if ambiguous); if NO idea was given, write `app_name: ""` — the plan phase sets the name after research confirms the concept.
 - `app_slug` — kebab-case of `app_name`; write `app_slug: ""` if `app_name` is blank.
