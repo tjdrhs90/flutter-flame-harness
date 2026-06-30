@@ -27,7 +27,7 @@ AdMob 연동, 릴리스 빌드(Android + iOS), App Store / Play Store 스크린�
 ## 설치
 
 ```bash
-/plugin marketplace add /Users/ssg/AndroidStudioProjects/flutter-flame-harness
+/plugin marketplace add <projects-dir>/flutter-flame-harness
 /plugin install flutter-flame-harness
 ```
 

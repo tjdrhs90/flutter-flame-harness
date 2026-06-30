@@ -30,7 +30,7 @@ Before any action, load:
    (per protocol §1).
 2. `docs/harness/state.md` — confirm `next_role: screenshot` (per protocol §2).
 
-Derive the game root path: `/Users/ssg/AndroidStudioProjects/<app_slug>/`.
+Derive the game root path: `<projects-dir>/<app_slug>/`.
 
 ---
 

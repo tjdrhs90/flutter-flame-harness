@@ -60,14 +60,14 @@ hyphens) — convert `app_slug` (e.g. `swing-line` → `swing_line`). This packa
 the bundle id:
 
 ```bash
-flutter create --org com.gonigon --project-name <app_slug_snake_case> \
-  /Users/ssg/AndroidStudioProjects/<app_slug>
+flutter create --org com.<company> --project-name <app_slug_snake_case> \
+  <projects-dir>/<app_slug>
 ```
 
 **Bundle id — set it explicitly and IDENTICALLY on both platforms (do not trust the value
 `flutter create` derives from the project name).** `flutter create` builds the bundle id from
 `--org` + project-name, which can leave underscores / case differences and can diverge between iOS
-and Android. Force both to the canonical `config.bundle_id` (`com.gonigon.<id>`, lowercase
+and Android. Force both to the canonical `config.bundle_id` (`com.<company>.<id>`, lowercase
 `[a-z0-9]` only — see `docs/harness-protocol.md`):
 - iOS: set `PRODUCT_BUNDLE_IDENTIFIER` = `<bundle_id>` in **all three** build configs
   (Debug/Release/Profile) in `ios/Runner.xcodeproj/project.pbxproj`.
@@ -79,8 +79,8 @@ and Android. Force both to the canonical `config.bundle_id` (`com.gonigon.<id>`,
 `docs/harness/` directory into the game project so all artifacts share one repository:
 
 ```bash
-mv /Users/ssg/AndroidStudioProjects/flutter-flame-harness/docs/harness \
-   /Users/ssg/AndroidStudioProjects/<app_slug>/docs/harness
+mv <projects-dir>/flutter-flame-harness/docs/harness \
+   <projects-dir>/<app_slug>/docs/harness
 ```
 
 All subsequent reads/writes of harness files use the new path inside the game project.
@@ -90,8 +90,8 @@ All subsequent reads/writes of harness files use the new path inside the game pr
 Delete the generated counter demo to start from a clean slate:
 
 ```bash
-rm /Users/ssg/AndroidStudioProjects/<app_slug>/lib/main.dart
-rm /Users/ssg/AndroidStudioProjects/<app_slug>/test/widget_test.dart
+rm <projects-dir>/<app_slug>/lib/main.dart
+rm <projects-dir>/<app_slug>/test/widget_test.dart
 ```
 
 These files will be replaced by the game implementation below.
@@ -306,18 +306,36 @@ void main() {
 Copy `templates/ci.yml.template` → `.github/workflows/ci.yml` (GitHub Actions running
 `flutter analyze --no-fatal-infos` + `flutter test` on push/PR), mirroring the shipped games' CI.
 
+### 5a.12 Initialize version control
+
+The generated game is its own git repository — initialize it and commit as the build progresses, so
+the work has atomic history from the start (and the user can diff/revert per sub-phase).
+
+```bash
+cd <projects-dir>/<app_slug>
+git init -q
+printf '%s\n' 'build/' '.dart_tool/' '*.jks' '*.p8' '*.p12' 'play-store-key.json' \
+  'key.properties' 'ios/fastlane/certs/' >> .gitignore   # never commit key material
+git add -A && git commit -q -m "chore: scaffold <app_name> (flame-harness 5a)"
+```
+
+Use **Conventional Commits** and **never add AI-authorship trailers** (no `Co-Authored-By`, no
+"Generated with…" line). Make one atomic commit at each sub-phase gate (5a/5b/5c) and one per
+discrete fix on round N > 1.
+
 ### 5a HARD GATE
 
-After completing steps 5a.1–5a.11, run both commands and confirm both exit 0 before
+After completing steps 5a.1–5a.12, run both commands and confirm both exit 0 before
 proceeding to Sub-phase 5b:
 
 ```bash
-cd /Users/ssg/AndroidStudioProjects/<app_slug>
+cd <projects-dir>/<app_slug>
 flutter analyze
 flutter test
 ```
 
-`flutter analyze` must report **0 issues**. `flutter test` must report **0 failures**.
+`flutter analyze` must report **0 issues**. `flutter test` must report **0 failures**. When green,
+commit: `git add -A && git commit -q -m "feat: core loop scaffold passes analyze+test (5a)"`.
 
 **If either command fails, fix all reported issues before proceeding. Do not start 5b until
 this gate is green.**
@@ -436,12 +454,13 @@ Add tests under `test/` for:
 After completing steps 5b.1–5b.9, run:
 
 ```bash
-cd /Users/ssg/AndroidStudioProjects/<app_slug>
+cd <projects-dir>/<app_slug>
 flutter analyze
 flutter test
 ```
 
-`flutter analyze` must report **0 issues**. `flutter test` must report **0 failures**.
+`flutter analyze` must report **0 issues**. `flutter test` must report **0 failures**. When green,
+commit: `git add -A && git commit -q -m "feat: game systems and components (5b)"`.
 
 **If either command fails, fix all reported issues before proceeding. Do not start 5c until
 this gate is green.**
@@ -508,7 +527,7 @@ dependencies:
 Verify l10n is complete:
 
 ```bash
-cd /Users/ssg/AndroidStudioProjects/<app_slug>
+cd <projects-dir>/<app_slug>
 flutter gen-l10n
 ```
 
@@ -548,7 +567,7 @@ Before the final HARD GATE, run:
 
 ```bash
 grep -rn "TODO\|stub\|placeholder\|스텁\|미구현" \
-  /Users/ssg/AndroidStudioProjects/<app_slug>/lib/ --include="*.dart"
+  <projects-dir>/<app_slug>/lib/ --include="*.dart"
 ```
 
 If this command returns any output, fix or remove every match. The contract requires zero
@@ -625,7 +644,7 @@ ships fully code-drawn.
 After completing steps 5c.1–5c.11, run:
 
 ```bash
-cd /Users/ssg/AndroidStudioProjects/<app_slug>
+cd <projects-dir>/<app_slug>
 flutter analyze
 flutter test
 ```
@@ -640,7 +659,8 @@ And assets/CI (5b.6 / 5c.11 / 5a.11): the game ships with **synthesized (or sour
 `.github/workflows/ci.yml` is present.
 
 **This is the final gate. Do not write the handoff until both commands pass. If either fails,
-fix all reported issues and re-run both commands.**
+fix all reported issues and re-run both commands.** When green, commit:
+`git add -A && git commit -q -m "feat: UI, content, branding and native config (5c)"`.
 
 ---
 

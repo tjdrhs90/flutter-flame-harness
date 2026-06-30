@@ -47,7 +47,7 @@ fi
 PLAN="$ROOT/skills/flame-harness-plan/SKILL.md"
 if [ -f "$PLAN" ]; then
   require_section "$PLAN" "app_slug\|slug" "slug assignment"
-  require_section "$PLAN" "com.gonigon" "bundle id rule"
+  require_section "$PLAN" "com.<company>" "bundle id rule"
   require_section "$PLAN" "scope\|스코프" "scope guard"
   require_section "$PLAN" "lib/" "lib structure map"
 fi
@@ -75,7 +75,12 @@ if [ -f "$GEN" ]; then
   require_section "$GEN" "analyze.*test\|test.*analyze\|HARD GATE\|게이트" "per-subphase gate"
   require_section "$GEN" "handoff" "handoff output"
   require_section "$GEN" "feedback" "feedback intake on round>1"
+  require_section "$GEN" "git init" "generated game git init + atomic commits"
 fi
+# No author identity / personal contact leaked into committed skills, docs, or templates
+# (legit plugin authorship in LICENSE + .claude-plugin/plugin.json is allowed).
+LEAK=$(git -C "$ROOT" grep -nE 'gonigon|Seonggon|tjdrhs90@gmail|8DHJJJ66LY|339MZ7CUZ5|f9a69502-1e93' 2>/dev/null | grep -vE '^LICENSE:|^\.claude-plugin/plugin\.json:|^scripts/validate\.sh:' || true)
+[ -z "$LEAK" ] || err "personal identity/credential leaked into tracked files: $LEAK"
 
 EVA="$ROOT/skills/flame-harness-evaluator/SKILL.md"
 if [ -f "$EVA" ]; then

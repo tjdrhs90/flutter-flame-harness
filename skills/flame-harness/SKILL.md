@@ -69,9 +69,20 @@ docs/harness/plans/
 
 ### 2. Write `docs/harness/config.md`
 
-Read `/Users/ssg/AndroidStudioProjects/credentials/store-metadata.md` to extract the
-`developer`, `ios`, and `android` credential blocks, then write `docs/harness/config.md`
-with the full schema from `docs/harness-protocol.md` Section 1.
+Determine `credentials_dir`: use the `--credentials-dir <path>` flag if given, else a `credentials/`
+directory beside the harness, else `~/AndroidStudioProjects/credentials`. **Never hard-code a
+company, developer name, contact, or signing identity into the schema or skills** — every such value
+is the *user's own* and must be sourced at runtime.
+
+Look for `<credentials_dir>/store-metadata.md` and read the `developer`, `ios`, and `android` blocks
+from it. **If that file does not exist** (e.g. a new user who just installed the plugin), do NOT fall
+back to any placeholder/sample identity — instead **ask the user** for their own values (company,
+first/last name, support email, contact phone, privacy-policy URL, support/marketing URL, copyright;
+and — only when a deploy is intended — Apple `team_id`/`asc_key_id`/`asc_issuer_id`/key path and the
+Android keystore path/alias). Offer to save them to `<credentials_dir>/store-metadata.md` for reuse.
+The signing/store-credential answers may be deferred (left blank) until the build/submit phase if the
+user only wants to generate and play the game now. Then write `docs/harness/config.md` with the full
+schema from `docs/harness-protocol.md` Section 1.
 
 Populate the game-specific keys from the parsed arguments:
 
@@ -79,10 +90,10 @@ Populate the game-specific keys from the parsed arguments:
 - `app_idea` — from the positional argument; if no positional argument was given, write `app_idea: ""` (blank is valid — research will generate and recommend concepts). Do NOT abort on an empty idea.
 - `app_name` — derive a short display name from the idea (ask the user if ambiguous); if NO idea was given, write `app_name: ""` — the plan phase sets the name after research confirms the concept.
 - `app_slug` — kebab-case of `app_name`; write `app_slug: ""` if `app_name` is blank.
-- `bundle_id` — `com.gonigon.<id>` where `<id>` is `app_slug` with hyphens/underscores removed (bundle-id segments must be `[a-z0-9]+`; hyphens/underscores break signing). Blank if `app_slug` is blank.
+- `bundle_id` — `com.<company>.<id>` where `<id>` is `app_slug` with hyphens/underscores removed (bundle-id segments must be `[a-z0-9]+`; hyphens/underscores break signing). Blank if `app_slug` is blank.
 - `strict_mode`, `max_rounds`, `skip_research`, `skip_admob`, `auto_idea`, `auto_deploy` — from flags (defaults per table above)
 - `developer`, `ios`, `android` — from `credentials/store-metadata.md`
-- `credentials_dir` — `/Users/ssg/AndroidStudioProjects/credentials`
+- `credentials_dir` — `<projects-dir>/credentials`
 
 Do NOT hard-code credential values; always read them from `credentials_dir`.
 

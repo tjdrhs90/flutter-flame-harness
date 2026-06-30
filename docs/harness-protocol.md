@@ -18,7 +18,7 @@ Each game's `docs/harness/config.md` must be valid YAML containing the following
 app_idea: ""  # blank => research generates & recommends concepts; populated after research confirms choice
 app_name: "<display name>"
 app_slug: "<kebab-case identifier>"
-bundle_id: "com.gonigon.<id>"  # <id> = app_slug with hyphens/underscores stripped (segments must be [a-z0-9]+)
+bundle_id: "com.<company>.<id>"  # <id> = app_slug with hyphens/underscores stripped (segments must be [a-z0-9]+)
 default_language: en      # the language the user converses in; orchestrator sets this at bootstrap (e.g. ko, en)
 orientation: portrait     # portrait | landscape — the game's single locked orientation (set by plan)
 strict_mode: true          # if false, QA verdicts are advisory only
@@ -28,27 +28,30 @@ skip_admob: false          # set true to skip AdMob integration phase
 auto_idea: false           # true => research auto-selects the best concept without asking
 auto_deploy: false         # true => skip the post-QA human-review pause; PASS continues straight to deploy
 
-developer:                # all values come from credentials/store-metadata.md
-  company: gonigon
-  first_name: Seonggon     # App Review contact + Play contact
-  last_name: Sim
-  email: tjdrhs90@gmail.com # support email / App Review contact / Play contact
-  phone: "+82 10-5415-2601" # App Review contact phone
-  privacy: https://tjdrhs90.github.io/privacy/   # privacy policy URL (both stores)
-  homepage: https://tjdrhs90.github.io           # iOS support+marketing URL / Play website
-  copyright: "Copyright 2026. Gonigon all rights reserved."
+# developer/ios/android below are PLACEHOLDERS. Every value is the USER'S OWN, sourced at
+# bootstrap from <credentials_dir>/store-metadata.md (or asked interactively if that file is
+# absent). Never commit real names, emails, phones, company names, or signing identities here.
+developer:                # all values come from <credentials_dir>/store-metadata.md (user-supplied)
+  company: <company>      # reverse-DNS-safe, lowercase [a-z0-9] — used in the bundle id
+  first_name: <first-name>     # App Review contact + Play contact
+  last_name: <last-name>
+  email: <support-email> # support email / App Review contact / Play contact
+  phone: "<contact-phone>" # App Review contact phone
+  privacy: <privacy-policy-url>   # privacy policy URL (both stores)
+  homepage: <support-and-marketing-url>           # iOS support+marketing URL / Play website
+  copyright: "Copyright <year>. <company> all rights reserved."
 
 ios:
-  team_id: 8DHJJJ66LY
-  asc_key_id: 339MZ7CUZ5
-  asc_issuer_id: f9a69502-1e93-4fd1-9f53-5eb4db1b637a
+  team_id: <apple-team-id>
+  asc_key_id: <asc-key-id>
+  asc_issuer_id: <asc-issuer-id>
   asc_private_key_path: "<absolute path to AuthKey_<asc_key_id>.p8>"
 
 android:
   keystore_path: "<absolute path to upload.jks>"
   key_alias: upload
 
-credentials_dir: /Users/ssg/AndroidStudioProjects/credentials
+credentials_dir: <projects-dir>/credentials
 
 admob:
   enabled: true          # false when skip_admob
@@ -59,7 +62,7 @@ admob:
 
 ### Key Notes
 
-- `bundle_id` must follow `com.gonigon.<id>`, where `<id>` is `app_slug` with all hyphens and underscores removed, **lowercase** (each reverse-DNS segment must match `[a-z0-9]+`; a hyphen/underscore/uppercase makes the bundle id invalid and breaks iOS/Android signing). E.g. `swing-line` → `com.gonigon.swingline`. It must be **byte-for-byte identical** on both platforms — iOS `PRODUCT_BUNDLE_IDENTIFIER` == Android `applicationId` (+ `namespace`) == this value. Do not let `flutter create` derive divergent ids from the project name.
+- `bundle_id` must follow `com.<company>.<id>`, where `<id>` is `app_slug` with all hyphens and underscores removed, **lowercase** (each reverse-DNS segment must match `[a-z0-9]+`; a hyphen/underscore/uppercase makes the bundle id invalid and breaks iOS/Android signing). E.g. `swing-line` → `com.<company>.swingline`. It must be **byte-for-byte identical** on both platforms — iOS `PRODUCT_BUNDLE_IDENTIFIER` == Android `applicationId` (+ `namespace`) == this value. Do not let `flutter create` derive divergent ids from the project name.
 - `credentials_dir` is the shared directory for all credential files (keystores, p8 keys, etc.).
 - Skills must not hard-code credential paths; they must read `credentials_dir` from `config.md`.
 - `max_rounds` controls how many generator→evaluator cycles are allowed before a forced judgment.

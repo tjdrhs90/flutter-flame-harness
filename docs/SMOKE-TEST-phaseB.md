@@ -19,7 +19,7 @@ bundle ID. Neither fastlane nor this harness can create the app record for you �
 requires a one-time manual action in each console:
 
 - **iOS**: Sign in to [App Store Connect](https://appstoreconnect.apple.com) → My Apps → **+** →
-  New App. Set the bundle ID to match `bundle_id` from `config.md` (format: `com.gonigon.<slug>`).
+  New App. Set the bundle ID to match `bundle_id` from `config.md` (format: `com.<company>.<slug>`).
 - **Android**: Sign in to [Google Play Console](https://play.google.com/console) → All apps →
   **Create app**. Set the package name to the same `bundle_id` value.
 
@@ -34,7 +34,7 @@ must enroll the upload certificate's SHA fingerprint before the first `fastlane 
 1. Extract the SHA-256 fingerprint from the keystore:
    ```bash
    keytool -list -v -keystore <game>/android/upload-keystore.jks \
-     -alias upload -storepass 111111 | grep SHA256
+     -alias upload -storepass <keystore-password> | grep SHA256
    ```
 2. In Play Console → App → Setup → App integrity → App signing, upload the certificate or paste
    the fingerprint when prompted.
@@ -44,7 +44,7 @@ Without enrollment, the AAB upload will be rejected with a signing validation er
 ### (c) `flutter drive` screenshot output location
 
 `flutter drive` with `IntegrationTestWidgetsFlutterBinding.takeScreenshot` writes PNG files
-to the **game project root** by default (i.e. `/Users/ssg/AndroidStudioProjects/<app_slug>/`).
+to the **game project root** by default (i.e. `<projects-dir>/<app_slug>/`).
 Before running `fastlane screenshots` or `fastlane images`, you must move the captured PNGs
 into the fastlane-expected directory layout:
 
@@ -55,7 +55,7 @@ into the fastlane-expected directory layout:
 Check the `flutter drive` output (stdout) for the exact path where PNGs land before moving them.
 The integration test driver writes a line like:
 ```
-Screenshot: 01_home → /Users/ssg/AndroidStudioProjects/<slug>/01_home.png
+Screenshot: 01_home → <projects-dir>/<slug>/01_home.png
 ```
 Use those absolute paths in your `mv` commands.
 

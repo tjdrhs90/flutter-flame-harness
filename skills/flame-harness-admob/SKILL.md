@@ -152,7 +152,7 @@ admob:
 ## Code Injection
 
 After collecting IDs, inject the integration code into the Flutter project at
-`/Users/ssg/AndroidStudioProjects/<app_slug>/`.
+`<projects-dir>/<app_slug>/`.
 
 ### 1. pubspec.yaml — Add Dependencies
 

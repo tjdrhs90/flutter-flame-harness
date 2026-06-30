@@ -14,7 +14,7 @@ This agent cannot execute those commands on your behalf.
 2. The plugin is installed in your session:
 
    ```
-   /plugin marketplace add /Users/ssg/AndroidStudioProjects/flutter-flame-harness
+   /plugin marketplace add <projects-dir>/flutter-flame-harness
    /plugin install flutter-flame-harness
    ```
 
@@ -26,7 +26,7 @@ This agent cannot execute those commands on your behalf.
 
 3. Flutter SDK is on your `PATH` (`flutter doctor` passes for at least one target).
 4. The credentials store file exists:
-   `/Users/ssg/AndroidStudioProjects/credentials/store-metadata.md`
+   `<projects-dir>/credentials/store-metadata.md`
    (the orchestrator reads `developer`, `ios`, and `android` blocks from it).
 
 ---
@@ -88,7 +88,7 @@ After the orchestrator starts (before any phase skill runs):
 - [ ] `docs/harness/config.md` is valid YAML and contains:
   - `app_idea: "tap to flap, single obstacle"`
   - `app_slug:` a non-empty kebab-case string
-  - `bundle_id: "com.gonigon.<slug>"` — the slug must match `app_slug`
+  - `bundle_id: "com.<company>.<slug>"` — the slug must match `app_slug`
   - `skip_research: true`
   - `developer:`, `ios:`, `android:` blocks populated from `store-metadata.md`
 - [ ] `docs/harness/state.md` is valid YAML with:
@@ -118,7 +118,7 @@ resume_attempts: 0
 
 - [ ] `docs/harness/plans/prd.md` (or equivalent PRD file) exists.
 - [ ] PRD contains `app_slug:` entry.
-- [ ] PRD contains `bundle_id: com.gonigon.<slug>`.
+- [ ] PRD contains `bundle_id: com.<company>.<slug>`.
 - [ ] PRD contains a scope guard section (no features beyond single-obstacle flap).
 - [ ] PRD contains a `lib/` directory structure map.
 - [ ] `docs/harness/pipeline-log.md` contains a `complete` row for the `plan` phase.
@@ -176,7 +176,7 @@ sides agree to the contract.
 The generator builds the Flutter/Flame project in three sub-phases: scaffold → API wiring →
 UI polish.
 
-- [ ] Flutter project directory exists at `/Users/ssg/AndroidStudioProjects/<slug>/`.
+- [ ] Flutter project directory exists at `<projects-dir>/<slug>/`.
 - [ ] `flutter create` was run (check for `pubspec.yaml` in the project root).
 - [ ] Sub-phase A (scaffold): project compiles — `flutter analyze` reports 0 errors.
 - [ ] Sub-phase B (API/game logic): `flutter test` passes.
@@ -293,7 +293,7 @@ If the pipeline behaves differently from this document, note each divergence her
 | `test-hook.sh` | PASS / FAIL |
 | Plugin installed (9 skills visible) | YES / NO |
 | Bootstrap creates config.md + state.md | YES / NO |
-| Plan: PRD has app_slug + com.gonigon.\<slug\> | YES / NO |
+| Plan: PRD has app_slug + com.<company>.\<slug\> | YES / NO |
 | Design: tokens doc created | YES / NO |
 | Contract: `## Status: AGREED` + all 8 hard gates | YES / NO |
 | Generator: flutter analyze 0 errors | YES / NO |

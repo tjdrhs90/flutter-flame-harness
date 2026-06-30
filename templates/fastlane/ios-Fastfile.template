@@ -1,12 +1,12 @@
 default_platform(:ios)
 
 ASC_KEY = {
-  key_id: "339MZ7CUZ5",
-  issuer_id: "f9a69502-1e93-4fd1-9f53-5eb4db1b637a",
-  key_filepath: File.expand_path("AuthKey_339MZ7CUZ5.p8", __dir__),
+  key_id: "<asc-key-id>",
+  issuer_id: "<asc-issuer-id>",
+  key_filepath: File.expand_path("AuthKey_<asc-key-id>.p8", __dir__),
 }
 APP_ID = "__APP_ID__"
-TEAM_ID = "8DHJJJ66LY"
+TEAM_ID = "<apple-team-id>"
 CERTS_DIR = File.expand_path("certs", __dir__)
 
 def asc_key

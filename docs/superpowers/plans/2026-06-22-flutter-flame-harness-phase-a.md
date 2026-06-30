@@ -11,14 +11,14 @@
 ## Global Constraints
 
 - Plugin name `flutter-flame-harness`; skill prefix `flame-harness-*`.
-- Plugin source repo: `/Users/ssg/AndroidStudioProjects/flutter-flame-harness/` (already git-initialized).
+- Plugin source repo: `<projects-dir>/flutter-flame-harness/` (already git-initialized).
 - GitHub: public repo `tjdrhs90/flutter-flame-harness` via `gh` CLI (account `tjdrhs90`).
 - Commits: Conventional Commits (`feat:`, `fix(scope):`, `docs:`, `chore:`, `refactor:`). **Never add AI-authorship trailers (no `Co-Authored-By`).**
-- Commit author identity: `git -c user.name='Seonggon Sim' -c user.email='tjdrhs90@gmail.com'` (repo is not a user-config git env).
-- Central credential vault: `/Users/ssg/AndroidStudioProjects/credentials/` (`AuthKey_339MZ7CUZ5.p8`, `play-store-key.json`, `upload-keystore.jks`, `store-metadata.md`).
+- Commit author identity: `git -c user.name='<your-name>' -c user.email='<support-email>'` (repo is not a user-config git env).
+- Central credential vault: `<projects-dir>/credentials/` (`AuthKey_<asc-key-id>.p8`, `play-store-key.json`, `upload-keystore.jks`, `store-metadata.md`).
 - Per-game key copies live in `<game>/secrets/` (gitignored). `credentials/`, `secrets/`, `*.jks`, `*.p8`, `key.properties`, key `*.json` gitignored everywhere; never committed to the public plugin repo.
-- iOS: Issuer `f9a69502-1e93-4fd1-9f53-5eb4db1b637a`, Key `339MZ7CUZ5`, Team `8DHJJJ66LY`. Bundle id `com.gonigon.<slug>`.
-- Android shared keystore: `upload-keystore.jks`, alias `upload`, store/key pw `111111`.
+- iOS: Issuer `<asc-issuer-id>`, Key `<asc-key-id>`, Team `<apple-team-id>`. Bundle id `com.<company>.<slug>`.
+- Android shared keystore: `upload-keystore.jks`, alias `upload`, store/key pw `<keystore-password>`.
 - Scope = Phase A only (research → plan → design → contract → generator → evaluator + status/resume utils + orchestrator + hook). Phase B (admob/build/screenshot/submit/retro) is a later cycle.
 
 ---
@@ -98,7 +98,7 @@ Expected: FAIL (manifests do not exist yet) → exits non-zero with `FAIL: missi
   "name": "flutter-flame-harness",
   "version": "0.1.0",
   "description": "Idea-to-store harness for Flutter/Flame games: research, plan, design, contract, generator-evaluator build loop, and (later) deploy.",
-  "author": { "name": "Seonggon Sim", "email": "tjdrhs90@gmail.com" },
+  "author": { "name": "<your-name>", "email": "<support-email>" },
   "repository": "https://github.com/tjdrhs90/flutter-flame-harness",
   "hooks": {
     "StopFailure": [
@@ -126,7 +126,7 @@ Expected: FAIL (manifests do not exist yet) → exits non-zero with `FAIL: missi
 
 - [ ] **Step 5: Create `README.md`**
 
-Write a README with: one-paragraph overview; "Phase A (this release): research → plan → design → contract → generator ↔ evaluator → playable game"; "Phase B (planned): admob, build, screenshot, submit, retro"; install instructions (`/plugin marketplace add /Users/ssg/AndroidStudioProjects/flutter-flame-harness` then `/plugin install flutter-flame-harness`); usage `/flame-harness <idea>` with flags `--strict`, `--rounds N`, `--skip-research`; a table of the Phase A skills; and a security note that credentials/secrets never enter the repo. Reference `docs/harness-protocol.md` for the file protocol.
+Write a README with: one-paragraph overview; "Phase A (this release): research → plan → design → contract → generator ↔ evaluator → playable game"; "Phase B (planned): admob, build, screenshot, submit, retro"; install instructions (`/plugin marketplace add <projects-dir>/flutter-flame-harness` then `/plugin install flutter-flame-harness`); usage `/flame-harness <idea>` with flags `--strict`, `--rounds N`, `--skip-research`; a table of the Phase A skills; and a security note that credentials/secrets never enter the repo. Reference `docs/harness-protocol.md` for the file protocol.
 
 - [ ] **Step 6: Make validator executable and run it**
 
@@ -137,7 +137,7 @@ Expected: PASS → prints `validate: OK` (no skills yet, so the skill loop is a 
 
 ```bash
 git add .claude-plugin README.md scripts/validate.sh
-git -c user.name='Seonggon Sim' -c user.email='tjdrhs90@gmail.com' \
+git -c user.name='<your-name>' -c user.email='<support-email>' \
   commit -q -m "feat: scaffold plugin manifests, README, and validator"
 ```
 
@@ -186,7 +186,7 @@ Expected: FAIL → `FAIL: missing docs/harness-protocol.md`.
 
 Include these sections with exact content:
 
-1. **`config.md` schema** — YAML keys: `app_idea`, `app_name`, `app_slug`, `bundle_id` (=`com.gonigon.<slug>`), `default_language: ko`, `strict_mode`, `max_rounds` (default 3), `skip_research`, `skip_admob`, a `developer:` block (company `gonigon`, email `tjdrhs90@gmail.com`, privacy `https://tjdrhs90.github.io/privacy/`, homepage `https://tjdrhs90.github.io`, copyright `Copyright 2026. Gonigon all rights reserved.`), an `ios:` block (`team_id: 8DHJJJ66LY`, `asc_key_id: 339MZ7CUZ5`, `asc_issuer_id: f9a69502-1e93-4fd1-9f53-5eb4db1b637a`, `asc_private_key_path`), an `android:` block (`keystore_path`, `key_alias: upload`), and `credentials_dir: /Users/ssg/AndroidStudioProjects/credentials`.
+1. **`config.md` schema** — YAML keys: `app_idea`, `app_name`, `app_slug`, `bundle_id` (=`com.<company>.<slug>`), `default_language: ko`, `strict_mode`, `max_rounds` (default 3), `skip_research`, `skip_admob`, a `developer:` block (company `<company>`, email `<support-email>`, privacy `<privacy-policy-url>`, homepage `<support-and-marketing-url>`, copyright `Copyright <year>. <company> all rights reserved.`), an `ios:` block (`team_id: <apple-team-id>`, `asc_key_id: <asc-key-id>`, `asc_issuer_id: <asc-issuer-id>`, `asc_private_key_path`), an `android:` block (`keystore_path`, `key_alias: upload`), and `credentials_dir: <projects-dir>/credentials`.
 2. **`state.md` schema** — YAML keys: `status` (`running|paused|completed`), `current_phase`, `current_round`, `next_role`, `pause_reason` (`""|rate_limit|manual_action|error`), `created_at`, `updated_at`, `resume_attempts`. (Timestamps are written by skills, not by scripts.)
 3. **`contract.md` layout** — header, "Mandatory Hard Gates" list (the §6.4 gates from the spec, copied verbatim), "Functional Criteria (per game)" list, trailing `## Status: AGREED`.
 4. **`handoff/round-N-gen.md` layout** — sections: What Was Built/Fixed, Contract Self-Assessment (per-criterion DONE/PARTIAL), Test Results (`flutter analyze`, `flutter test`), Environment Detection, Known Issues.
@@ -218,7 +218,7 @@ Expected: PASS → `validate: OK`.
 
 ```bash
 git add docs/harness-protocol.md scripts/validate.sh
-git -c user.name='Seonggon Sim' -c user.email='tjdrhs90@gmail.com' \
+git -c user.name='<your-name>' -c user.email='<support-email>' \
   commit -q -m "feat: define harness file protocol and state machine"
 ```
 
@@ -270,7 +270,7 @@ allowed-tools: [Agent, Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion, Ski
 
 Body must contain, as labeled sections:
 - **Argument parsing** — map flags to `config.md` keys per `docs/harness-protocol.md`; `--skip-research` sets `skip_research: true`.
-- **Bootstrap (first run)** — if `docs/harness/state.md` absent: create `docs/harness/{,handoff,feedback,specs,plans}`, write `config.md` (read `/Users/ssg/AndroidStudioProjects/credentials/store-metadata.md` to fill developer/ios/android blocks), write `state.md` with `status: running`, `current_phase: (init)`, `next_role: research` (or `plan` if `--skip-research`). Append INIT to `pipeline-log.md`.
+- **Bootstrap (first run)** — if `docs/harness/state.md` absent: create `docs/harness/{,handoff,feedback,specs,plans}`, write `config.md` (read `<projects-dir>/credentials/store-metadata.md` to fill developer/ios/android blocks), write `state.md` with `status: running`, `current_phase: (init)`, `next_role: research` (or `plan` if `--skip-research`). Append INIT to `pipeline-log.md`.
 - **Dispatch loop** — read `state.md.next_role`; invoke `Skill("flame-harness-<next_role>")`; the phase skill updates `state.md` and returns; orchestrator re-reads and dispatches the next, following the transition table in `docs/harness-protocol.md`. Stop when `status: completed` or `current_phase` reaches the Phase B boundary (`admob`) — at that boundary, print a handoff message (Phase B not yet implemented).
 - **Resume** — if `--resume`, delegate to `Skill("flame-harness-resume")`.
 - Cite `docs/harness-protocol.md` for all schemas (do not restate them).
@@ -284,7 +284,7 @@ Expected: PASS → `validate: OK`.
 
 ```bash
 git add skills/flame-harness/SKILL.md scripts/validate.sh
-git -c user.name='Seonggon Sim' -c user.email='tjdrhs90@gmail.com' \
+git -c user.name='<your-name>' -c user.email='<support-email>' \
   commit -q -m "feat(orchestrator): add flame-harness dispatch skill"
 ```
 
@@ -340,7 +340,7 @@ Run: `bash scripts/validate.sh` → Expected: `validate: OK`.
 
 ```bash
 git add skills/flame-harness-research scripts/validate.sh
-git -c user.name='Seonggon Sim' -c user.email='tjdrhs90@gmail.com' \
+git -c user.name='<your-name>' -c user.email='<support-email>' \
   commit -q -m "feat(research): add idea discovery and user-query skill"
 ```
 
@@ -361,7 +361,7 @@ git -c user.name='Seonggon Sim' -c user.email='tjdrhs90@gmail.com' \
 PLAN="$ROOT/skills/flame-harness-plan/SKILL.md"
 if [ -f "$PLAN" ]; then
   require_section "$PLAN" "app_slug\|slug" "slug assignment"
-  require_section "$PLAN" "com.gonigon" "bundle id rule"
+  require_section "$PLAN" "com.<company>" "bundle id rule"
   require_section "$PLAN" "scope\|스코프" "scope guard"
   require_section "$PLAN" "lib/" "lib structure map"
 fi
@@ -384,7 +384,7 @@ allowed-tools: [Agent, Read, Write, Edit, Bash]
 ---
 ```
 
-Body sections: **Input** (read research spec + config); **PRD content** (Korean: genre, core loop, mechanics, content metrics = #levels/#enemies/#waves, progression/economy, controls, win/lose, **scope guard** that lists what is explicitly out of scope, App Store compliance checklist); **lib/ structure map** (`game/`, `game/components/`, `game/systems/`, `game/data/`, `screens/`, `ui/`, `l10n/`); **Identity** (set `app_name`, kebab-case `app_slug`, `bundle_id: com.gonigon.<slug>` in `config.md`); **Output** (`docs/harness/plans/<date>-prd.md`; `state.md` `current_phase: plan`, `next_role: design`). Cite protocol.
+Body sections: **Input** (read research spec + config); **PRD content** (Korean: genre, core loop, mechanics, content metrics = #levels/#enemies/#waves, progression/economy, controls, win/lose, **scope guard** that lists what is explicitly out of scope, App Store compliance checklist); **lib/ structure map** (`game/`, `game/components/`, `game/systems/`, `game/data/`, `screens/`, `ui/`, `l10n/`); **Identity** (set `app_name`, kebab-case `app_slug`, `bundle_id: com.<company>.<slug>` in `config.md`); **Output** (`docs/harness/plans/<date>-prd.md`; `state.md` `current_phase: plan`, `next_role: design`). Cite protocol.
 
 - [ ] **Step 4: Run validator** → Expected: `validate: OK`.
 
@@ -392,7 +392,7 @@ Body sections: **Input** (read research spec + config); **PRD content** (Korean:
 
 ```bash
 git add skills/flame-harness-plan scripts/validate.sh
-git -c user.name='Seonggon Sim' -c user.email='tjdrhs90@gmail.com' \
+git -c user.name='<your-name>' -c user.email='<support-email>' \
   commit -q -m "feat(plan): add game PRD skill"
 ```
 
@@ -441,7 +441,7 @@ Body sections: **Input** (read PRD + config); **Design tokens** (specify the fut
 
 ```bash
 git add skills/flame-harness-design scripts/validate.sh
-git -c user.name='Seonggon Sim' -c user.email='tjdrhs90@gmail.com' \
+git -c user.name='<your-name>' -c user.email='<support-email>' \
   commit -q -m "feat(design): add design-concept skill"
 ```
 
@@ -502,7 +502,7 @@ Then **Functional criteria** (per-game, derived from PRD; each must be verifiabl
 
 ```bash
 git add skills/flame-harness-contract scripts/validate.sh
-git -c user.name='Seonggon Sim' -c user.email='tjdrhs90@gmail.com' \
+git -c user.name='<your-name>' -c user.email='<support-email>' \
   commit -q -m "feat(contract): add completion-criteria negotiation skill"
 ```
 
@@ -515,7 +515,7 @@ git -c user.name='Seonggon Sim' -c user.email='tjdrhs90@gmail.com' \
 
 **Interfaces:**
 - Consumes: `contract.md`, PRD, design doc, and (round N>1) `feedback/round-(N-1)-qa.md`.
-- Produces: the game project under `/Users/ssg/AndroidStudioProjects/<app_slug>/`; `handoff/round-N-gen.md`; updates `state.md` (`next_role: evaluator`).
+- Produces: the game project under `<projects-dir>/<app_slug>/`; `handoff/round-N-gen.md`; updates `state.md` (`next_role: evaluator`).
 
 - [ ] **Step 1: Add validator assertions**
 
@@ -547,7 +547,7 @@ allowed-tools: [Agent, Read, Write, Edit, Bash, Glob, Grep]
 
 Body sections:
 - **Round handling** — round 1: build from contract/PRD/design. Round N>1: read `feedback/round-(N-1)-qa.md` and fix only the listed failures.
-- **Sub-phase 5a (scaffold + core loop)** — `flutter create` at `/Users/ssg/AndroidStudioProjects/<app_slug>/`, set pubspec (Flame 1.37+, `flame_audio`, `google_mobile_ads`, `shared_preferences`), create the PRD's `lib/` structure, `game_config.dart`, `GameState` enum, `FlameGame` subclass, input handling. **HARD GATE:** `flutter analyze` (0) + `flutter test` before 5b; remove default template files.
+- **Sub-phase 5a (scaffold + core loop)** — `flutter create` at `<projects-dir>/<app_slug>/`, set pubspec (Flame 1.37+, `flame_audio`, `google_mobile_ads`, `shared_preferences`), create the PRD's `lib/` structure, `game_config.dart`, `GameState` enum, `FlameGame` subclass, input handling. **HARD GATE:** `flutter analyze` (0) + `flutter test` before 5b; remove default template files.
 - **Sub-phase 5b (systems + components)** — entities, systems (spawning/collision/scoring/audio/difficulty), data catalogs. **HARD GATE** before 5c.
 - **Sub-phase 5c (UI + content + polish)** — screens/overlays (menu/HUD/pause/game-over/shop as PRD requires), KO/EN l10n, content data, apply design tokens, `shared_preferences` persistence. **HARD GATE.**
 - **Self-evaluation & handoff** — write `handoff/round-N-gen.md` per protocol (built/fixed, contract self-assessment, analyze+test results, environment detection, known issues); set `state.md` `current_phase: generator`, `next_role: evaluator`.
@@ -559,7 +559,7 @@ Body sections:
 
 ```bash
 git add skills/flame-harness-generator scripts/validate.sh
-git -c user.name='Seonggon Sim' -c user.email='tjdrhs90@gmail.com' \
+git -c user.name='<your-name>' -c user.email='<support-email>' \
   commit -q -m "feat(generator): add 3-sub-phase game build skill"
 ```
 
@@ -619,7 +619,7 @@ Sections:
 
 ```bash
 git add skills/flame-harness-evaluator scripts/validate.sh
-git -c user.name='Seonggon Sim' -c user.email='tjdrhs90@gmail.com' \
+git -c user.name='<your-name>' -c user.email='<support-email>' \
   commit -q -m "feat(evaluator): add skeptical QA loop skill"
 ```
 
@@ -681,7 +681,7 @@ Body: read `state.md.pause_reason`. `rate_limit` → confirm window passed, set 
 
 ```bash
 git add skills/flame-harness-status skills/flame-harness-resume scripts/validate.sh
-git -c user.name='Seonggon Sim' -c user.email='tjdrhs90@gmail.com' \
+git -c user.name='<your-name>' -c user.email='<support-email>' \
   commit -q -m "feat: add status and resume utility skills"
 ```
 
@@ -768,7 +768,7 @@ Expected: PASS → `validate: OK`.
 
 ```bash
 git add hooks templates scripts/test-hook.sh
-git -c user.name='Seonggon Sim' -c user.email='tjdrhs90@gmail.com' \
+git -c user.name='<your-name>' -c user.email='<support-email>' \
   commit -q -m "feat: add rate-limit stop-failure hook and game gitignore template"
 ```
 
@@ -793,14 +793,14 @@ Expected: both PASS.
 
 Run in Claude Code:
 ```
-/plugin marketplace add /Users/ssg/AndroidStudioProjects/flutter-flame-harness
+/plugin marketplace add <projects-dir>/flutter-flame-harness
 /plugin install flutter-flame-harness
 ```
 Expected: 9 `flame-harness*` skills appear in the skill list.
 
 - [ ] **Step 3: Write `docs/SMOKE-TEST.md`**
 
-Document a manual dry run with a deliberately tiny game (e.g. `--skip-research` + a one-line idea "tap to flap, single obstacle"). The checklist verifies, in order: orchestrator creates `docs/harness/config.md` + `state.md`; plan produces a PRD with `app_slug` + `com.gonigon.<slug>`; design produces tokens doc; contract reaches `## Status: AGREED` containing all 8 mandatory hard gates; generator scaffolds `/Users/ssg/AndroidStudioProjects/<slug>/` and passes `flutter analyze`+`flutter test`; evaluator launches the game, screenshots, and writes a PASS/FAIL verdict; on FAIL the round increments and re-dispatches generator. Record expected `state.md` transitions against the protocol table.
+Document a manual dry run with a deliberately tiny game (e.g. `--skip-research` + a one-line idea "tap to flap, single obstacle"). The checklist verifies, in order: orchestrator creates `docs/harness/config.md` + `state.md`; plan produces a PRD with `app_slug` + `com.<company>.<slug>`; design produces tokens doc; contract reaches `## Status: AGREED` containing all 8 mandatory hard gates; generator scaffolds `<projects-dir>/<slug>/` and passes `flutter analyze`+`flutter test`; evaluator launches the game, screenshots, and writes a PASS/FAIL verdict; on FAIL the round increments and re-dispatches generator. Record expected `state.md` transitions against the protocol table.
 
 - [ ] **Step 4: Run the smoke test and record results**
 
@@ -813,7 +813,7 @@ Update `README.md` to mark Phase A complete and link `docs/SMOKE-TEST.md`.
 
 ```bash
 git add docs/SMOKE-TEST.md README.md
-git -c user.name='Seonggon Sim' -c user.email='tjdrhs90@gmail.com' \
+git -c user.name='<your-name>' -c user.email='<support-email>' \
   commit -q -m "docs: add Phase A smoke test and finalize README"
 git push origin HEAD
 ```

@@ -74,13 +74,14 @@ Do not use underscores — kebab-case only.
 
 The bundle id is part of the app's identity and is decided **here, up front** (the user sees it in
 the PRD). Format — reverse-DNS **`com.<company>.<appname>`**:
-- `<company>` = `developer.company` from `config.md` (default `gonigon`).
+- `<company>` = `developer.company` from `config.md` (no built-in default — it comes from the user's
+  own `credentials/store-metadata.md`, collected at bootstrap; never a hard-coded company name).
 - `<appname>` = `app_slug` with **all hyphens/underscores removed, lowercase** (each segment must be
   `[a-z0-9]+`; hyphens/underscores/uppercase are INVALID and break iOS/Android signing).
 
 So `bundle_id` = `com.<company>.<appname>`. Examples: `app_slug: space-hop` →
-**`com.gonigon.spacehop`**; `app_slug: swing-line` → **`com.gonigon.swingline`** (NOT
-`com.gonigon.space-hop`). State the chosen `bundle_id` explicitly in the PRD identity section. It must
+**`com.<company>.spacehop`**; `app_slug: swing-line` → **`com.<company>.swingline`** (NOT
+`com.<company>.space-hop`). State the chosen `bundle_id` explicitly in the PRD identity section. It must
 be byte-identical on iOS and Android (`docs/harness-protocol.md` §1).
 
 ### orientation
@@ -97,7 +98,7 @@ Use `Edit` to update `config.md` with the identity keys + orientation:
 ```yaml
 app_name: "<display name>"
 app_slug: "<kebab-case-slug>"
-bundle_id: "com.gonigon.<id>"   # <id> = app_slug with hyphens/underscores removed
+bundle_id: "com.<company>.<id>"   # <id> = app_slug with hyphens/underscores removed
 orientation: portrait            # or "landscape"
 ```
 
@@ -125,7 +126,7 @@ research spec alone — no guessing required.
 > **버전:** 1.0  
 > **작성일:** <YYYY-MM-DD>  
 > **작성자:** flame-harness-plan  
-> **번들 ID:** com.gonigon.<id> (slug에서 하이픈·언더스코어 제거)
+> **번들 ID:** com.<company>.<id> (slug에서 하이픈·언더스코어 제거)
 
 ---
 
@@ -320,7 +321,7 @@ Leave all other keys unchanged. Use `Edit` for a targeted update.
 Append one row to `docs/harness/pipeline-log.md` per the schema in `docs/harness-protocol.md` §6:
 
 ```
-| <ISO-8601 UTC now> | complete | plan | PRD written; app_slug: <slug>; bundle_id: com.gonigon.<id> |
+| <ISO-8601 UTC now> | complete | plan | PRD written; app_slug: <slug>; bundle_id: com.<company>.<id> |
 ```
 
 ---

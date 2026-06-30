@@ -51,7 +51,7 @@ immediate FAIL — do not continue checking remaining criteria.
 ### Step 1 — Static analysis
 
 ```bash
-cd /Users/ssg/AndroidStudioProjects/<app_slug>
+cd <projects-dir>/<app_slug>
 flutter analyze
 ```
 
@@ -61,7 +61,7 @@ message. This is a Mandatory Hard Gate.
 ### Step 2 — Tests
 
 ```bash
-cd /Users/ssg/AndroidStudioProjects/<app_slug>
+cd <projects-dir>/<app_slug>
 flutter test
 ```
 
@@ -71,7 +71,7 @@ Required result: **0 failures**. Capture the full output. This is a Mandatory Ha
 
 ```bash
 grep -rn "TODO\|stub\|placeholder\|스텁\|미구현" \
-  /Users/ssg/AndroidStudioProjects/<app_slug>/lib/ --include="*.dart"
+  <projects-dir>/<app_slug>/lib/ --include="*.dart"
 ```
 
 Any match is an **automatic FAIL**. No exceptions (per `docs/harness-protocol.md` §3 Hard
@@ -81,7 +81,7 @@ Gate 3). Record each match with file path, line number, and the matched text.
 
 ```bash
 grep -rn "[0-9]\{3,\}\.\?[0-9]*" \
-  /Users/ssg/AndroidStudioProjects/<app_slug>/lib/game/ --include="*.dart" \
+  <projects-dir>/<app_slug>/lib/game/ --include="*.dart" \
   | grep -v "game_config.dart"
 ```
 
@@ -92,7 +92,7 @@ status codes) if clearly justified in a comment; document any exclusion in the f
 ### Step 5 — l10n completeness
 
 ```bash
-cd /Users/ssg/AndroidStudioProjects/<app_slug>
+cd <projects-dir>/<app_slug>
 flutter gen-l10n
 ```
 
@@ -210,7 +210,7 @@ xcrun simctl boot "iPhone 16" 2>/dev/null || true
 Install and launch the game:
 
 ```bash
-cd /Users/ssg/AndroidStudioProjects/<app_slug>
+cd <projects-dir>/<app_slug>
 flutter run -d "iPhone 16" --no-pub
 ```
 
@@ -218,23 +218,23 @@ While the game is running:
 
 0. Create the screenshots directory if it does not already exist:
    ```bash
-   mkdir -p /Users/ssg/AndroidStudioProjects/<app_slug>/docs/harness/screenshots
+   mkdir -p <projects-dir>/<app_slug>/docs/harness/screenshots
    ```
 1. Navigate to the main menu. Capture a screenshot:
    ```bash
    xcrun simctl io booted screenshot \
-     /Users/ssg/AndroidStudioProjects/<app_slug>/docs/harness/screenshots/round-<N>-ios-menu.png
+     <projects-dir>/<app_slug>/docs/harness/screenshots/round-<N>-ios-menu.png
    ```
 2. Start a game session. Play through the core loop (start → play → win/lose → restart).
 3. Capture a screenshot of the gameplay state:
    ```bash
    xcrun simctl io booted screenshot \
-     /Users/ssg/AndroidStudioProjects/<app_slug>/docs/harness/screenshots/round-<N>-ios-play.png
+     <projects-dir>/<app_slug>/docs/harness/screenshots/round-<N>-ios-play.png
    ```
 4. Reach a game-over or win condition. Capture the result screen:
    ```bash
    xcrun simctl io booted screenshot \
-     /Users/ssg/AndroidStudioProjects/<app_slug>/docs/harness/screenshots/round-<N>-ios-end.png
+     <projects-dir>/<app_slug>/docs/harness/screenshots/round-<N>-ios-end.png
    ```
 5. Study each screenshot carefully. Check for: blank/white screens, visual glitches, missing
    sprites, overlapping UI elements, wrong language, or any rendering error.

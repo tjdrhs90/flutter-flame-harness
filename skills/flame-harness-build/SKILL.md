@@ -31,7 +31,7 @@ Before any action, load:
    (per protocol §1). Also read `ios.asc_key_id` and `android.key_alias`.
 2. `docs/harness/state.md` — confirm `next_role: build` (per protocol §2).
 
-Derive the game root path: `/Users/ssg/AndroidStudioProjects/<app_slug>/`.
+Derive the game root path: `<projects-dir>/<app_slug>/`.
 
 ---
 
@@ -45,7 +45,7 @@ platform directories.
 
 ```bash
 mkdir -p <game>/ios/fastlane/certs
-cp <credentials_dir>/AuthKey_339MZ7CUZ5.p8 <game>/ios/fastlane/
+cp <credentials_dir>/AuthKey_<asc-key-id>.p8 <game>/ios/fastlane/
 ```
 
 The `.p8` filename encodes the ASC key ID from `config.md` `ios.asc_key_id`. The `certs/`
@@ -71,15 +71,15 @@ Check whether `<credentials_dir>/upload-keystore.jks` exists.
 
 - **If it is missing:** generate a new keystore with `keytool`. Use the alias and password
   defined in `config.md` `android.key_alias` (default: `upload`). Store and key passwords are
-  both `111111`.
+  both `<keystore-password>`.
 
   ```bash
   keytool -genkey -v \
     -keystore <game>/android/upload-keystore.jks \
     -alias upload \
     -keyalg RSA -keysize 2048 -validity 10000 \
-    -storepass 111111 -keypass 111111 \
-    -dname "CN=Gonigon, OU=Dev, O=Gonigon, L=Seoul, S=Seoul, C=KR"
+    -storepass <keystore-password> -keypass <keystore-password> \
+    -dname "CN=<company>, OU=Dev, O=<company>, L=Seoul, S=Seoul, C=KR"
   ```
 
 ### android/key.properties
@@ -89,8 +89,8 @@ values (placeholders are already concrete — the template uses literal values m
 generated above):
 
 ```
-storePassword=111111
-keyPassword=111111
+storePassword=<keystore-password>
+keyPassword=<keystore-password>
 keyAlias=upload
 storeFile=upload-keystore.jks
 ```
@@ -109,7 +109,7 @@ placeholders in the templates located at `templates/fastlane/`:
 | `__APP_ID__` | `bundle_id` from `config.md` |
 | `__PACKAGE__` | `bundle_id` from `config.md` |
 | `__IPA_NAME__` | `<app_name>.ipa` (spaces allowed; use the value of `app_name` verbatim) |
-| `__PROFILE_NAME__` | `<bundle_id> AppStore` (e.g. `com.gonigon.mygame AppStore`) |
+| `__PROFILE_NAME__` | `<bundle_id> AppStore` (e.g. `com.<company>.mygame AppStore`) |
 
 Note: `__PROFILE_NAME__` is used both as the Xcode code-signing profile name and as the
 `.mobileprovision` filename (with `.mobileprovision` appended by fastlane). Spaces are acceptable.
@@ -150,7 +150,7 @@ After substitution, verify with `grep '__' <game>/ios/fastlane/Appfile <game>/io
 
 ## Phase 3 — Build and Upload
 
-Run all build commands from the game root (`/Users/ssg/AndroidStudioProjects/<app_slug>/`).
+Run all build commands from the game root (`<projects-dir>/<app_slug>/`).
 
 ### Pre-build platform requirements
 
