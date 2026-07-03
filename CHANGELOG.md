@@ -3,6 +3,20 @@
 All notable changes to flutter-flame-harness are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.16.0] — 2026-07-03
+
+### Added
+- **Accessibility & safety baseline (gate R10):** no >3 Hz flashing (photosensitive safety), respect
+  OS Reduce Motion (`MediaQuery.disableAnimations`), ≥48dp tap targets + `Semantics` labels on
+  menu/overlay buttons. Full in-game screen-reader support remains out of scope (arcade games).
+- **Test depth (gate R11):** generator now scaffolds real tests (system unit + widget + integration)
+  from new templates; requires ≥3 system unit + ≥1 widget + ≥1 integration test. Default-mode QA
+  checks it (was `--strict`-only). Adds the `integration_test` dev dependency.
+- **Store-compliance completeness:** submit skill now includes a concrete iOS App Privacy label +
+  Play Data Safety data-collection profile and COPPA/child-directed consistency guidance.
+- **Resilience:** `flutter create` idempotency guard (safe re-run/resume) + per-sub-phase
+  `checkpoint` in `state.md` so resume skips completed sub-phases; store-upload non-idempotency note.
+
 ## [0.15.0] — 2026-06-30
 
 ### Added

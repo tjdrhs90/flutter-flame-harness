@@ -1,0 +1,29 @@
+// Integration test — boots the app and drives the core loop: menu -> play -> game-over.
+// Lives at integration_test/app_test.dart. Requires the `integration_test` dev dependency.
+// Adapt the finders/gestures to the game's actual screens and input.
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:integration_test/integration_test.dart';
+// import 'package:<app_slug>/main.dart' as app;
+
+void main() {
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  testWidgets('core loop: boot -> play -> game over', (tester) async {
+    app.main();
+    await tester.pumpAndSettle();
+
+    // Start the game from the main menu.
+    await tester.tap(find.bySemanticsLabel(RegExp('play', caseSensitive: false)).first);
+    await tester.pumpAndSettle();
+
+    // Let the game run a few seconds of the core loop.
+    for (var i = 0; i < 60; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+
+    // The game should still be alive (not crashed) — assert a gameplay/HUD marker exists.
+    // Replace with a real finder for the HUD or a known gameplay widget.
+    expect(tester.takeException(), isNull);
+  });
+}

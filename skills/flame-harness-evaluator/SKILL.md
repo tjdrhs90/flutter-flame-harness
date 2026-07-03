@@ -116,7 +116,7 @@ Missing keys in either locale are a Hard Gate failure (protocol §3 Hard Gate 6)
 
 ### Step 5a — Platform-robustness gates
 
-Verify the `## Platform-Robustness Gates` (R1–R9) from `contract.md` / `docs/game-gotchas.md`:
+Verify the `## Platform-Robustness Gates` (R1–R11) from `contract.md` / `docs/game-gotchas.md`:
 
 ```bash
 # R1 audio: frequent SFX pooled + audio calls guarded; BGM stop on teardown
@@ -156,6 +156,15 @@ ls android/fastlane/metadata/android/*/images/featureGraphic.png 2>/dev/null | g
 grep -q "flutter_secure_storage" pubspec.yaml && grep -q "play_services_block_store" pubspec.yaml || echo "FAIL: durable-save deps missing (saves won't survive reinstall/device on iOS)"
 ls lib/data/save_repository.dart 2>/dev/null || echo "FAIL: no SaveRepository (durable save layer)"
 grep -q "FlutterSecureStorage" lib/data/save_repository.dart 2>/dev/null && grep -q "PlayServicesBlockStore" lib/data/save_repository.dart 2>/dev/null || echo "FAIL: SaveRepository missing a durable tier (Keychain/Block Store)"
+# R10 accessibility & safety: reduce-motion read, menu Semantics present, no >3Hz flashing
+grep -rq "disableAnimations" lib/ || echo "CHECK: OS Reduce Motion (MediaQuery.disableAnimations) not respected"
+grep -rq "Semantics(" lib/screens/ lib/ui/ 2>/dev/null || echo "CHECK: no Semantics labels on menu/overlay buttons (screen-reader nav)"
+grep -rniE "flash|strobe|invert" lib/ | grep -i "update\|timer\|0\.0[0-9]" && echo "CHECK: verify no full-screen flash faster than 3/sec (photosensitive safety)"
+# R11 test depth: >=3 system unit tests + >=1 widget test + >=1 integration test
+UNIT=$(ls test/*_test.dart 2>/dev/null | grep -viE 'widget' | wc -l | tr -d ' ')
+grep -rlq "testWidgets" test/ 2>/dev/null || echo "FAIL: no widget test (R11 needs >=1)"
+ls integration_test/*.dart >/dev/null 2>&1 || echo "FAIL: no integration test (R11 needs >=1 core-loop test)"
+[ "${UNIT:-0}" -ge 1 ] || echo "CHECK: few unit test files — R11 wants >=3 system unit tests"
 # every asset path declared in pubspec must exist on disk
 python3 - <<'PY'
 import re,glob,os,sys
@@ -189,6 +198,12 @@ workflow is a FAIL. **Store graphics (R8):** a missing Play hi-res icon (512×51
 delete, so the player loses progress on reinstall/new device. There must be a `SaveRepository`
 mirroring to iOS Keychain + Android Block Store (durable-first read, all-tier write, try/catch), with
 `PreferencesService` routing through it.
+**Accessibility & safety (R10):** a full-screen effect that flashes faster than 3×/second is a FAIL
+(photosensitive-seizure safety). Reduce Motion not read (`MediaQuery.disableAnimations`) and icon-only
+menu/overlay buttons with no `Semantics` label are CHECK-level — a FAIL only if the game leans on
+heavy motion with no damping. Tap targets on menu buttons should be ≥48×48 dp.
+**Test depth (R11):** a passing `flutter test` that only checks `GameConfig` constants is a FAIL —
+there must be ≥3 system unit tests + ≥1 widget test + ≥1 integration test, and all must pass.
 
 ### Step 6 — Contract criteria evidence
 
@@ -384,10 +399,12 @@ status: running
 current_phase: evaluator
 next_role: generator
 current_round: <N+1>
+checkpoint: ""
 updated_at: "<ISO-8601 UTC now>"
 ```
 
-Leave `created_at`, `resume_attempts`, and `pause_reason` unchanged.
+Leave `created_at`, `resume_attempts`, and `pause_reason` unchanged. **Reset `checkpoint: ""`** — the
+next round is a fresh feedback-driven pass, so the generator must not skip sub-phases (per protocol §2).
 
 ### Append to build-log.md
 

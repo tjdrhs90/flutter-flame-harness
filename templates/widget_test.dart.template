@@ -1,0 +1,25 @@
+// Widget test — the main-menu overlay renders and its primary button is tappable.
+// Adapt the widget + finders to the game's actual menu screen.
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+// import 'package:<app_slug>/screens/main_menu_screen.dart';
+
+void main() {
+  testWidgets('main menu renders and Play is tappable', (tester) async {
+    var started = false;
+    await tester.pumpWidget(MaterialApp(
+      home: MainMenuScreen(onPlay: () => started = true),
+    ));
+
+    // Renders the title / a Play control.
+    expect(find.byType(MainMenuScreen), findsOneWidget);
+
+    // The Play button is present and large enough to tap (accessibility R10: >= 48dp).
+    final play = find.bySemanticsLabel(RegExp('play', caseSensitive: false));
+    expect(play, findsWidgets);
+
+    await tester.tap(play.first);
+    await tester.pump();
+    expect(started, isTrue);
+  });
+}

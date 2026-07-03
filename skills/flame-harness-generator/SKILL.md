@@ -35,7 +35,11 @@ When `current_round` is 1:
 3. Read the latest design doc (`docs/harness/plans/*-design.md`, sort descending, take first).
 4. Read `docs/harness/contract.md`. Confirm `## Status: AGREED` is present; abort with
    `flame-harness-generator: contract not AGREED — run flame-harness-contract first` if missing.
-5. Proceed to Sub-phase 5a.
+5. Read `checkpoint` from `state.md` (see `docs/harness-protocol.md` §2). **Re-entry:** if a prior run
+   crashed/paused mid-phase, skip every sub-phase `≤ checkpoint` (its HARD GATE already passed and its
+   output exists) and resume at the next one — e.g. `checkpoint: 5a` → start at 5b. If `checkpoint` is
+   `""`, start at 5a. This makes the generator safe to re-run without redoing (or colliding with)
+   completed work.
 
 ### Round N > 1 — fix only listed failures (feedback intake)
 
@@ -60,9 +64,17 @@ hyphens) — convert `app_slug` (e.g. `swing-line` → `swing_line`). This packa
 the bundle id:
 
 ```bash
-flutter create --org com.<company> --project-name <app_slug_snake_case> \
-  <projects-dir>/<app_slug>
+GAME=<projects-dir>/<app_slug>
+if [ -d "$GAME/lib" ]; then
+  echo "project already exists — reusing (skipping flutter create)"
+else
+  flutter create --org com.<company> --project-name <app_slug_snake_case> "$GAME"
+fi
 ```
+
+**Idempotency:** `flutter create` fails if the target already exists, which would break a resume or a
+re-run of round 1. The guard above makes 5a.1 safe to re-enter — it reuses an existing scaffold instead
+of hard-failing. (If the user passed `--clean`, `rm -rf "$GAME"` first, then create fresh.)
 
 **Bundle id — set it explicitly and IDENTICALLY on both platforms (do not trust the value
 `flutter create` derives from the project name).** `flutter create` builds the bundle id from
@@ -126,6 +138,8 @@ Add to `dev_dependencies` (`image` is used by `tool/gen_icon.dart` + `tool/strip
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  integration_test:
+    sdk: flutter          # core-loop integration test (5c.8)
   flutter_lints: ^4.0.0
   image: ^4.0.0
   flutter_launcher_icons: ^0.14.0
@@ -344,7 +358,8 @@ flutter test
 ```
 
 `flutter analyze` must report **0 issues**. `flutter test` must report **0 failures**. When green,
-commit: `git add -A && git commit -q -m "feat: core loop scaffold passes analyze+test (5a)"`.
+commit: `git add -A && git commit -q -m "feat: core loop scaffold passes analyze+test (5a)"`, then
+write `checkpoint: 5a` to `state.md` (atomically) so a later re-entry skips 5a.
 
 **If either command fails, fix all reported issues before proceeding. Do not start 5b until
 this gate is green.**
@@ -452,11 +467,16 @@ all values must come from the catalog.
 
 ### 5b.9 Tests for systems
 
-Add tests under `test/` for:
+Scaffold real system tests from `templates/test_system.dart.template` (copy to
+`test/systems_test.dart` and adapt to this game's systems). Write **at least 3** focused unit tests
+covering the game's actual systems, e.g.:
 
-- `ScoreSystem.addScore` increments correctly.
-- `DifficultySystem` increases spawn rate over time.
+- `ScoreSystem.addScore` increments correctly (and `reset` zeroes it).
+- `DifficultySystem` increases spawn rate over time but never below `minSpawnInterval`.
 - Data catalog entries are non-empty and all numeric fields are positive.
+
+These are the minimum; add one per non-trivial system the PRD defines (matches the shipped games,
+which carry 8–21 unit tests). Contract gate R11 requires ≥3 system unit tests.
 
 ### 5b HARD GATE
 
@@ -469,7 +489,8 @@ flutter test
 ```
 
 `flutter analyze` must report **0 issues**. `flutter test` must report **0 failures**. When green,
-commit: `git add -A && git commit -q -m "feat: game systems and components (5b)"`.
+commit: `git add -A && git commit -q -m "feat: game systems and components (5b)"`, then write
+`checkpoint: 5b` to `state.md`.
 
 **If either command fails, fix all reported issues before proceeding. Do not start 5c until
 this gate is green.**
@@ -504,6 +525,13 @@ transition methods. Required screens (add or remove based on PRD):
 If the PRD defines a shop, add `lib/screens/shop_screen.dart` with overlay name `'shop'`.
 
 Register all overlay builder functions in `main.dart`'s `GameWidget.overlayBuilderMap`.
+
+**Accessibility baseline (gate R10 — see `docs/game-gotchas.md` → Accessibility & safety):** every
+tappable control on these menu/overlay screens must (1) be at least **48×48 dp**, and (2) carry a
+`Semantics(label: …)` (or a `Tooltip`/labelled widget) — especially icon-only buttons (pause,
+settings, restart) — so the menus are screen-reader navigable. Read the OS **Reduce Motion** setting
+via `MediaQuery.of(context).disableAnimations` and expose it (e.g. through the settings/prefs service)
+so gameplay effects can damp screen-shake/particles/flashing; **never flash faster than 3×/second**.
 
 ### 5c.3 HUD widget
 
@@ -584,9 +612,15 @@ stubs in game logic (per `docs/harness-protocol.md` §3, Hard Gate 3).
 
 ### 5c.8 Full tests
 
-Add or expand tests to cover:
+Scaffold the two higher-level tests (contract gate R11 requires **≥1 widget test + ≥1 integration
+test**), then expand coverage:
 
-- Main menu renders without throwing.
+- **Widget test** — copy `templates/widget_test.dart.template` → `test/menu_widget_test.dart`; adapt
+  to the real main-menu screen. Assert it renders and its Play control (Semantics-labelled, ≥48dp per
+  R10) is tappable and triggers game start.
+- **Integration test** — copy `templates/integration_test.dart.template` →
+  `integration_test/app_test.dart`; adapt to drive the core loop (boot → play → game-over) and assert
+  no exception. (Requires the `integration_test` dev dep added in 5a.3.)
 - Game-over screen shows the correct score.
 - Localisation: all required ARB keys are present in every configured `app_<locale>.arb` (`default_language`, plus `app_en.arb` when `default_language` ≠ `en`).
 - `PreferencesService` read/write round-trip (use a mock `SharedPreferences`).
@@ -684,7 +718,8 @@ And assets/CI (5b.6 / 5c.11 / 5a.11): the game ships with **synthesized (or sour
 
 **This is the final gate. Do not write the handoff until both commands pass. If either fails,
 fix all reported issues and re-run both commands.** When green, commit:
-`git add -A && git commit -q -m "feat: UI, content, branding and native config (5c)"`.
+`git add -A && git commit -q -m "feat: UI, content, branding and native config (5c)"`, then write
+`checkpoint: 5c` to `state.md` before writing the handoff.
 
 ---
 

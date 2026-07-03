@@ -175,7 +175,8 @@ if [ -f "$GEN" ]; then
   require_section "$GEN" "README.md.template\|Project README" "generated game README step"
   require_section "$GEN" "LICENSE.template\|LICENSE" "generated game LICENSE step"
 fi
-for t in build_audio.dart strip_bg.dart ci.yml save_repository.dart README.md LICENSE; do
+for t in build_audio.dart strip_bg.dart ci.yml save_repository.dart README.md LICENSE \
+         test_system.dart widget_test.dart integration_test.dart; do
   [ -f "$ROOT/templates/$t.template" ] || err "missing templates/$t.template"
 done
 [ -f "$ROOT/templates/gen_icon.dart.template" ] || err "missing templates/gen_icon.dart.template"
@@ -190,8 +191,26 @@ CON2="$ROOT/skills/flame-harness-contract/SKILL.md"
 if [ -f "$CON2" ]; then
   require_section "$CON2" "Platform-Robustness Gates" "robustness gates block"
   require_section "$CON2" "R9 Durable save\|R9.*[Dd]urable" "R9 durable save gate"
+  require_section "$CON2" "R10 Accessibility\|R10.*[Aa]ccessib" "R10 accessibility gate"
+  require_section "$CON2" "R11 Test depth\|R11.*[Tt]est" "R11 test-depth gate"
 fi
 EVA2="$ROOT/skills/flame-harness-evaluator/SKILL.md"
-[ -f "$EVA2" ] && require_section "$EVA2" "play_services_block_store\|SaveRepository" "evaluator R9 durable-save check"
+if [ -f "$EVA2" ]; then
+  require_section "$EVA2" "play_services_block_store\|SaveRepository" "evaluator R9 durable-save check"
+  require_section "$EVA2" "disableAnimations" "evaluator R10 reduce-motion check"
+  require_section "$EVA2" "integration_test\|testWidgets" "evaluator R11 test-depth check"
+fi
+# generator wires the new steps
+if [ -f "$GEN" ]; then
+  require_section "$GEN" "checkpoint" "generator sub-phase checkpoints (resilience)"
+  require_section "$GEN" "integration_test" "generator integration-test scaffold"
+  require_section "$GEN" "disableAnimations\|Semantics" "generator accessibility baseline"
+  require_section "$GEN" "already exists\|flutter create fails\|Idempotency" "generator flutter-create idempotency guard"
+fi
+# submit wires store-compliance completeness
+SUB2="$ROOT/skills/flame-harness-submit/SKILL.md"
+[ -f "$SUB2" ] && require_section "$SUB2" "App Privacy\|Data-collection profile" "submit store-privacy/data-safety profile"
+# protocol declares the checkpoint state key
+require_section "$PROTO" "checkpoint" "state.md checkpoint key"
 
 [ "$fail" -eq 0 ] && echo "validate: OK" || exit 1

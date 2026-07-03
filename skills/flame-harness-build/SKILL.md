@@ -161,6 +161,12 @@ bumped, `Info.plist` ATT + `SKAdNetworkItems`, and `ITSAppUsesNonExemptEncryptio
 export-compliance prompt). **Bump the build number on every upload** — App Store Connect rejects a
 duplicate build number, so increment it (don't reuse `1`).
 
+**Re-run / resume safety (store uploads are NOT idempotent):** if this phase is re-entered after a
+partial or failed upload, **bump the build number again before re-uploading** — re-sending the same
+build number fails on ASC and can create a stuck/duplicate build on Play. Verify in App Store Connect /
+Play Console whether the prior build actually landed before retrying; never blindly re-run the upload
+lane with the same number.
+
 ### iOS — Signed IPA → TestFlight
 
 ```bash

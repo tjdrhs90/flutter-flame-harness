@@ -112,6 +112,9 @@ xxl: 48 dp   — hero area padding
 All layout constants in `design_tokens.dart` use these named values — no raw numbers in
 UI code. Spacing values are applied as `const double` fields.
 
+Also define `minTapTarget = 48.0` (dp) — every menu/overlay button must be at least this size
+(accessibility gate R10; pairs with the 4.5:1 contrast rule above).
+
 ### Radius and elevation
 
 ```

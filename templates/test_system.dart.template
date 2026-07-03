@@ -1,0 +1,33 @@
+// System unit tests — adapt to the game's actual systems (score, spawn, difficulty, economy).
+// Aim for >= 3 focused system tests. Test pure logic, not rendering (that's the widget test).
+import 'package:flutter_test/flutter_test.dart';
+import 'package:<app_slug>/game/game_config.dart';
+// import the systems under test, e.g.:
+// import 'package:<app_slug>/game/systems/score_system.dart';
+// import 'package:<app_slug>/game/systems/difficulty_system.dart';
+
+void main() {
+  group('ScoreSystem', () {
+    test('addScore increments the running total', () {
+      final score = ScoreSystem();
+      score.addScore(GameConfig.scorePerEnemy);
+      expect(score.value, GameConfig.scorePerEnemy);
+    });
+
+    test('reset returns the score to zero', () {
+      final score = ScoreSystem()..addScore(50);
+      score.reset();
+      expect(score.value, 0);
+    });
+  });
+
+  group('DifficultySystem', () {
+    test('spawn interval shrinks over time but never below the floor', () {
+      final d = DifficultySystem();
+      final start = d.spawnInterval;
+      d.update(30); // 30 seconds elapsed
+      expect(d.spawnInterval, lessThan(start));
+      expect(d.spawnInterval, greaterThanOrEqualTo(GameConfig.minSpawnInterval));
+    });
+  });
+}

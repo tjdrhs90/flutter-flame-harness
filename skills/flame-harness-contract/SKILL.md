@@ -92,6 +92,14 @@ section requiring the patterns in `docs/game-gotchas.md` (cite it). These are ma
   alone) — a `SaveRepository` mirrors the save blob to iOS Keychain (`flutter_secure_storage`,
   `first_unlock`) + Android Block Store (`play_services_block_store`) + a `shared_preferences` cache,
   reading durable-first and writing all tiers in try/catch; `PreferencesService` routes through it.
+- **R10 Accessibility & safety baseline**: no effect flashes faster than 3×/second (photosensitive
+  safety); OS Reduce Motion (`MediaQuery.disableAnimations`) is read and damps screen-shake/particles/
+  flashing; menu/overlay buttons are ≥48×48 dp with `Semantics` labels (icon-only buttons especially);
+  in-game HUD keeps `withNoTextScaling`. (Full in-game screen-reader support is out of scope.)
+- **R11 Test depth**: beyond `flutter test` merely passing, the game ships **≥3 system unit tests**
+  (score/spawn/difficulty/economy — real logic), **≥1 widget test** (a menu/overlay renders + a button
+  taps), and **≥1 integration test** (core loop: boot → play → game-over). Mirrors the shipped games;
+  prevents a green `flutter test` that actually covers nothing.
 
 ---
 

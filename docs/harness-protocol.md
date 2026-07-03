@@ -82,6 +82,7 @@ pause_reason: ""         # "" | rate_limit | manual_action | error
 created_at: "2026-06-22T00:00:00Z"   # ISO-8601; set by bootstrap, never changed
 updated_at: "2026-06-22T00:00:00Z"   # ISO-8601; updated by every skill on write
 resume_attempts: 0       # integer; incremented each time the harness resumes after a pause
+checkpoint: ""           # "" | 5a | 5b | 5c — last generator sub-phase whose HARD GATE passed
 ```
 
 ### Key Definitions
@@ -96,6 +97,12 @@ resume_attempts: 0       # integer; incremented each time the harness resumes af
 | `created_at` | ISO-8601 string | — | bootstrap only |
 | `updated_at` | ISO-8601 string | — | every skill on write |
 | `resume_attempts` | integer | ≥ 0 | resume handler |
+| `checkpoint` | enum | `""` \| `5a` \| `5b` \| `5c` | generator |
+
+**`checkpoint`** lets the generator re-enter safely after a mid-phase crash/pause: it records the last
+sub-phase whose HARD GATE passed. On re-entry within the same round the generator skips sub-phases
+`≤ checkpoint` (the scaffold/systems already exist and passed) and resumes at the next one. It is reset
+to `""` when a new round starts (evaluator FAIL → generator round N+1 does a fresh feedback-driven pass).
 
 **Note:** Timestamps are written by skills at runtime, not by scripts.
 

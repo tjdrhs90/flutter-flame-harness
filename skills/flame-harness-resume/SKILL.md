@@ -198,6 +198,10 @@ Valid `next_role` values are listed in the transition table in
 `docs/harness-protocol.md` §7. `admob` is a normal dispatchable role and is handled like any
 other `next_role` — dispatch `Skill("flame-harness-admob")` without any special boundary check.
 
+If `next_role` is `generator`, the generator resumes safely on its own: it reads `checkpoint` from
+`state.md` (§2) and skips the sub-phases whose HARD GATE already passed, so resume needs no special
+handling here — just dispatch it.
+
 If `next_role` is empty or unknown, abort with:
 
 ```

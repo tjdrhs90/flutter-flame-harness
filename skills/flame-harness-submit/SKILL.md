@@ -113,9 +113,17 @@ already hit; see `docs/game-gotchas.md` → Store rejections):
 - **No alpha** in the iOS icon or any screenshot.
 - **Build number** incremented (ASC rejects duplicates).
 - **Export compliance** set (`ITSAppUsesNonExemptEncryption=false`) so no per-upload prompt.
-- **Privacy:** declare tracking accurately in App Privacy; `PrivacyInfo.xcprivacy` present.
-- **Android:** privacy policy URL set (`developer.privacy`); Content Rating, Data Safety, Target
-  Audience questionnaires completed. (Contact email/website were set in Phase 0 via the API script.)
+- **iOS App Privacy (nutrition label):** in App Store Connect → App Privacy, declare data types
+  accurately (this is **separate from** `PrivacyInfo.xcprivacy`, which is a bundled manifest — the
+  label is a Connect form). A missing/empty label blocks release. Use the **Data-collection profile**
+  below.
+- **Privacy:** `PrivacyInfo.xcprivacy` present in the bundle; tracking matches the ATT prompt.
+- **Android:** privacy policy URL set (`developer.privacy`); Content Rating (IARC), Data Safety, and
+  Target Audience questionnaires completed with the **Data-collection profile** below. (Contact
+  email/website were set in Phase 0 via the API script.)
+- **COPPA / kids:** if the game is **child-directed** (see the profile), AdMob must be "Made for kids"
+  with `tagForChildDirectedTreatment`, and Play Target Audience must include children — keep all three
+  consistent or expect a rejection / FTC exposure.
 
 ### Pre-pause state write
 
@@ -182,6 +190,28 @@ submission.
 4. Once all questionnaires are complete, click **"Promote release → Production"**.
 5. Set the rollout percentage (100% recommended for a new app).
 6. Click **"Review release"** then **"Start rollout to production"**.
+
+**Data-collection profile** — the privacy questionnaires on both stores ask the same underlying
+question. For a typical offline Flame game with AdMob (and no login/analytics/PII), fill them with:
+
+| Question | Answer |
+|---|---|
+| Collects data? | **Yes** — only if AdMob is enabled (`skip_admob: false`); otherwise **No**. |
+| Data type | **Identifiers** — advertising ID / device ID (AdMob). No name, email, location, contacts, photos, health, financial, or messages. |
+| Purpose | **Third-party advertising** (and, if ATT-authorized, measurement). |
+| Linked to identity? | No (no account/login). |
+| Used for tracking? | Yes if ATT-authorized (advertising ID → cross-app). Declare this on iOS App Privacy → "Tracking". |
+| Shared with third parties? | Yes — the AdMob SDK (Google). |
+| Encrypted in transit? | Yes. |
+| User can request deletion? | Not applicable (no server-side user data). |
+
+- **iOS App Privacy:** declare **Identifiers → Third-Party Advertising**, and mark it under
+  **Tracking** (matches the ATT prompt). If `skip_admob: true`, declare **Data Not Collected**.
+- **Play Data Safety:** "Collects **Device or other IDs**" for **Advertising**, shared with Google,
+  encrypted in transit; nothing else. If `skip_admob: true`, "No data collected".
+- **COPPA / Target Audience:** default = **not directed at children**. Only if the concept is
+  child-directed, set Play Target Audience to include under-13 **and** AdMob "Made for kids" +
+  `tagForChildDirectedTreatment(true)` — all three must agree.
 
 When you have completed all of the above steps on both platforms, run:
 

@@ -84,6 +84,24 @@ gracefully (silent audio, no-op haptic, fallback rectangle) — the game stays p
   `LayoutBuilder`/max-width so notches and landscape don't clip or stretch the UI.
 - **Block input during splash/transitions** so a stray tap doesn't fall through into gameplay.
 
+## Accessibility & safety (arcade-appropriate baseline — gate R10)
+
+Full screen-reader/AAA a11y is out of scope for a visual arcade game, but a small baseline is cheap,
+genuinely useful, and two items are **safety/compliance**, not nicety:
+
+- **No flashing faster than 3 flashes/second** (photosensitive-seizure safety — WCAG 2.3.1; app
+  stores flag it). Full-screen strobes/rapid inversions are the risk; keep any flash effect ≤3 Hz.
+- **Respect OS "Reduce Motion"** — read `MediaQuery.of(context).disableAnimations` (iOS Reduce Motion
+  / Android Remove Animations). When true, damp or skip screen-shake, big particle bursts, and any
+  flashing. Route it through one flag (e.g. `GameConfig`/a settings service) so effects check it.
+- **Tap targets ≥ 48×48 dp** for menu/overlay buttons (Play/Pause/Restart/Settings) — comfortable and
+  the platform minimum.
+- **Text contrast ≥ 4.5:1** against its background (already required in the design-tokens spec).
+- **`Semantics` labels on menu/overlay buttons** so the menus are screen-reader navigable (label the
+  few control buttons; gameplay itself need not be labelled). Icon-only buttons especially.
+- Keep pinning `MediaQuery.withNoTextScaling` for the in-game HUD (prevents OS font-scaling from
+  breaking tight/pixel-font layouts) — that is intentional and separate from the above.
+
 ## Performance
 
 - **No per-frame `whereType` in hot paths**: computing `world.children.whereType<X>()` per component
@@ -187,6 +205,18 @@ These caused real App Store / Play rejections and were fixed; prevent them up fr
   phone-only game (and remove `~ipad` orientation keys).
 - **AdMob "Made for kids" = No** in the AdMob app config (unless truly child-directed), or ads won't
   serve.
+- **iOS App Privacy label (App Store Connect)** — a Connect form, **separate from**
+  `PrivacyInfo.xcprivacy`. An empty/absent label blocks release. For an offline game + AdMob: declare
+  **Identifiers → Third-Party Advertising** and mark it under **Tracking** (must match the ATT
+  prompt). With `skip_admob: true` → **Data Not Collected**.
+- **Play Data Safety** — must match the iOS label: "Collects **Device or other IDs**" for
+  **Advertising**, shared with Google, encrypted in transit; nothing else (no location/contacts/PII).
+  With `skip_admob: true` → "No data collected". Mismatched declarations across stores draw review
+  scrutiny.
+- **COPPA / child-directed consistency** — if a game is directed at under-13, Play **Target
+  Audience**, AdMob **"Made for kids"** + `tagForChildDirectedTreatment(true)` must all agree;
+  personalized ads must be off. Default every game to **not** child-directed unless the concept
+  clearly targets kids (misdeclaring is an FTC-enforcement risk, not just a rejection).
 
 ---
 
