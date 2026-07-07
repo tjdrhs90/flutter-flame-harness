@@ -3,6 +3,17 @@
 All notable changes to flutter-flame-harness are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.17.0] — 2026-07-07
+
+### Fixed
+- **Localized ATT / permission strings (repeat App Store rejection):** the admob skill hard-coded
+  `NSUserTrackingUsageDescription` in a single language in the base `Info.plist` and never localized
+  it — so a non-Korean listing showed a foreign-language prompt (real, recurring rejection). Now the
+  base string is written in `default_language` and the ATT reason is added to every configured
+  locale's `ios/Runner/<locale>.lproj/InfoPlist.strings`. `submit`'s pre-submit checklist verifies
+  every locale carries the string, `game-gotchas.md` documents it as a distinct rejection, and
+  `validate.sh` asserts both.
+
 ## [0.16.0] — 2026-07-03
 
 ### Added

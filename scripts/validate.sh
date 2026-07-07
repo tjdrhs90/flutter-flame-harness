@@ -104,6 +104,7 @@ ADM="$ROOT/skills/flame-harness-admob/SKILL.md"
 if [ -f "$ADM" ]; then
   require_section "$ADM" "rewarded\|리워드" "rewarded strategy"
   require_section "$ADM" "ATT\|app_tracking\|UMP\|consent" "ATT/UMP consent"
+  require_section "$ADM" "lproj/InfoPlist.strings\|lproj.*InfoPlist" "ATT string localized per locale"
   require_section "$ADM" "skip_admob\|skip-admob" "skip flag"
   require_section "$ADM" "next_role" "state update"
 fi
@@ -134,6 +135,7 @@ if [ -f "$SUB" ]; then
   require_section "$SUB" "Submit for Review\|심사 제출\|production" "manual submit steps"
   require_section "$SUB" "retro" "resume target"
   require_section "$SUB" "review_information\|review-information" "ios app review contact"
+  require_section "$SUB" "Localized permission strings\|UsageDescription.*locale\|NS.*UsageDescription" "localized permission-string check"
   require_section "$SUB" "copyright" "copyright metadata"
   require_section "$SUB" "set_contact_details\|contact_email\|contact email" "android contact details"
 fi

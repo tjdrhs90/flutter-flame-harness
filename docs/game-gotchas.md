@@ -62,8 +62,9 @@ gracefully (silent audio, no-op haptic, fallback rectangle) — the game stays p
   iOS → "NSUserTrackingUsageDescription present but the alert never appears" rejection. Required
   pattern: **wait until `WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed`** (poll
   up to ~4s), then a **~400 ms settle delay**, then request **only when `notDetermined`** — from a
-  post-frame callback, awaited **before** ads init. Localize the prompt text (per-locale
-  `InfoPlist.strings`).
+  post-frame callback, awaited **before** ads init. Localize the prompt text for **every** configured
+  locale (per-locale `<locale>.lproj/InfoPlist.strings`) — see *Store rejections* → "Permission
+  strings not localized".
 - **Android hardware back button**: wrap the app in `PopScope` — back closes an open overlay, else
   (in-game) pauses, else (on the **root/menu**) shows a Flutter `SnackBar` ("press back again to
   exit") and only exits on a second back within ~2 s. Never let a single back kill the app mid-run.
@@ -172,6 +173,13 @@ These caused real App Store / Play rejections and were fixed; prevent them up fr
   (wait-for-resumed + settle + notDetermined, post-frame, before ads). For the review reply, attach
   a **screen recording on a physical device** showing a fresh install → the ATT prompt appearing
   before any tracking → the following flow, and put it in App Review Information → Notes.
+- **Permission strings not localized** (real, repeat rejection): if the app declares multiple App
+  Store localizations, every `NS*UsageDescription` (especially `NSUserTrackingUsageDescription`)
+  must be translated per locale, or a reviewer in another language sees a foreign-language prompt.
+  The base `Info.plist` string is only the development-language fallback — add each translation to
+  `ios/Runner/<locale>.lproj/InfoPlist.strings` (same files as the localized `CFBundleDisplayName`),
+  for **every** configured locale (`default_language` + English when `default_language ≠ en`). The
+  admob skill owns this when it injects ATT; verify at submit.
 - **App icon / screenshots with an alpha channel are rejected** — flatten to opaque RGB (no
   transparency) for the iOS icon and all store screenshots.
 - **Play listing requires a hi-res icon (512×512) + feature graphic (1024×500)** — generate both

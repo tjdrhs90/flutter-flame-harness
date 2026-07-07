@@ -110,6 +110,12 @@ already hit; see `docs/game-gotchas.md` → Store rejections):
 - **ATT (2.1):** attach a **screen recording from a physical device** to App Review Information →
   Notes, showing fresh-install → ATT prompt appears before any tracking → following flow. (The app
   must use the wait-for-resumed ATT pattern, or the prompt won't show on the latest iOS.)
+- **Localized permission strings:** every configured App Store locale's
+  `ios/Runner/<locale>.lproj/InfoPlist.strings` must carry a `NSUserTrackingUsageDescription` (and
+  any other `NS*UsageDescription` the app declares) — a permission string left in only one language
+  is a repeat localization rejection (the reviewer sees a foreign-language prompt). Verify:
+  `for d in ios/Runner/*.lproj; do grep -q NSUserTrackingUsageDescription "$d/InfoPlist.strings" || echo "MISSING: $d"; done`
+  (no output = OK). Wording must match the App Privacy / tracking declaration.
 - **No alpha** in the iOS icon or any screenshot.
 - **Build number** incremented (ASC rejects duplicates).
 - **Export compliance** set (`ITSAppUsesNonExemptEncryption=false`) so no per-upload prompt.

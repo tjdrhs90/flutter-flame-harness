@@ -164,14 +164,41 @@ dependencies:
 
 Run `flutter pub get` after editing.
 
-### 2. iOS ATT Permission — Info.plist
+### 2. iOS ATT Permission — Info.plist (localize for EVERY configured locale)
 
-Add to `ios/Runner/Info.plist`:
+Read `default_language` from `docs/harness/config.md`. The configured App Store localizations are
+`default_language` **plus English when `default_language ≠ en`** — the same set as the l10n Hard
+Gate. The ATT prompt string must exist in **every** one of them, or you get a repeat rejection:
+a reviewer (or user) in another locale sees a foreign-language permission prompt.
+
+**Base string** — add `NSUserTrackingUsageDescription` to `ios/Runner/Info.plist` in the app's
+`default_language` (this is the development-region fallback — NOT hard-coded to any one language):
 
 ```xml
 <key>NSUserTrackingUsageDescription</key>
-<string>광고를 개인화하고 앱 개선을 위해 사용합니다.</string>
+<string><ATT reason, written in default_language></string>
 ```
+
+**Localize it per locale.** The generator already created a `ios/Runner/<locale>.lproj/InfoPlist.strings`
+for each configured locale (for `CFBundleDisplayName`, generator §5c.9) and registered them in the
+Xcode project. **Add the ATT key to each of those files** — reuse them; create+register any missing
+one:
+
+`ios/Runner/en.lproj/InfoPlist.strings`:
+```
+"NSUserTrackingUsageDescription" = "We use this to personalize ads and improve the app.";
+```
+`ios/Runner/ko.lproj/InfoPlist.strings`:
+```
+"NSUserTrackingUsageDescription" = "광고를 개인화하고 앱 개선을 위해 사용합니다.";
+```
+For any other configured locale, add the same key with a natural translation. Keep the wording
+truthful to what the app does and consistent with the App Privacy / tracking declaration.
+
+> The base `Info.plist` value is the fallback; the matching `<locale>.lproj/InfoPlist.strings`
+> entry overrides it per language. **Verify before build:** every configured locale's
+> `InfoPlist.strings` contains a `NSUserTrackingUsageDescription` line —
+> `for d in ios/Runner/*.lproj; do grep -q NSUserTrackingUsageDescription "$d/InfoPlist.strings" || echo "MISSING ATT string: $d"; done`.
 
 Add the iOS AdMob App ID:
 
