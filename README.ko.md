@@ -10,6 +10,42 @@
 
 AI 코딩 도구는 보통 지루한 부분을 건너뜁니다 — 요구사항을 굳히기 전에 코드부터 짜고, 테스트를 생략하고, 덜 끝난 채 손을 뗍니다. 이 하네스는 **코드가 아니라 절차를 위임**합니다: 가드레일 → 계획 → generator↔evaluator 빌드 루프(*게임을 실제로 띄워보고 판정하는 회의적 QA*) → 사람 검수. 그리고 이론이 아니라, **실제로 Flame 게임을 출시하며 얻은 픽스**(오디오 풀링·햅틱·생명주기·성능·스토어/빌드 함정)가 처음부터 들어가 있어, 생성된 게임이 같은 함정을 다시 밟지 않습니다.
 
+## Games
+
+직접 출시한 게임과 이 하네스로 만든 게임을 섞어 담았습니다 — Flutter + Flame.
+
+### Portrait
+
+<table>
+  <tr>
+    <td align="center" valign="top"><img src="assets/previews/hover-hopper.gif" width="150" alt="Hover Hopper"><br><sub><b>Hover Hopper</b><br>Hold-to-rise stamina arcade</sub></td>
+    <td align="center" valign="top"><img src="assets/previews/manshin.gif" width="150" alt="Manshin"><br><sub><b>Manshin</b><br>Korean shamanist action arcade</sub></td>
+    <td align="center" valign="top"><img src="assets/previews/swing-line.gif" width="150" alt="Swing Line"><br><sub><b>Swing Line</b><br>One-tap physics arcade</sub></td>
+    <td align="center" valign="top"><img src="assets/previews/deckbuilder.gif" width="150" alt="Ink Spire: Sumi-e"><br><sub><b>Ink Spire: Sumi-e</b><br>Ink-painting deckbuilder</sub></td>
+  </tr>
+  <tr>
+    <td align="center" valign="top"><img src="assets/previews/salvage-protocol.gif" width="150" alt="Salvage Protocol"><br><sub><b>Salvage Protocol</b><br>Turn-based tactics</sub></td>
+    <td align="center" valign="top"><img src="assets/previews/merge-lighthouse.gif" width="150" alt="Merge Lighthouse"><br><sub><b>Merge Lighthouse</b><br>Merge builder</sub></td>
+    <td align="center" valign="top"><img src="assets/previews/loop-city.gif" width="150" alt="Loop City"><br><sub><b>Loop City</b><br>Loop-drawing city sim</sub></td>
+  </tr>
+</table>
+
+### Landscape
+
+<table>
+  <tr>
+    <td align="center" valign="top"><img src="assets/previews/goni-run.gif" width="360" alt="Goni Run"><br><sub><b>Goni Run</b><br>Endless runner</sub></td>
+    <td align="center" valign="top"><img src="assets/previews/goni-defense.gif" width="360" alt="Goni Defense"><br><sub><b>Goni Defense</b><br>Tower defense</sub></td>
+  </tr>
+  <tr>
+    <td align="center" valign="top"><img src="assets/previews/topshot.gif" width="360" alt="TopShot"><br><sub><b>TopShot</b><br>Top-down arcade shooter</sub></td>
+    <td align="center" valign="top"><img src="assets/previews/froggy-dash.gif" width="360" alt="Froggy Dash"><br><sub><b>Froggy Dash</b><br>Platformer</sub></td>
+  </tr>
+  <tr>
+    <td align="center" valign="top"><img src="assets/previews/tumble-zoo.gif" width="360" alt="Tumble Zoo"><br><sub><b>Tumble Zoo</b><br>Physics puzzle</sub></td>
+  </tr>
+</table>
+
 ## 단계 (Phases)
 
 **Phase A (완료): 리서치 → 계획 → 디자인 → 계약 → generator ↔ evaluator → 플레이 가능한 게임**

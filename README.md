@@ -10,6 +10,42 @@ A Claude Code plugin that takes a Flutter/Flame game from raw idea all the way t
 
 AI coding tools usually skip the boring parts — they code before pinning requirements, skip tests, and stop while it's half-done. This harness **delegates the process, not just the code**: guardrails → plan → a generator↔evaluator build loop with a *skeptical QA that runs the game before judging* → human review. And it isn't theory — the **fixes earned shipping real Flame games** (audio pooling, haptics, app-lifecycle, performance, store/build pitfalls) are baked in, so a generated game doesn't re-walk the same traps.
 
+## Games
+
+A mix of games I've shipped and games built with this harness — Flutter + Flame.
+
+### Portrait
+
+<table>
+  <tr>
+    <td align="center" valign="top"><img src="assets/previews/hover-hopper.gif" width="150" alt="Hover Hopper"><br><sub><b>Hover Hopper</b><br>Hold-to-rise stamina arcade</sub></td>
+    <td align="center" valign="top"><img src="assets/previews/manshin.gif" width="150" alt="Manshin"><br><sub><b>Manshin</b><br>Korean shamanist action arcade</sub></td>
+    <td align="center" valign="top"><img src="assets/previews/swing-line.gif" width="150" alt="Swing Line"><br><sub><b>Swing Line</b><br>One-tap physics arcade</sub></td>
+    <td align="center" valign="top"><img src="assets/previews/deckbuilder.gif" width="150" alt="Ink Spire: Sumi-e"><br><sub><b>Ink Spire: Sumi-e</b><br>Ink-painting deckbuilder</sub></td>
+  </tr>
+  <tr>
+    <td align="center" valign="top"><img src="assets/previews/salvage-protocol.gif" width="150" alt="Salvage Protocol"><br><sub><b>Salvage Protocol</b><br>Turn-based tactics</sub></td>
+    <td align="center" valign="top"><img src="assets/previews/merge-lighthouse.gif" width="150" alt="Merge Lighthouse"><br><sub><b>Merge Lighthouse</b><br>Merge builder</sub></td>
+    <td align="center" valign="top"><img src="assets/previews/loop-city.gif" width="150" alt="Loop City"><br><sub><b>Loop City</b><br>Loop-drawing city sim</sub></td>
+  </tr>
+</table>
+
+### Landscape
+
+<table>
+  <tr>
+    <td align="center" valign="top"><img src="assets/previews/goni-run.gif" width="360" alt="Goni Run"><br><sub><b>Goni Run</b><br>Endless runner</sub></td>
+    <td align="center" valign="top"><img src="assets/previews/goni-defense.gif" width="360" alt="Goni Defense"><br><sub><b>Goni Defense</b><br>Tower defense</sub></td>
+  </tr>
+  <tr>
+    <td align="center" valign="top"><img src="assets/previews/topshot.gif" width="360" alt="TopShot"><br><sub><b>TopShot</b><br>Top-down arcade shooter</sub></td>
+    <td align="center" valign="top"><img src="assets/previews/froggy-dash.gif" width="360" alt="Froggy Dash"><br><sub><b>Froggy Dash</b><br>Platformer</sub></td>
+  </tr>
+  <tr>
+    <td align="center" valign="top"><img src="assets/previews/tumble-zoo.gif" width="360" alt="Tumble Zoo"><br><sub><b>Tumble Zoo</b><br>Physics puzzle</sub></td>
+  </tr>
+</table>
+
 ## Phases
 
 **Phase A (complete): research → plan → design → contract → generator ↔ evaluator → playable game**
