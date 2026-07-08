@@ -133,6 +133,10 @@ grep -rn "whereType" lib/ | grep -i "update" && echo "CHECK: whereType inside up
 ls assets/icons/icon.png 2>/dev/null || echo "FAIL: no custom app icon"
 grep -q "flutter_launcher_icons" pubspec.yaml && grep -q "flutter_native_splash" pubspec.yaml || echo "FAIL: launcher-icons/native-splash not configured"
 sips -g hasAlpha assets/icons/icon.png 2>/dev/null | grep -qi "hasAlpha: no" || echo "CHECK: icon may have alpha (App Store rejects)"
+# R5 Android adaptive icon: padded foreground + monochrome configured & emitted (not the full-bleed iOS icon → avoids the cropped/"zoomed" launcher look)
+grep -q "adaptive_icon_foreground" pubspec.yaml || echo "CHECK: no adaptive_icon_foreground — Android reuses full-bleed icon and looks cropped/zoomed"
+grep -q "adaptive_icon_monochrome" pubspec.yaml || echo "CHECK: no adaptive_icon_monochrome — Android 13+ themed icon will look off"
+ls android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml 2>/dev/null | grep -q . || echo "CHECK: adaptive-icon XML not emitted (run flutter_launcher_icons)"
 grep -rn "CFBundleDisplayName" ios/Runner/Info.plist 2>/dev/null || echo "CHECK: iOS display name not set"
 grep -rn 'android:label' android/app/src/main/AndroidManifest.xml 2>/dev/null | grep -qiv "runner" || echo "CHECK: Android label still default/runner"
 # R6 native config: orientation locked (matches config.orientation, no ~ipad), iPhone-only, export compliance, root back

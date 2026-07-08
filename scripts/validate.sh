@@ -56,6 +56,7 @@ DES="$ROOT/skills/flame-harness-design/SKILL.md"
 if [ -f "$DES" ]; then
   require_section "$DES" "design_tokens" "design tokens spec"
   require_section "$DES" "asset\|에셋\|audio\|오디오" "asset/audio plan"
+  require_section "$DES" "adaptive_icon_foreground\|safe zone" "Android adaptive icon guidance"
   require_section "$DES" "next_role" "state update"
 fi
 
@@ -159,6 +160,8 @@ if [ -f "$GEN" ]; then
   require_section "$GEN" "haptics" "haptics system"
   require_section "$GEN" "WidgetsBindingObserver" "lifecycle observer"
   require_section "$GEN" "flutter_launcher_icons" "branding: launcher icons"
+  require_section "$GEN" "adaptive_icon_foreground" "branding: Android adaptive foreground (avoid cropped/zoomed icon)"
+  require_section "$GEN" "adaptive_icon_monochrome" "branding: Android 13+ themed icon"
   require_section "$GEN" "flutter_native_splash" "branding: native splash"
   require_section "$GEN" "CFBundleDisplayName\|android:label" "branding: display name"
   require_section "$GEN" "UISupportedInterfaceOrientations" "native: orientation lock"
@@ -182,6 +185,8 @@ for t in build_audio.dart strip_bg.dart ci.yml save_repository.dart README.md LI
   [ -f "$ROOT/templates/$t.template" ] || err "missing templates/$t.template"
 done
 [ -f "$ROOT/templates/gen_icon.dart.template" ] || err "missing templates/gen_icon.dart.template"
+grep -q "icon-fg.png" "$ROOT/templates/gen_icon.dart.template" || err "gen_icon template must emit icon-fg.png (Android adaptive foreground)"
+grep -q "icon-mono.png" "$ROOT/templates/gen_icon.dart.template" || err "gen_icon template must emit icon-mono.png (Android 13+ themed icon)"
 [ -f "$ROOT/templates/gitignore.template" ] || err "missing templates/gitignore.template"
 # Plugin repo runs its own validators in CI + contributor infra present
 [ -f "$ROOT/.github/workflows/validate.yml" ] || err "missing .github/workflows/validate.yml (plugin CI)"

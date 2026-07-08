@@ -3,6 +3,19 @@
 All notable changes to flutter-flame-harness are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.18.0] — 2026-07-08
+
+### Fixed
+- **Android adaptive icon looked cropped/"zoomed" (iOS icon reused full-bleed):** the generator only
+  wired `image_path`, and `gen_icon.dart` produced a single full-bleed icon — so on Android the
+  launcher mask (108dp canvas, ~66dp safe zone) cropped it. `gen_icon.dart` now also emits a
+  **padded adaptive foreground** (`icon-fg.png`, motif kept inside the safe zone) and a **monochrome
+  themed-icon layer** (`icon-mono.png`, white-on-transparent), and the `flutter_launcher_icons`
+  config wires `adaptive_icon_foreground`/`adaptive_icon_background`/`adaptive_icon_monochrome`.
+  Covers the Android 13+/Play themed-icon expectation. Documented in `game-gotchas.md`; evaluator R5
+  and `validate.sh` assert it. Verified by running the icon generator (all layers emitted; foreground
+  padded, monochrome = opaque-white centre + transparent corners).
+
 ## [0.17.0] — 2026-07-07
 
 ### Fixed

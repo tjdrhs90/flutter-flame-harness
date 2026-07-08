@@ -287,18 +287,26 @@ Specify the icon intent so the generator can configure `flutter_launcher_icons`:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/icons/icon.png"          # 1024×1024 PNG, no alpha on Android
-  adaptive_icon_background: "<hex colour>"     # Android adaptive icon background
-  adaptive_icon_foreground: "assets/icons/icon-fg.png"  # foreground layer
+  remove_alpha_ios: true
+  image_path: "assets/icons/icon.png"                    # 1024×1024, no alpha (iOS + legacy)
+  adaptive_icon_background: "<hex colour>"               # solid, opaque
+  adaptive_icon_foreground: "assets/icons/icon-fg.png"   # safe-zone padded (NOT full-bleed)
+  adaptive_icon_monochrome: "assets/icons/icon-mono.png" # Android 13+ themed icon
   min_sdk_android: 21
   web:
     generate: false
 ```
 
 The icon must:
-- Be 1024×1024 pixels, PNG format.
+- Be 1024×1024 pixels, PNG format; iOS `icon.png` is **opaque** (no alpha).
 - Follow the app's art direction (character portrait or logo on the `Primary` background).
-- Android adaptive icon: foreground layer uses character/logo; background uses `Primary`.
+- **Android adaptive foreground** (`icon-fg.png`): the motif must sit inside the **safe zone** — the
+  108dp canvas is masked to ≤72dp and only the centre ~66dp is guaranteed unclipped, so keep ~25%
+  padding on every side. Reusing the full-bleed `icon.png` here makes the icon look cropped/"zoomed"
+  on Android. Background is a solid colour (`Primary`/Background), not an image.
+- **Android themed icon** (`icon-mono.png`): a single-colour (white-on-transparent) silhouette in the
+  same safe zone; Android 13+ tints it to the user's theme. Without it the icon looks out of place
+  among themed icons (Google Play increasingly expects one).
 
 ### flutter_native_splash
 

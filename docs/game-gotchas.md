@@ -135,6 +135,14 @@ genuinely useful, and two items are **safety/compliance**, not nicety:
 - **Icon + splash + in-app logo from one shared painter** for visual consistency; the native splash
   `color` must match the in-app splash background (else a color blink on launch). iOS icon must be
   opaque (no alpha); `flutter_launcher_icons: remove_alpha_ios: true`.
+- **Android adaptive icon ≠ iOS icon — don't reuse the full-bleed image.** The adaptive-icon canvas
+  is 108dp but the launcher mask shows only ≤72dp, and just the centre ~66dp circle is guaranteed
+  unclipped. A full-bleed iOS icon dropped in as the `adaptive_icon_foreground` gets cropped/"zoomed"
+  by the mask. Ship a **separate padded foreground** (`icon-fg.png`, motif inside the safe zone,
+  ~25% margin) over a solid `adaptive_icon_background` colour — not the `image_path` art. Also ship a
+  **monochrome layer** (`adaptive_icon_monochrome`, white-on-transparent silhouette) for Android 13+
+  themed icons; Google Play increasingly expects one and Android 16 auto-tints non-compliant icons,
+  so an icon without it looks off among themed icons.
 - **Asset paths lowercase**: Android/Linux are case-sensitive; keep `assets/**` names lowercase and
   declare directories (trailing slash) in `pubspec.yaml`.
 - **Always ship with assets (no manual sourcing required)**: audio defaults to **code-synthesized**

@@ -633,18 +633,36 @@ the **Build/platform** + **Store rejections** patterns in `docs/game-gotchas.md`
 1. **Icon + splash art.** Default: copy `templates/gen_icon.dart.template` → `tool/gen_icon.dart`,
    fill its color constants from `design_tokens` (Background / Primary / Accent RGB) and `kGlyph`
    from the first letter of `app_name`, add `image: ^4.0.0` to `dev_dependencies`, then
-   `dart run tool/gen_icon.dart` → writes `assets/icons/icon.png` (1024×1024, **opaque/no-alpha**),
-   `assets/images/splash.png`, **`assets/store/play_icon.png` (512×512 Play hi-res icon)**, and
-   **`assets/store/feature_graphic.png` (1024×500 Play feature graphic)**. The screenshot phase places
-   the last two into the Android listing. If the design asset plan chose AI-generated art, use that image
-   instead at `assets/icons/icon.png`, flattened to **opaque** (no alpha).
-2. **Config + run the tools.** Add the `flutter_launcher_icons` (with `remove_alpha_ios: true`,
-   `image_path: assets/icons/icon.png`) and `flutter_native_splash` (`color:` = design Background,
-   `image: assets/images/splash.png`) blocks to `pubspec.yaml` (per the design doc), then run:
+   `dart run tool/gen_icon.dart` → writes `assets/icons/icon.png` (1024×1024, **opaque/no-alpha**, iOS),
+   **`assets/icons/icon-fg.png`** (Android adaptive **foreground**, transparent, motif inside the safe
+   zone), **`assets/icons/icon-mono.png`** (Android 13+ **themed/monochrome** layer, white on
+   transparent), `assets/images/splash.png`, **`assets/store/play_icon.png` (512×512 Play hi-res icon)**,
+   and **`assets/store/feature_graphic.png` (1024×500 Play feature graphic)**. The screenshot phase
+   places the last two into the Android listing. If the design asset plan chose AI-generated art, use it
+   at `assets/icons/icon.png` (flattened **opaque**) **and** produce a padded `icon-fg.png` + a
+   `icon-mono.png` — do not reuse the full-bleed art as the adaptive foreground (see below).
+2. **Config + run the tools.** Add the `flutter_launcher_icons` block to `pubspec.yaml` with **all**
+   Android adaptive layers, not just `image_path` — a full-bleed `image_path` reused as the Android
+   icon is cropped/"zoomed" by the launcher mask (108dp canvas, only the center ~66dp is safe;
+   `docs/game-gotchas.md` → Build/platform). Then `flutter_native_splash` (`color:` = design
+   Background, `image: assets/images/splash.png`):
+   ```yaml
+   flutter_launcher_icons:
+     android: true
+     ios: true
+     remove_alpha_ios: true
+     image_path: assets/icons/icon.png                    # iOS + legacy Android
+     adaptive_icon_background: "<design Background hex>"   # solid color, opaque
+     adaptive_icon_foreground: assets/icons/icon-fg.png    # safe-zone padded
+     adaptive_icon_monochrome: assets/icons/icon-mono.png  # Android 13+ themed
+     min_sdk_android: 21
+   ```
    ```bash
    dart run flutter_launcher_icons
    dart run flutter_native_splash:create
    ```
+   Verify Android adaptive layers were emitted: `ls android/app/src/main/res/mipmap-anydpi-v26/`
+   should contain `ic_launcher.xml` referencing `<foreground>` (and `<monochrome>`).
 3. **Localized display name.** Set `app_name` as the home-screen name: iOS `CFBundleDisplayName`
    (base `Info.plist` + per-locale `<locale>.lproj/InfoPlist.strings`, register in the Xcode project);
    Android `android:label="@string/app_name"` + `values/strings.xml` (+ `values-<locale>/strings.xml`)
