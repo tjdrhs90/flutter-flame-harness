@@ -207,8 +207,25 @@ Add the iOS AdMob App ID:
 <string>ca-app-pub-XXXX~YYYY</string>
 ```
 
-Also add `SKAdNetworkItems` (Google's SKAdNetwork IDs from the official `google_mobile_ads` docs) to
-`Info.plist` — required for an ads build to pass App Store review (see `docs/game-gotchas.md`).
+Also add an **`SKAdNetworkItems`** array to `Info.plist` — **required manual step** (the SDK does not
+inject it). Without it iOS install attribution breaks, and it's an expected config for an ads app at
+App Store review. At minimum include Google's own ID:
+
+```xml
+<key>SKAdNetworkItems</key>
+<array>
+  <dict><key>SKAdNetworkIdentifier</key><string>cstr6suwn9.skadnetwork</string></dict>
+  <!-- + third-party buyer IDs (see below) -->
+</array>
+```
+
+AdMob's exchange serves third-party demand even without mediation, so copy the **full current list**
+from Google's docs — it changes over time, so fetch the latest at build time rather than hard-coding
+an old copy:
+- Quick-start Info.plist snippet: <https://developers.google.com/admob/ios/quick-start>
+- Full third-party SKAdNetwork IDs: <https://developers.google.com/admob/ios/3p-skadnetworks>
+
+(See `docs/game-gotchas.md` → Build/platform.)
 
 ### 3. Android — AndroidManifest.xml + minSdk
 

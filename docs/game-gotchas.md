@@ -123,8 +123,12 @@ genuinely useful, and two items are **safety/compliance**, not nicety:
 - **Android `minSdk = 23`** — `google_mobile_ads` requires API 23+; lower fails at startup.
 - **iOS `Podfile` platform**: bump `platform :ios, '<x>'` to the highest plugin requirement, or
   `pod install` fails.
-- **`Info.plist`**: `NSUserTrackingUsageDescription` (ATT) and `SKAdNetworkItems` (Google's list) are
-  required for an ads build to pass App Store review.
+- **`Info.plist`**: `NSUserTrackingUsageDescription` (ATT) and `SKAdNetworkItems` are required for an
+  ads build. `SKAdNetworkItems` is a **manual** step — the SDK does not inject it; include Google's
+  `cstr6suwn9.skadnetwork` plus the full third-party buyer list (AdMob serves third-party demand even
+  without mediation). Copy the current list at build time — it changes:
+  [quick-start](https://developers.google.com/admob/ios/quick-start) /
+  [3p SKAdNetwork IDs](https://developers.google.com/admob/ios/3p-skadnetworks).
 - **iOS `PrivacyInfo.xcprivacy` (iOS 17+)**: ship a Privacy Manifest and register it in the Xcode
   project, or App Store Connect rejects the upload. Declare reasons for any required-reason APIs
   (UserDefaults, file timestamps, etc.).

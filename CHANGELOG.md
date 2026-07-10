@@ -3,6 +3,14 @@
 All notable changes to flutter-flame-harness are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.18.1] — 2026-07-08
+
+### Changed
+- **Concrete `SKAdNetworkItems` guidance:** the admob skill now spells out that `SKAdNetworkItems` is
+  a *required manual* Info.plist step (the SDK doesn't inject it), gives the minimal Google ID
+  (`cstr6suwn9.skadnetwork`), and links Google's authoritative lists (quick-start + 3p SKAdNetwork
+  IDs) with a note to copy the current full list at build time. Mirrored in `game-gotchas.md`.
+
 ## [0.18.0] — 2026-07-08
 
 ### Fixed
