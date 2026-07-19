@@ -63,8 +63,8 @@ See [`docs/SMOKE-TEST-phaseB.md`](docs/SMOKE-TEST-phaseB.md) for the full manual
 ## Install
 
 ```bash
-/plugin marketplace add <projects-dir>/flutter-flame-harness
-/plugin install flutter-flame-harness
+/plugin marketplace add tjdrhs90/flutter-flame-harness
+/plugin install flutter-flame-harness@flutter-flame-harness
 ```
 
 ## Updating
