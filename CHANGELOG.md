@@ -3,6 +3,31 @@
 All notable changes to flutter-flame-harness are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.19.0] — 2026-07-28
+
+### Fixed
+- **Every iOS store screenshot uploaded twice, and `deliver` reported success:** `deliver` judges
+  "already uploaded?" by comparing App Store Connect's `sourceFileChecksum` to the local file's MD5.
+  When that comparison doesn't match, its post-upload verification concludes *every* local file is
+  missing and retries — and the retry keeps the screenshots that already landed while re-uploading
+  the whole set, so each image is stored twice. Once a set holds 10 images `deliver`'s own "nothing
+  missing" guard passes, so it prints *Successfully uploaded all screenshots* and exits 0 on the
+  doubled set (a 5-shot locale doubles to exactly 10 with no error). `overwrite_screenshots: true`
+  does not prevent it — that only clears the sets *before* the first round. The iOS Fastfile template
+  now carries `prune_duplicate_screenshots!`, which keys on **file name** instead of checksum: it
+  keeps one screenshot per name (preferring a `COMPLETE` one), drops failed/incomplete leftovers,
+  restores filename order, and checks the per-locale count against the local PNGs. The `screenshots`
+  lane runs it strictly after upload so a doubled set now *fails* the lane, and a new
+  `screenshots_prune` lane runs it standalone to clean an app that already carries duplicates.
+  `screenshots_path` is pinned so the upload and the check read the same directory. The screenshot
+  skill also empties each locale directory before copying captures in (`deliver` uploads every PNG it
+  finds, and a stale file would skew the count check), and documents why the cleanup step must not be
+  removed; `game-gotchas.md` records the behaviour and `validate.sh` asserts the skill covers it.
+  Verified by extracting the helper from the template and running it against stubs across 5
+  scenarios / 14 assertions — including the reported symptom (ko + en-US each doubled to 10),
+  `COMPLETE`-preferring survivor choice, `FAILED` orphan removal, a locale with no local directory,
+  and strict-vs-report modes — plus `fastlane lanes` to confirm both lanes register.
+
 ## [0.18.1] — 2026-07-08
 
 ### Changed
