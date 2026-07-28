@@ -8,9 +8,80 @@ ASC_KEY = {
 APP_ID = "__APP_ID__"
 TEAM_ID = "<apple-team-id>"
 CERTS_DIR = File.expand_path("certs", __dir__)
+SHOTS_DIR = File.expand_path("screenshots", __dir__)
 
 def asc_key
   app_store_connect_api_key(**ASC_KEY)
+end
+
+def asc_token
+  Spaceship::ConnectAPI.token = Spaceship::ConnectAPI::Token.create(
+    key_id: ASC_KEY[:key_id],
+    issuer_id: ASC_KEY[:issuer_id],
+    filepath: ASC_KEY[:key_filepath],
+  )
+end
+
+# Delete duplicate and broken screenshots from the edit version, then check the
+# remaining count against the local files.
+#
+# deliver decides "already uploaded?" purely by comparing App Store Connect's
+# `sourceFileChecksum` to the local file's MD5. When that comparison does not match,
+# its post-upload verification concludes every local file is missing and retries —
+# and the retry keeps every already-COMPLETE screenshot while re-uploading the whole
+# set, so each image lands twice. Once a set holds 10, deliver's own "nothing
+# missing" guard passes and it exits 0 on the doubled set. `overwrite_screenshots`
+# does not help: it only clears the sets *before* the first round. File name is the
+# reliable key — two screenshots with the same fileName in one set are the same
+# local file uploaded twice.
+def prune_duplicate_screenshots!(strict:)
+  asc_token
+  version = Spaceship::ConnectAPI::App.find(APP_ID).get_edit_app_store_version
+  UI.user_error!("No editable App Store version for #{APP_ID}") unless version
+
+  problems = []
+  version.get_app_store_version_localizations.each do |loc|
+    expected = Dir.glob(File.join(SHOTS_DIR, loc.locale, "*.{png,jpg,jpeg}")).count
+
+    (loc.get_app_screenshot_sets || []).each do |set|
+      shots = set.app_screenshots || []
+
+      # Keep one screenshot per file name, preferring a fully processed one.
+      keep = {}
+      shots.each do |shot|
+        current = keep[shot.file_name]
+        keep[shot.file_name] = shot if current.nil? || (!current.complete? && shot.complete?)
+      end
+
+      (shots - keep.values).each do |dup|
+        UI.important("Deleting duplicate #{loc.locale}/#{dup.file_name}")
+        dup.delete!
+      end
+
+      # Failed or stuck-in-processing leftovers are not usable assets — drop them
+      # so the count check below reports a real shortfall instead of passing.
+      keep.values.reject(&:complete?).each do |bad|
+        UI.important("Deleting incomplete #{loc.locale}/#{bad.file_name}")
+        bad.delete!
+        keep.delete(bad.file_name)
+      end
+
+      # Re-assert store order after the deletions. The capture step names files
+      # with zero-padded numeric prefixes, so a plain sort is the intended order.
+      remaining = keep.values.sort_by(&:file_name)
+      set.reorder_screenshots(app_screenshot_ids: remaining.map(&:id)) unless remaining.empty?
+      UI.success("#{loc.locale} #{set.screenshot_display_type}: #{remaining.count} screenshot(s)")
+
+      if expected.positive? && remaining.count != expected
+        problems << "#{loc.locale} #{set.screenshot_display_type}: " \
+                    "#{remaining.count} on App Store Connect vs #{expected} local"
+      end
+    end
+  end
+
+  return UI.success("Screenshots verified — no duplicates") if problems.empty?
+
+  strict ? UI.user_error!(problems.join("\n")) : problems.each { |p| UI.error(p) }
 end
 
 platform :ios do
@@ -85,11 +156,7 @@ platform :ios do
 
   desc "Read back the live App Store metadata via the API to verify it landed"
   lane :verify do
-    Spaceship::ConnectAPI.token = Spaceship::ConnectAPI::Token.create(
-      key_id: ASC_KEY[:key_id],
-      issuer_id: ASC_KEY[:issuer_id],
-      filepath: ASC_KEY[:key_filepath],
-    )
+    asc_token
     app = Spaceship::ConnectAPI::App.find(APP_ID)
     UI.success("APP: #{app.name} | #{app.bundle_id} | id=#{app.id}")
 
@@ -115,11 +182,7 @@ platform :ios do
 
   desc "List valid App Store category + subcategory IDs"
   lane :list_cats do
-    Spaceship::ConnectAPI.token = Spaceship::ConnectAPI::Token.create(
-      key_id: ASC_KEY[:key_id],
-      issuer_id: ASC_KEY[:issuer_id],
-      filepath: ASC_KEY[:key_filepath],
-    )
+    asc_token
     require "net/http"
     require "json"
     uri = URI(
@@ -158,6 +221,7 @@ platform :ios do
     upload_to_app_store(
       api_key: asc_key,
       app_identifier: APP_ID,
+      screenshots_path: SHOTS_DIR,
       skip_binary_upload: true,
       skip_metadata: true,
       skip_app_version_update: true,
@@ -165,7 +229,15 @@ platform :ios do
       run_precheck_before_submit: false,
       force: true,
     )
+    # deliver reports success even when it uploaded every screenshot twice — see
+    # prune_duplicate_screenshots!. Never drop this step.
+    prune_duplicate_screenshots!(strict: true)
     UI.success("App Store screenshots uploaded")
+  end
+
+  desc "Delete duplicate/broken App Store screenshots left by an earlier upload"
+  lane :screenshots_prune do
+    prune_duplicate_screenshots!(strict: false)
   end
 
   desc "Provision an App Store distribution certificate + profile via the API"

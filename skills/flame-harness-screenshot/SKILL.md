@@ -206,27 +206,58 @@ upload lanes:
 <game>/android/fastlane/metadata/android/en-US/images/phoneScreenshots/   ← EN PNGs
 ```
 
-Create directories as needed:
+Create the directories, and **empty them before copying** — `deliver` and `supply` upload every
+PNG they find, so a leftover file from an earlier run or the other locale silently ships:
 
 ```bash
-mkdir -p <game>/ios/fastlane/screenshots/ko
-mkdir -p <game>/ios/fastlane/screenshots/en-US
-mkdir -p <game>/android/fastlane/metadata/android/ko-KR/images/phoneScreenshots
-mkdir -p <game>/android/fastlane/metadata/android/en-US/images/phoneScreenshots
+for d in <game>/ios/fastlane/screenshots/ko \
+         <game>/ios/fastlane/screenshots/en-US \
+         <game>/android/fastlane/metadata/android/ko-KR/images/phoneScreenshots \
+         <game>/android/fastlane/metadata/android/en-US/images/phoneScreenshots; do
+  mkdir -p "$d"
+  rm -f "$d"/*.png
+done
 ```
 
 ### iOS — fastlane screenshots lane
 
-Run from the iOS fastlane directory to upload screenshots and metadata to App Store Connect:
+Run from the iOS fastlane directory to upload the locale screenshot directories to App Store
+Connect (screenshots only — text metadata goes up in Phase 10):
 
 ```bash
 cd <game>/ios
 fastlane screenshots
 ```
 
-The `screenshots` lane calls `deliver` (or `upload_to_app_store` with `skip_binary_upload: true`)
-to push all locale screenshot directories and metadata files. Ensure the generated
-`<game>/ios/fastlane/Fastfile` contains a `screenshots` lane.
+The lane calls `upload_to_app_store` with `skip_binary_upload: true`, then runs a **duplicate
+cleanup and count check** and fails if App Store Connect does not end up with exactly the local
+number of screenshots per locale. A successful run ends with
+`Screenshots verified — no duplicates`.
+
+**Do not remove that cleanup step.** `deliver` decides "is this screenshot already uploaded?" by
+comparing App Store Connect's `sourceFileChecksum` against the local file's MD5. When that
+comparison does not match, its post-upload verification concludes every local file is missing and
+retries — and the retry keeps the already-uploaded screenshots while re-uploading the whole set, so
+each image lands **twice**. Once a set holds 10 images its own "nothing missing" guard passes, so
+`deliver` prints *Successfully uploaded all screenshots* and exits 0 with a doubled set.
+`overwrite_screenshots: true` does not prevent this — it only clears the sets before the first
+round.
+
+If an app already carries duplicates from an earlier upload, clean it without re-uploading:
+
+```bash
+cd <game>/ios
+fastlane screenshots_prune   # deletes duplicates + broken assets, reports per-locale counts
+```
+
+Confirm the result against the live API — the per-locale counts must equal the local PNG counts:
+
+```bash
+fastlane verify   # VER[ko] … screenshots=N / VER[en-US] … screenshots=N
+```
+
+Ensure the generated `<game>/ios/fastlane/Fastfile` contains both the `screenshots` and
+`screenshots_prune` lanes.
 
 ### Android — Play listing graphics (required)
 

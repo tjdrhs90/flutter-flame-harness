@@ -199,6 +199,14 @@ These caused real App Store / Play rejections and were fixed; prevent them up fr
   icon.png` + `featureGraphic.png` so `supply` uploads them; without them the Play listing can't be
   published. (App Store needs no feature graphic.)
 - **ASC rejects duplicate build numbers** — bump the build number on every upload (don't reuse `1`).
+- **`deliver` silently uploads every iOS screenshot twice** — it dedupes by comparing ASC's
+  `sourceFileChecksum` to the local MD5; when that doesn't match, its verification declares all
+  files missing and retries, and the retry re-uploads the whole set on top of the screenshots that
+  already landed. At 10 per set its own guard passes, so it prints *Successfully uploaded all
+  screenshots* and exits 0 with a doubled set. `overwrite_screenshots: true` only clears sets before
+  the first round, so it does not help. The `screenshots` lane therefore prunes by file name and
+  asserts the per-locale count afterwards — keep that step; run `fastlane screenshots_prune` to
+  clean an app that already has duplicates.
 - **Export compliance prompt every upload** — set `ITSAppUsesNonExemptEncryption = false` in
   `Info.plist` if the app uses no non-exempt encryption, to skip the prompt on future builds.
 - **AdMob "Publisher data not found" / no ads** — the ad unit's publisher prefix must match the
