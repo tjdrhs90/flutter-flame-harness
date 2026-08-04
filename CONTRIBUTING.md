@@ -44,3 +44,23 @@ align the skills (it's the single source of truth — skills cite it, never rede
 - **Never add AI-authorship trailers** — no `Co-Authored-By`, no "Generated with…" line.
 - No credentials or personal info in the diff.
 - Keep PRs small and focused; open an issue first for larger changes.
+
+## Releasing
+
+Any change that affects what the harness produces ships as a release. Do all of it in the **same
+commit** as the change — splitting the version bump out is how it gets forgotten:
+
+1. Bump `version` in `.claude-plugin/plugin.json` — minor for anything that changes generated output
+   or skill behaviour, patch for guidance/wording only.
+2. Add a `## [x.y.z] — YYYY-MM-DD` section to `CHANGELOG.md` describing the symptom, the cause, and
+   how it was verified.
+3. After pushing, tag it and publish the release:
+
+```bash
+git tag vx.y.z && git push origin main vx.y.z
+gh release create vx.y.z --title "vx.y.z — <summary>" --notes "<changelog section>"
+```
+
+The tag and release are what make the current version visible on GitHub — `plugin.json` alone is
+invisible to anyone browsing the repo. Tagging lapsed between 0.16.0 and 0.19.0 precisely because
+this was never written down.
