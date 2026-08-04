@@ -63,12 +63,30 @@ Open `<game>/integration_test/screenshots_test.dart` and replace every
 
 ### Test driver
 
-Ensure `<game>/test_driver/integration_test.dart` exists (standard Flutter integration_test
-boilerplate):
+Ensure `<game>/test_driver/integration_test.dart` exists. **`integrationDriver()` has no default
+screenshot writer** — its native path is guarded by `onScreenshot != null`, so without the callback
+below every `takeScreenshot` byte is silently discarded and no file is ever written. Pass one:
 
 ```dart
+import 'dart:io';
+
 import 'package:integration_test/integration_test_driver_extended.dart';
-Future<void> main() => integrationDriver();
+
+Future<void> main() => integrationDriver(
+  onScreenshot: (
+    String name,
+    List<int> bytes, [
+    Map<String, Object?>? args,
+  ]) async {
+    // The driver runs on the host, so Platform.environment works here (inside
+    // the test it would not — that side uses String.fromEnvironment).
+    final dir = Platform.environment['SCREENSHOT_DIR'] ?? 'build/screenshots';
+    final file = File('$dir/$name.png');
+    await file.parent.create(recursive: true);
+    await file.writeAsBytes(bytes);
+    return true;
+  },
+);
 ```
 
 ---
@@ -92,8 +110,22 @@ no ad overlays appear in store screenshots. Screenshot mode should also skip the
 mute audio (native prompts/sound break automated capture).
 
 **No alpha channel** (App Store rejection): store screenshots — and the iOS app icon — must be
-flattened to opaque RGB. Strip any transparency before upload (e.g. `sips -s format png` onto an
-opaque background, or export without alpha). See `docs/game-gotchas.md` → Store rejections.
+flattened to opaque RGB. Check with `sips -g hasAlpha <file>` (must report `hasAlpha: no`).
+
+**`sips -s format png` does NOT strip alpha** — it re-encodes and keeps the channel, so it silently
+leaves the rejection in place. Use one of these instead:
+
+```bash
+# Preferred — lossless, needs ImageMagick
+magick in.png -background white -alpha remove -alpha off out.png
+
+# macOS built-ins only — round-trip through JPEG (lossy, fine for screenshots)
+sips -s format jpeg in.png --out tmp.jpg && sips -s format png tmp.jpg --out out.png
+
+sips -g hasAlpha out.png   # verify: hasAlpha: no
+```
+
+See `docs/game-gotchas.md` → Store rejections.
 
 ```dart
 // In the ad helper (example):
@@ -105,12 +137,15 @@ const bool isScreenshotMode =
 
 Run the capture twice, once per locale (`ko` and `en`), using `--dart-define=SCREENSHOT_LOCALE=`:
 
+`SCREENSHOT_DIR` is read by the `onScreenshot` callback above — give each locale its own directory
+so the two runs can't overwrite each other:
+
 ```bash
 DEVICE_ID="<ios-simulator-id>"
 GAME="<absolute-path-to-game-root>"
 
 # KO screenshots — iOS
-flutter drive \
+SCREENSHOT_DIR=build/screenshots/ios/ko flutter drive \
   --driver=test_driver/integration_test.dart \
   --target=integration_test/screenshots_test.dart \
   -d "$DEVICE_ID" \
@@ -118,7 +153,7 @@ flutter drive \
   --dart-define=screenshots=true
 
 # EN screenshots — iOS
-flutter drive \
+SCREENSHOT_DIR=build/screenshots/ios/en-US flutter drive \
   --driver=test_driver/integration_test.dart \
   --target=integration_test/screenshots_test.dart \
   -d "$DEVICE_ID" \
@@ -126,13 +161,21 @@ flutter drive \
   --dart-define=screenshots=true
 ```
 
-Repeat for the Android phone emulator with its device ID.
+Repeat for the Android phone emulator with its device ID, using
+`build/screenshots/android/<ko-KR|en-US>`.
 
 ### Screenshot output directory
 
-`flutter drive` with `IntegrationTestWidgetsFlutterBinding.takeScreenshot` writes PNG files
-to `<game>/` by default. Move them into the fastlane-expected paths immediately after each run
-(see Phase 3 — Upload for the target paths).
+The PNGs land in `$SCREENSHOT_DIR` (default `build/screenshots`), named after the `takeScreenshot`
+argument — e.g. `build/screenshots/ios/ko/01_home.png`. Nothing is written to the game root. Phase 4
+copies these into the fastlane-expected paths.
+
+After each run, confirm the files actually exist before moving on — an empty directory means the
+`onScreenshot` callback is missing or the capture failed:
+
+```bash
+ls -1 build/screenshots/ios/ko/*.png | wc -l   # must match the number of shot() calls
+```
 
 ---
 
@@ -142,23 +185,33 @@ Populate all ASO metadata for both `ko` and `en` locales.
 
 ### iOS keywords.txt
 
-Write `<game>/ios/fastlane/metadata/<locale>/keywords.txt` for each locale. The string must be
-**95–100 characters** including commas (App Store Connect truncates at 100).
+Write `<game>/ios/fastlane/metadata/<locale>/keywords.txt` for each locale. The field holds at most
+**100 characters** including commas; aim for **95–100** so none of it is wasted.
 
-Example KO keywords (exactly 97 chars including commas):
+Example KO keywords (97 characters):
 ```
-러너,점프,캐주얼,무한달리기,아케이드,코인,스킨,피하기,반응속도,귀여운캐릭터,하이스코어,빠른게임
-```
-
-Example EN keywords (exactly 96 chars including commas):
-```
-runner,jump,casual,endless,arcade,coin,skins,dodge,reflex,cute,highscore,fast,retro,fun
+러너,점프,캐주얼,무한달리기,아케이드,코인,스킨,피하기,반응속도,귀여운캐릭터,하이스코어,빠른게임,한손조작,중독성,심플,오프라인,시간순삭,랭킹,도전,연타,순발력,두뇌게임,틈틈이
 ```
 
-Verify the length before writing:
+Example EN keywords (99 characters):
+```
+runner,jump,casual,endless,arcade,coin,skins,dodge,reflex,cute,highscore,fast,retro,fun,offline,tap
+```
+
+Verify the length before writing. **Count characters, not bytes** — `wc -c` counts bytes, and one
+Hangul syllable is 3 bytes in UTF-8, so the KO example above measures 247 with `wc -c`. Using `wc -c`
+makes a valid Korean string look 2.5× over the limit and costs you two thirds of the field:
+
 ```bash
-echo -n "your,keyword,string" | wc -c   # must be 95–100
+# a here-string (<<<) would append a newline and inflate the count by 1 — use printf '%s'
+printf '%s' "your,keyword,string" | python3 -c 'import sys;print(len(sys.stdin.read()))'
+
+# check what was actually written (trailing newline stripped)
+python3 -c 'import sys;print(len(open(sys.argv[1],encoding="utf-8").read().strip()))' \
+  <game>/ios/fastlane/metadata/ko/keywords.txt
 ```
+
+Both must report **95–100**.
 
 ### iOS localized title and description
 
@@ -210,14 +263,24 @@ Create the directories, and **empty them before copying** — `deliver` and `sup
 PNG they find, so a leftover file from an earlier run or the other locale silently ships:
 
 ```bash
-for d in <game>/ios/fastlane/screenshots/ko \
-         <game>/ios/fastlane/screenshots/en-US \
-         <game>/android/fastlane/metadata/android/ko-KR/images/phoneScreenshots \
-         <game>/android/fastlane/metadata/android/en-US/images/phoneScreenshots; do
-  mkdir -p "$d"
-  rm -f "$d"/*.png
+cd <game>
+
+# "<staging dir>:<fastlane dir>" — staging dirs are the SCREENSHOT_DIR values from Phase 2
+for pair in \
+  "build/screenshots/ios/ko:ios/fastlane/screenshots/ko" \
+  "build/screenshots/ios/en-US:ios/fastlane/screenshots/en-US" \
+  "build/screenshots/android/ko-KR:android/fastlane/metadata/android/ko-KR/images/phoneScreenshots" \
+  "build/screenshots/android/en-US:android/fastlane/metadata/android/en-US/images/phoneScreenshots"; do
+  src="${pair%%:*}"; dst="${pair#*:}"
+  mkdir -p "$dst"
+  rm -f "$dst"/*.png            # drop leftovers from an earlier run / the other locale
+  cp "$src"/*.png "$dst"/
+  echo "$dst: $(ls -1 "$dst"/*.png | wc -l) file(s)"
 done
 ```
+
+Every locale must report the **same** non-zero count. A zero means capture produced nothing (see
+Phase 2's `onScreenshot` note).
 
 ### iOS — fastlane screenshots lane
 

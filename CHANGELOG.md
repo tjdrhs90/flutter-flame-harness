@@ -3,6 +3,34 @@
 All notable changes to flutter-flame-harness are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.20.0] — 2026-07-28
+
+### Fixed
+- **Screenshot capture wrote nothing at all:** the screenshot skill's test-driver boilerplate was
+  `Future<void> main() => integrationDriver();`, but `integrationDriver` has **no default screenshot
+  writer** — its native path is guarded by `onScreenshot != null`, so every `takeScreenshot` byte was
+  silently discarded and no PNG was ever produced. The skill now supplies an `onScreenshot` callback
+  that writes to `$SCREENSHOT_DIR` (default `build/screenshots`), the Phase 2 locale loop gives each
+  locale its own staging directory, and Phase 4 copies from there into the fastlane paths with a
+  per-locale file count printed. The old claim that `flutter drive` "writes PNG files to `<game>/`"
+  was wrong and is gone. Verified: the callback type-checks against the real `ScreenshotCallback`
+  typedef (`dart analyze`, no issues).
+- **`sips -s format png` was recommended to strip alpha, and it does not:** it re-encodes and keeps
+  the channel, so the "flatten before upload" step left the App Store alpha rejection in place — the
+  exact rejection the guidance exists to prevent. (The evaluator's `sips -g hasAlpha` *detector* was
+  correct all along; only the fix was wrong.) Replaced with two verified recipes —
+  `magick … -alpha remove -alpha off`, or a JPEG round-trip using macOS built-ins — both confirmed to
+  turn `hasAlpha: yes` into `hasAlpha: no` on a real RGBA PNG.
+- **ASO keyword length was measured in bytes, wasting two thirds of the field:** the skill told you to
+  check `keywords.txt` with `echo -n … | wc -c`, which counts **bytes**; one Hangul syllable is 3
+  bytes in UTF-8, so a valid 97-character Korean string measures 247 and looks 2.5× over the 100-char
+  cap. Following it truncates Korean keywords to ~33 characters. Now counts characters (and notes
+  that a here-string `<<<` adds a newline and inflates the count by 1). Both worked examples were
+  also mislabelled — "exactly 97 chars" was 53 and "exactly 96 chars" was 87, i.e. both violated the
+  skill's own 95–100 rule; replaced with strings measured at 97 (KO) and 99 (EN).
+- `validate.sh` now guards all three against regression, and `game-gotchas.md` records them. Each
+  guard was confirmed to actually fail when the corresponding guidance is removed.
+
 ## [0.19.0] — 2026-07-28
 
 ### Fixed

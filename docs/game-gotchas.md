@@ -199,6 +199,20 @@ These caused real App Store / Play rejections and were fixed; prevent them up fr
   icon.png` + `featureGraphic.png` so `supply` uploads them; without them the Play listing can't be
   published. (App Store needs no feature graphic.)
 - **ASC rejects duplicate build numbers** — bump the build number on every upload (don't reuse `1`).
+- **`sips -s format png` does NOT strip an alpha channel** — it re-encodes and keeps the channel, so
+  using it to "flatten" a screenshot or icon leaves the App Store alpha rejection in place (verified:
+  `hasAlpha` stays `yes`). Use `magick in.png -background white -alpha remove -alpha off out.png`, or
+  with macOS built-ins only round-trip through JPEG (`sips -s format jpeg` → `sips -s format png`).
+  Always confirm with `sips -g hasAlpha` → `hasAlpha: no`.
+- **Count store-metadata limits in characters, not bytes** — `wc -c` counts bytes and a Hangul
+  syllable is 3 bytes in UTF-8, so a 97-character Korean `keywords.txt` measures 247. Trusting
+  `wc -c` makes a valid string look far over the 100-char cap and wastes two thirds of the ASO field.
+  Use `printf '%s' "$s" | python3 -c 'import sys;print(len(sys.stdin.read()))'` (a here-string `<<<`
+  appends a newline and adds 1).
+- **`integrationDriver()` writes no screenshots without an `onScreenshot` callback** — the native
+  path in `integration_test_driver_extended.dart` is guarded by `onScreenshot != null`, so
+  `takeScreenshot` bytes are silently discarded and no file appears. The driver must pass a callback
+  that writes the bytes to disk.
 - **`deliver` silently uploads every iOS screenshot twice** — it dedupes by comparing ASC's
   `sourceFileChecksum` to the local MD5; when that doesn't match, its verification declares all
   files missing and retries, and the retry re-uploads the whole set on top of the screenshots that

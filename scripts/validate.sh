@@ -126,6 +126,10 @@ if [ -f "$SHOT" ]; then
   require_section "$SHOT" "keywords" "ASO keywords"
   require_section "$SHOT" "screenshots\|images" "fastlane upload"
   require_section "$SHOT" "screenshots_prune" "duplicate screenshot cleanup"
+  # Regression guards — each of these was a wrong command that shipped once.
+  require_section "$SHOT" "onScreenshot" "driver screenshot callback (integrationDriver writes nothing without it)"
+  require_section "$SHOT" "alpha remove\|hasAlpha" "working alpha-strip recipe (sips -s format png does not strip it)"
+  require_section "$SHOT" "len(sys.stdin.read())\|wc -m" "character-count check (wc -c counts bytes)"
   require_section "$SHOT" "featureGraphic" "play feature graphic"
   require_section "$SHOT" "icon.png\|hi-res icon\|512" "play hi-res icon"
 fi
