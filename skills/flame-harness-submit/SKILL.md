@@ -9,7 +9,8 @@ allowed-tools: [Read, Write, Edit, Bash, AskUserQuestion]
 
 Phase 10 of the flutter-flame-harness pipeline. Uploads store text metadata and app categories via
 fastlane for both iOS and Android, then pauses the pipeline with exact manual steps for the final
-review submission / production promotion that cannot be automated.
+review submission / production promotion (see **Boundary** below for what is genuinely manual and
+what is a deliberate checkpoint).
 
 All file schemas (`config.md`, `state.md`, `pipeline-log.md`) and the phase transition table are
 defined in `docs/harness-protocol.md` — that document is the single source of truth (§1 for
@@ -17,9 +18,15 @@ defined in `docs/harness-protocol.md` — that document is the single source of 
 §7 for the `submit → metadata-done → paused` transition and the `(paused) → resume → retro`
 transition). Do not redefine schemas here.
 
-**Boundary:** Text metadata upload is automated. The final "Submit for Review" tap on iOS and the
-"Promote to production" action on Android are **manual** — the Apple and Google APIs do not permit
-fully automated submission without human confirmation after the review build is staged.
+**Boundary:** Text metadata upload is automated. The final "Submit for Review" on iOS and the
+"Promote to production" action on Android are **manual in this pipeline** — deliberately, so a
+human sees the assembled listing once before it goes out, and because the Play questionnaires
+(Content Rating, Data Safety, Target Audience) have no API.
+
+Note the iOS half *is* automatable if you want it: `reviewSubmissions` will submit a version
+end-to-end (see **iOS submission over the API** below). What is genuinely not automatable is the
+Play side and the age-rating questionnaire. Keep the pause unless you have a reason not to — the
+review is the point of it.
 
 **Prerequisites:** Phase 9 (`flame-harness-screenshot`) completed; screenshots and ASO metadata
 already uploaded; `state.md` shows `next_role: submit`.
@@ -107,6 +114,25 @@ perform the final submission actions that cannot be automated.
 
 **Pre-submit rejection checklist** (print this with the manual steps — these are the rejections
 already hit; see `docs/game-gotchas.md` → Store rejections):
+- **Age rating declarations complete — especially `advertising` = Yes.** Apple added
+  `userGeneratedContent`, `messagingAndChat`, `ageAssurance`, `gunsOrOtherWeapons`, `advertising`,
+  `healthOrWellnessTopics`, `parentalControls` in 2026. An app record that only answered the old
+  questionnaire is blocked before human review. **Any AdMob build (banners count) must answer
+  `advertising` = Yes**, or Apple's automated analysis bounces it. `ageRatingDeclarations` is
+  write-only over the API (`GET` → `403`) — verify in the Connect UI, there is no other way.
+- **Android: check the *merged* manifest, not the one you wrote.** Dependencies merge their own
+  permissions into the bundle and Play Console demands a declaration for them under **App content
+  → Needs attention**. `FOREGROUND_SERVICE_*` in particular requires a form with a **mandatory
+  demo video link** (unlisted YouTube; private is invisible to reviewers) showing the feature
+  working while the app is backgrounded. Past the deadline this blocks updates while the live
+  listing stays up. Check:
+  `grep uses-permission android/app/build/intermediates/merged_manifests/release/AndroidManifest.xml`
+- **iPad: `TARGETED_DEVICE_FAMILY` matches reality.** Declaring iPad (`"1,2"`) obliges the game to
+  support every iPad orientation — a portrait-only phone game shipped with the template default
+  gets rejected under 4.0. Phone-only games use `"1"`.
+- **Version string not already released.** A new build under an already-released version fails with
+  *"Invalid Pre-Release Train … closed for new build submissions."* Bump the name in `pubspec.yaml`
+  and leave `+N` (the Android `versionCode`) alone.
 - **ATT (2.1):** attach a **screen recording from a physical device** to App Review Information →
   Notes, showing fresh-install → ATT prompt appears before any tracking → following flow. (The app
   must use the wait-for-resumed ATT pattern, or the prompt won't show on the latest iOS.)
@@ -160,6 +186,36 @@ using the transition event name `metadata-done` (matches protocol §7):
 ```
 | <ISO-8601 UTC now> | pause | submit | metadata-done: iOS metadata+categories uploaded, Android metadata+release_notes uploaded; awaiting manual Submit for Review (iOS) and production promotion (Android) |
 ```
+
+### iOS submission over the API (reference — for resubmissions and automation)
+
+`POST /v1/appStoreVersionSubmissions` is **deprecated**: `403 "Allowed operation is: DELETE"`.
+The current flow is three calls:
+
+```
+1. POST  /v1/reviewSubmissions       { platform: IOS, app: <appId> }
+         reuse an existing submission in state READY_FOR_REVIEW rather than creating a second
+2. POST  /v1/reviewSubmissionItems   { reviewSubmission: <id>, appStoreVersion: <id> }
+3. PATCH /v1/reviewSubmissions/<id>  { submitted: true }
+```
+
+**Resubmitting after a rejection.** The rejected version is still attached to the submission that
+rejected it, so step 2 fails with `STATE_ERROR.ITEM_PART_OF_ANOTHER_SUBMISSION`. Detach first: for
+every submission in state `UNRESOLVED_ISSUES`,
+`PATCH /v1/reviewSubmissionItems/<itemId> { removed: true }`.
+
+Do **not** create a new version for a rejection — `REJECTED`, `DEVELOPER_REJECTED`,
+`METADATA_REJECTED`, `INVALID_BINARY` are editable, so attach the new build to the same version.
+A duplicate version string fails with `ENTITY_ERROR.ATTRIBUTE.INVALID.DUPLICATE`.
+
+**Reviewer communication.** Resolution Center has no API — you can read that a version is
+`REJECTED` but not why, and you cannot reply. `appStoreReviewDetail.notes` is readable, writable,
+and read by reviewers; it is the only channel available. When fixing a rejection, put the
+explanation in `ios/fastlane/metadata/review_information/notes.txt` and upload it **before**
+resubmitting. State facts about this build — "we will add it later" invites another rejection.
+
+**Metadata stays editable through `WAITING_FOR_REVIEW` and `IN_REVIEW`** and locks at
+`READY_FOR_SALE` (`PATCH` → `409`). A wrong release note is fixable until approval, then never.
 
 ### Print exact manual steps
 

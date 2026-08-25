@@ -156,6 +156,21 @@ genuinely useful, and two items are **safety/compliance**, not nicety:
   exist — a dangling reference is a runtime crash/blank.
 - **Ship CI from day one**: `.github/workflows/ci.yml` running `flutter analyze --no-fatal-infos` +
   `flutter test` on push/PR.
+- **A build script that `git checkout`s a generated-but-tracked file silently reverts real source
+  changes.** iOS build scripts commonly restore `ios/Runner.xcodeproj/project.pbxproj` after
+  `flutter build`/prebuild rewrites it. If someone edited that file on purpose (device family,
+  capabilities, a build setting), `git checkout` throws the edit away — the repo then says one
+  thing and the shipped binary another, with no error anywhere. Copy the file before the step and
+  `mv` the copy back after, instead of checking out.
+- **Do not edit a shell script while it is running.** `zsh` reads the file by byte offset as it
+  executes; an edit shifts every later offset and the shell resumes mid-line, running garbage.
+  Prepare the patch and apply it once the run has finished.
+- **Release builds for both platforms at once will OOM a 16 GB machine** and kill both. Run them
+  sequentially, and gate an iOS build on free disk (~12 GB) — a full disk fails deep inside the
+  archive step with an error that does not mention disk.
+- **When sweeping a portfolio, get the app list from the store, not the filesystem.** Detecting
+  iOS targets by the presence of an `<app>-ios/` directory misses every project that builds iOS
+  from its own tree; enumerate `GET /v1/apps` and reconcile against what is on disk.
 
 ## Ads (init coordination — see also the admob skill)
 
@@ -259,6 +274,61 @@ These caused real App Store / Play rejections and were fixed; prevent them up fr
   Audience**, AdMob **"Made for kids"** + `tagForChildDirectedTreatment(true)` must all agree;
   personalized ads must be off. Default every game to **not** child-directed unless the concept
   clearly targets kids (misdeclaring is an FTC-enforcement risk, not just a rejection).
+- **Age rating: the declarations Apple added in 2026** — the questionnaire gained
+  `userGeneratedContent`, `messagingAndChat`, `ageAssurance`, `gunsOrOtherWeapons`,
+  `advertising`, `healthOrWellnessTopics`, `parentalControls`. An app record that only answered
+  the old questionnaire has these unset, and submission is blocked *before* human review with
+  `409 STATE_ERROR.ENTITY_STATE_INVALID` naming a missing `ageRatingDeclarations` attribute.
+  **Every AdMob game must set `advertising` = Yes** — banners count; otherwise the build is
+  bounced by Apple's automated analysis ("indicates the app may include advertising but you did
+  not select Yes for the Advertising content descriptor"). Note `ageRatingDeclarations` is
+  **write-only over the API** (`GET` → `403`), so a portfolio audit means opening the Connect UI.
+- **`POST /v1/appStoreVersionSubmissions` is deprecated** — returns
+  `403 "Allowed operation is: DELETE"`. Submitting is now three calls:
+  `POST /v1/reviewSubmissions` → `POST /v1/reviewSubmissionItems` (links the version) →
+  `PATCH /v1/reviewSubmissions/<id> { submitted: true }`. Reuse an existing submission in state
+  `READY_FOR_REVIEW` instead of creating a second one.
+- **A rejected version is still attached to the submission that rejected it** — adding it to a
+  new one fails with `STATE_ERROR.ITEM_PART_OF_ANOTHER_SUBMISSION`. For every submission in
+  state `UNRESOLVED_ISSUES`, `PATCH /v1/reviewSubmissionItems/<itemId> { removed: true }` first.
+  And do **not** create a new version for a rejection: `REJECTED`, `DEVELOPER_REJECTED`,
+  `METADATA_REJECTED`, `INVALID_BINARY` are all editable — attach the new build to the same
+  version. A duplicate version string fails with `ENTITY_ERROR.ATTRIBUTE.INVALID.DUPLICATE`.
+- **Metadata locks at release, not at submission** — `whatsNew`, store URLs, and review notes
+  stay editable through `WAITING_FOR_REVIEW` and `IN_REVIEW`; `PATCH` starts returning `409`
+  only at `READY_FOR_SALE`. So a wrong release note is fixable right up until approval and
+  permanently wrong one minute after. Proofread before the build is approved.
+- **Resolution Center has no API** — `/resolutionCenterThreads`, `/resolutionCenterMessages`,
+  `/apps/{id}/resolutionCenterThreads` all 404. You can read the *state* (`appStoreState`,
+  `reviewSubmissions.state`) but not the rejection text, and you cannot reply. The one channel
+  you can automate is `appStoreReviewDetail.notes`, which reviewers do read — so when fixing a
+  rejection, **write the explanation into the notes before resubmitting**, not after.
+- **A released version string cannot take another build** — the upload fails with
+  *"Invalid Pre-Release Train. The train version 'x.y.z' is closed for new build submissions."*
+  Bump the version name. On Flutter change only the name in `pubspec.yaml` and leave `+N` alone:
+  that number is the Android `versionCode` and has to keep increasing on its own schedule.
+- **Declaring iPad without supporting all iPad orientations is a rejection** (Guideline 4.0 /
+  90474). `TARGETED_DEVICE_FAMILY = "1,2"` is the default in some project templates, so a
+  portrait-only phone game ships claiming iPad support and gets bounced. For a phone-only game
+  set it to `"1"` — that is also what avoids the iPad screenshot requirement. Check what the
+  template actually wrote; do not assume.
+- **Play Console declarations come from the merged manifest, not yours** — a dependency's own
+  `AndroidManifest.xml` is merged into the bundle, so a permission you never typed becomes your
+  declaration to file under **App content → Needs attention**. The `alarm` package, for one,
+  declares `FOREGROUND_SERVICE_MEDIA_PLAYBACK` and a `foregroundServiceType="mediaPlayback"`
+  service — deleting your own `<uses-permission>` line changes nothing. Google's declaration
+  form for `FOREGROUND_SERVICE_*` requires a **demo video link** (unlisted YouTube; private is
+  not visible to reviewers) showing the feature working *while the app is backgrounded*. Past
+  the compliance deadline this blocks updates while the live listing stays up, so it is easy not
+  to notice until a release is stuck. Check with:
+  `grep uses-permission android/app/build/intermediates/merged_manifests/release/AndroidManifest.xml`
+  — `FOREGROUND_SERVICE_*`, `SCHEDULE_EXACT_ALARM`, `QUERY_ALL_PACKAGES`, `READ_MEDIA_*` all
+  need declarations.
+- **A privacy policy URL is readable over the App Store API and not over Play's** —
+  `appInfoLocalizations.privacyPolicyUrl` is per-locale and per-app (a 30-language listing has
+  30 of them, easy to leave stale). Play Developer API v3 has no endpoint at all:
+  `edits().listings()` carries only title/descriptions, `edits().details()` only contact fields,
+  `applications().dataSafety()` is create-only. Auditing Play privacy URLs is a manual job.
 
 ---
 

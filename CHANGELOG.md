@@ -3,6 +3,52 @@
 All notable changes to flutter-flame-harness are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.21.0] — 2026-08-25
+
+### Added
+- **App Store Connect submission over the API is documented, and the old claim that it cannot be
+  automated is corrected.** `POST /v1/appStoreVersionSubmissions` has been deprecated —
+  it answers `403 "Allowed operation is: DELETE"` — and the working flow is three calls:
+  `reviewSubmissions` → `reviewSubmissionItems` → `PATCH { submitted: true }`. The submit skill now
+  carries that flow as a reference section. The pipeline still pauses before the final submission,
+  but now says so as a deliberate checkpoint rather than an API limitation.
+- **Resubmitting after a rejection.** A rejected version stays attached to the submission that
+  rejected it, so adding it to a new one fails with `STATE_ERROR.ITEM_PART_OF_ANOTHER_SUBMISSION`;
+  every item under a submission in state `UNRESOLVED_ISSUES` has to be detached with
+  `{ removed: true }` first. And a rejection is edited in place — `REJECTED`,
+  `DEVELOPER_REJECTED`, `METADATA_REJECTED`, `INVALID_BINARY` are all editable states, so a new
+  version record is both unnecessary and rejected as a duplicate version string.
+- **Age rating: the declarations Apple added in 2026.** `userGeneratedContent`, `messagingAndChat`,
+  `ageAssurance`, `gunsOrOtherWeapons`, `advertising`, `healthOrWellnessTopics`, `parentalControls`.
+  An app record that only answered the old questionnaire cannot enter review. Any AdMob build must
+  answer `advertising` = Yes — banners count — or Apple's automated analysis bounces it before a
+  human looks. `ageRatingDeclarations` is write-only over the API (`GET` → `403`), so this is not
+  auditable programmatically; the checklist says to open the Connect UI.
+- **Play Console declarations come from the merged manifest.** A dependency's own
+  `AndroidManifest.xml` is merged into the bundle, so a permission nobody typed becomes a
+  declaration to file under App content → Needs attention. `FOREGROUND_SERVICE_*` requires a form
+  with a mandatory demo video showing the feature working while the app is backgrounded, and past
+  the compliance deadline it blocks updates while the live listing stays up. Deleting your own
+  `<uses-permission>` line does nothing when the dependency declares it.
+- **Metadata locks at release, not at submission** — `whatsNew`, store URLs, and review notes stay
+  editable through `WAITING_FOR_REVIEW` and `IN_REVIEW`, and start returning `409` at
+  `READY_FOR_SALE`.
+- **Resolution Center has no API.** The rejection text cannot be read and cannot be replied to;
+  `appStoreReviewDetail.notes` is the only reviewer-facing field that can be written, so a fix
+  explanation belongs there **before** the resubmission rather than after it.
+- **`TARGETED_DEVICE_FAMILY` has to match reality** — declaring iPad (`"1,2"`, a template default)
+  obliges the game to support every iPad orientation, and a portrait-only phone game shipped that
+  way is rejected under 4.0.
+- **A released version string cannot take another build** (*"Invalid Pre-Release Train … closed for
+  new build submissions"*); bump the name in `pubspec.yaml` and leave `+N`, the Android
+  `versionCode`, on its own schedule.
+- **Build-machine gotchas:** a build script that `git checkout`s a generated-but-tracked file
+  (`project.pbxproj`) silently reverts deliberate source edits, so the repo and the shipped binary
+  disagree with no error anywhere — copy and `mv` back instead; editing a shell script while it runs
+  corrupts the running shell's byte offsets; simultaneous iOS + Android release builds OOM a 16 GB
+  machine; and a portfolio sweep should take its app list from `GET /v1/apps`, not from directory
+  layout, which misses every project that builds iOS from its own tree.
+
 ## [0.20.0] — 2026-07-28
 
 ### Fixed
