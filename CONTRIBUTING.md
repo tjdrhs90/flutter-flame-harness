@@ -51,7 +51,11 @@ Any change that affects what the harness produces ships as a release. Do all of 
 commit** as the change — splitting the version bump out is how it gets forgotten:
 
 1. Bump `version` in `.claude-plugin/plugin.json` — minor for anything that changes generated output
-   or skill behaviour, patch for guidance/wording only.
+   or skill behaviour, patch for guidance/wording only. **If `.claude-plugin/marketplace.json` ever
+   grows a `version` field, bump that too** — that is the one the marketplace reads, and a stale
+   value there means installed users never see the update. It bit the sibling repo
+   (`rn-launch-harness`) on 2026-09-01; this repo's marketplace entry carries no version today, so
+   there is nothing to bump — check before assuming.
 2. Add a `## [x.y.z] — YYYY-MM-DD` section to `CHANGELOG.md` describing the symptom, the cause, and
    how it was verified.
 3. After pushing, tag it and publish the release:
