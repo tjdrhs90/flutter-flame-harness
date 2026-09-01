@@ -282,7 +282,9 @@ Future<void> _waitUntilResumed() async {
 }
 ```
 
-Call `requestATT()` from a **post-first-frame callback** (`WidgetsBinding.instance.addPostFrameCallback`), and **await it before** `loadConsentForm()` and `MobileAds.instance.initialize()` so the ATT decision precedes any ad/tracking request (see §5). Never call it synchronously in `main()` before the first frame — that is what triggers the 2.1 rejection.
+Call `requestATT()` **after** `loadConsentForm()` returns and before
+`MobileAds.instance.initialize()` (see §5). Never call it synchronously in
+`main()` before the first frame — that is what triggers the 2.1 rejection.
 
 ### 5. UMP Consent Flow — lib/admob/consent_helper.dart
 
@@ -322,11 +324,21 @@ Use this startup order in `main()`:
 
 ```dart
 WidgetsFlutterBinding.ensureInitialized();
+await loadConsentForm();     // UMP 동의 폼. ATT 보다 먼저다
 await requestATT();          // iOS only — no-op on Android
-await loadConsentForm();     // waits for UMP consent decision
 await MobileAds.instance.initialize();
 // preload ads / runApp after this point
 ```
+
+> **순서를 뒤집지 말 것.** AdMob 콘솔에서 만드는 ATT 안내 메시지는 "다음
+> 화면에서 '허용'을 탭하세요" 라고 말한다. ATT 를 먼저 띄우면 그 안내가 뒤에
+> 나와 앞뒤가 안 맞고, 추적 허용률이 떨어진다. 허용률은 곧 IDFA 확보율이고
+> eCPM 이다.
+>
+> 그리고 **`loadConsentForm()` 의 완료 콜백이 두 경로(폼 종료 / 정보 갱신
+> 실패)에서 불린다는 점**을 기억할 것. 위 구현은 `completer` 로 한 번만
+> 완료되게 막아 두었다. 이 가드를 빼면 폼이 떠 있는 동안 ATT 가 그 위에
+> 겹쳐 뜬다 — 실제로 출시된 앱에서 그렇게 나갔다 (2026-08, 51개 앱 점검).
 
 ### 6. ID Switch — lib/admob/ad_ids.dart
 

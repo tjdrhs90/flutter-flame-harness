@@ -3,6 +3,23 @@
 All notable changes to flutter-flame-harness are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.22.0] — 2026-09-01
+
+### Fixed
+- **UMP 동의 폼과 ATT 요청 순서를 바로잡았다.** 종전 안내는 `await requestATT()` 를 먼저,
+  `await loadConsentForm()` 을 나중에 부르게 되어 있었다. AdMob 콘솔에서 만드는 ATT 안내
+  메시지는 "다음 화면에서 '허용'을 탭하세요" 라고 말하므로, ATT 가 먼저 뜨면 그 안내가 뒤에
+  나와 앞뒤가 맞지 않는다. 추적 허용률은 곧 IDFA 확보율이고 eCPM 이라 그냥 어색한 정도로
+  끝나지 않는다. 시작 순서를 `loadConsentForm()` → `requestATT()` → `MobileAds.initialize()`
+  로 바꿨다.
+- **동의 완료 콜백이 두 경로에서 불린다는 점을 문서에 남겼다.** 폼 종료와 정보 갱신 실패가
+  같은 완료 지점으로 들어온다. 가드가 없으면 폼이 떠 있는 동안 ATT 가 그 위에 겹쳐 뜬다 —
+  실제로 출시된 앱에서 그렇게 나갔다 (2026-08, 51개 앱 점검에서 발견).
+
+### Added
+- **Evaluator R6 게이트에 순서 검사를 넣었다.** `lib/main.dart` 에서 `requestATT()` 가
+  `loadConsentForm()` 보다 먼저 나오면 FAIL 로 잡는다.
+
 ## [0.21.0] — 2026-08-25
 
 ### Added

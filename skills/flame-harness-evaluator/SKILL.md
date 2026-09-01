@@ -150,6 +150,12 @@ ANDID=$(grep -oE 'applicationId *= *"[^"]+"' android/app/build.gradle.kts 2>/dev
 echo "iOS=$IOSID  Android=$ANDID  (must be byte-identical == config.bundle_id)"
 { [ -n "$IOSID" ] && [ "$IOSID" = "$ANDID" ]; } || echo "FAIL: iOS and Android bundle id differ (or unset)"
 echo "$IOSID" | grep -qE '^[a-z0-9.]+$' || echo "FAIL: bundle id has uppercase/_/- (must be lowercase [a-z0-9.])"
+# R6 consent order: UMP form must run BEFORE ATT (AdMob 안내가 "다음 화면에서
+#    '허용'을 탭하세요" 라고 말한다. 뒤집히면 안내가 무의미하고 허용률이 떨어진다)
+grep -n "requestATT\|loadConsentForm" lib/main.dart 2>/dev/null | awk -F: '
+  /loadConsentForm/ { c=$1 } /requestATT/ { a=$1 }
+  END { if (a && c && a < c) print "FAIL: requestATT() runs before loadConsentForm() — 두 알림이 겹친다"
+        else if (!a || !c) print "CHECK: main.dart 에서 ATT/동의 호출을 찾지 못했다" }'
 # R7 assets & CI: audio present, no missing-asset refs, CI workflow exists
 ls assets/audio/*.wav assets/audio/*.mp3 assets/audio/*.ogg 2>/dev/null | grep -q . || echo "FAIL: no audio assets — game ships silent"
 ls .github/workflows/*.yml .github/workflows/*.yaml 2>/dev/null | grep -q . || echo "FAIL: no CI workflow"
