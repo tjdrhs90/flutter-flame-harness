@@ -2,9 +2,25 @@
 
 [English](README.md) | **한국어**
 
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-Plugin-purple?logo=anthropic)](https://claude.ai/code)
+[![Google Antigravity](https://img.shields.io/badge/Google%20Antigravity-Compatible-4285F4?logo=google)](https://deepmind.google)
+[![OpenAI Codex](https://img.shields.io/badge/OpenAI%20Codex-Ready-412991?logo=openai)](https://openai.com)
+[![Multi-Agent](https://img.shields.io/badge/Agent%20Agnostic-Universal-blueviolet)](#설치)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
 ![flutter-flame-harness — Flutter/Flame 게임을 아이디어부터 앱스토어까지 끌고 가는 AI 개발 하네스](assets/social-preview-ko.png)
 
-아이디어부터 앱스토어 출시까지, Flutter/Flame 게임 제작 전 과정을 끌고 가는 Claude Code 플러그인입니다. 하네스가 스킬들의 구조화된 파이프라인 — 리서치, 기획, 디자인, 계약 협상, 그리고 generator–evaluator 빌드 루프 — 을 조율하여, 각 단계가 검증되고 인수인계 가능한 산출물을 낸 뒤에야 다음 단계로 넘어갑니다.
+**Claude Code, Google Antigravity, OpenAI Codex** 및 AI 에이전트를 위한 자율 게임 런칭 하네스입니다. 아이디어부터 앱스토어 출시까지, Flutter/Flame 게임 제작 전 과정을 자동화합니다. 하네스가 스킬들의 구조화된 파이프라인 — 리서치, 기획, 디자인, 계약 협상, 그리고 generator–evaluator 빌드 루프 — 을 조율하여, 각 단계가 검증되고 인수인계 가능한 산출물을 낸 뒤에야 다음 단계로 넘어갑니다.
+
+---
+
+## 지원 환경
+
+| 환경 | 연동 방식 | 실행 인터페이스 |
+|---|---|---|
+| **Claude Code** | 네이티브 플러그인 (`.claude-plugin`) | `/flame-harness "아이디어"` |
+| **Google Antigravity** | 워크스페이스 스킬 (`.agents/skills/`) | `/flame-harness "아이디어"` 또는 자연어 요청 |
+| **OpenAI Codex / CLI** | 스킬 지침 주입 (`SKILL.md`) | 태스크 명령 / 서브프로세스 루프 |
 
 ## 왜
 

@@ -2,9 +2,25 @@
 
 **English** | [한국어](README.ko.md)
 
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-Plugin-purple?logo=anthropic)](https://claude.ai/code)
+[![Google Antigravity](https://img.shields.io/badge/Google%20Antigravity-Compatible-4285F4?logo=google)](https://deepmind.google)
+[![OpenAI Codex](https://img.shields.io/badge/OpenAI%20Codex-Ready-412991?logo=openai)](https://openai.com)
+[![Multi-Agent](https://img.shields.io/badge/Agent%20Agnostic-Universal-blueviolet)](#install)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
 ![flutter-flame-harness — take a Flutter/Flame game from idea to the App Store with an AI build harness](assets/social-preview.png)
 
-A Claude Code plugin that takes a Flutter/Flame game from raw idea all the way to the app stores. The harness orchestrates a structured pipeline of skills — research, planning, design, contract negotiation, and a generator–evaluator build loop — so every stage produces a verified, hand-off-ready artifact before the next one begins.
+An autonomous game launch harness for **Claude Code, Google Antigravity, and OpenAI Codex** that takes a Flutter/Flame game from raw idea all the way to the app stores. The harness orchestrates a structured pipeline of skills — research, planning, design, contract negotiation, and a generator–evaluator build loop — so every stage produces a verified, hand-off-ready artifact before the next one begins.
+
+---
+
+## Supported Environments
+
+| Environment | Integration Method | Execution Interface |
+|---|---|---|
+| **Claude Code** | Native plugin (`.claude-plugin`) | `/flame-harness "idea"` |
+| **Google Antigravity** | Workspace skill (`.agents/skills/`) | `/flame-harness "idea"` or subagent |
+| **OpenAI Codex / CLI** | Skill prompt injection (`SKILL.md`) | Task instruction / Subprocess loop |
 
 ## Why
 
