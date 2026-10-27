@@ -5,7 +5,7 @@
     {
       "name": "flutter-flame-harness",
       "source": ".",
-      "description": "Idea-to-store harness for Flutter/Flame games."
+      "description": "Idea-to-store autonomous harness for Flutter/Flame games across Claude Code, Antigravity, and Codex."
     }
   ]
 }

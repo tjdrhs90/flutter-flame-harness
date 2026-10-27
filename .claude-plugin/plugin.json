@@ -1,7 +1,7 @@
 {
   "name": "flutter-flame-harness",
   "version": "0.23.0",
-  "description": "Idea-to-store harness for Flutter/Flame games: research (AI idea recommendation), plan, design, contract, generator-evaluator build loop, AdMob, build, screenshot, submit, retro.",
+  "description": "Idea-to-store autonomous harness for Flutter/Flame games across Claude Code, Antigravity, and Codex: research, plan, design, contract, generator-evaluator loop, AdMob, build, screenshot, submit, retro.",
   "author": {
     "name": "Seonggon Sim",
     "email": "tjdrhs90@gmail.com"
