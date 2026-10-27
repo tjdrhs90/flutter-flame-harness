@@ -126,6 +126,16 @@ Read `docs/harness/state.md` and extract `next_role` and `status`.
 
 ### Dispatch
 
+**Multi-Agent Execution Adapter:**
+
+| Platform | Phase Skill Invocation | Context Isolation | User Input |
+|---|---|---|---|
+| **Claude Code** | `Skill("flame-harness-<next_role>")` | `Agent(role, prompt)` subprocess | `AskUserQuestion` |
+| **Antigravity** | `skills/flame-harness-<next_role>/SKILL.md` | `invoke_subagent(TypeName="self", ...)` | `ask_question` |
+| **OpenAI Codex / CLI** | `skills/flame-harness-<next_role>/SKILL.md` | Subprocess agent execution | Stdin / question tool |
+
+*Note: The underlying state machine (`docs/harness/state.md`) and protocol are 100% agent-agnostic.*
+
 For any `next_role` value in the known set, invoke the corresponding phase skill:
 
 ```

@@ -3,6 +3,15 @@
 All notable changes to flutter-flame-harness are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.23.0] — 2026-10-27
+
+### Added
+- **멀티 에이전트 환경(Antigravity, OpenAI Codex, CLI 에이전트) 호환 어댑터 추가.**
+  Claude Code 외에도 Google Antigravity, OpenAI Codex 등 다양한 AI 코딩 어시스턴트에서
+  하네스를 네이티브 스킬 및 슬래시 커맨드로 실행할 수 있도록 오케스트레이터의 Phase 디스패치 매핑과
+  연동 가이드(`docs/agent-compatibility.md`)를 추가했다.
+- **문서 업데이트.** README 및 README.ko에 Antigravity 및 기타 에이전트 설치·연동 안내를 반영했다.
+
 ## [0.22.0] — 2026-09-01
 
 ### Fixed

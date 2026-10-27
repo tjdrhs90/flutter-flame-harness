@@ -62,10 +62,19 @@ See [`docs/SMOKE-TEST-phaseB.md`](docs/SMOKE-TEST-phaseB.md) for the full manual
 
 ## Install
 
+### Claude Code
 ```bash
 /plugin marketplace add tjdrhs90/flutter-flame-harness
 /plugin install flutter-flame-harness@flutter-flame-harness
 ```
+
+### Google Antigravity & Other Agents
+Link the skill into your workspace's `.agents/skills/`:
+```bash
+mkdir -p .agents/skills
+ln -s /path/to/flutter-flame-harness/skills/flame-harness .agents/skills/flame-harness
+```
+See [docs/agent-compatibility.md](docs/agent-compatibility.md) for full Antigravity, OpenAI Codex, and generic agent integration details.
 
 ## Updating
 

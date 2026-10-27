@@ -62,10 +62,19 @@ AdMob 연동, 릴리스 빌드(Android + iOS), App Store / Play Store 스크린�
 
 ## 설치
 
+### Claude Code
 ```bash
 /plugin marketplace add tjdrhs90/flutter-flame-harness
 /plugin install flutter-flame-harness@flutter-flame-harness
 ```
+
+### Google Antigravity 및 기타 AI 에이전트
+워크스페이스의 `.agents/skills/`에 스킬을 심볼릭 링크로 연결하여 사용합니다:
+```bash
+mkdir -p .agents/skills
+ln -s /path/to/flutter-flame-harness/skills/flame-harness .agents/skills/flame-harness
+```
+OpenAI Codex, Antigravity 등 멀티 에이전트 연동 상세는 [docs/agent-compatibility.md](docs/agent-compatibility.md)를 참고하세요.
 
 ## 업데이트
 
