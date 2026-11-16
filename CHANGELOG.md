@@ -3,6 +3,13 @@
 All notable changes to flutter-flame-harness are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.24.0] — 2026-11-16
+
+### Added
+- **신규 앱 첫 빌드 테스터 등록 프로토콜 및 가이드 추가.**
+  - iOS (TestFlight): ASC API(`POST /v1/betaGroups`)로 내부 그룹(`isInternalGroup: true`)을 생성하여 팀 개발자에게 심사 없이 즉시 배포하는 절차 명시.
+  - Android (Google Play): Play Developer API가 내부 테스트 트랙의 테스터 설정을 거부(`Cannot set tester group on an internal track`)하므로 Play Console 웹에서 1회성 테스터 목록 선택·저장이 필수임을 문서화.
+
 ## [0.23.0] — 2026-10-27
 
 ### Added

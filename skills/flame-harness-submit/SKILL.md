@@ -156,6 +156,14 @@ already hit; see `docs/game-gotchas.md` → Store rejections):
 - **COPPA / kids:** if the game is **child-directed** (see the profile), AdMob must be "Made for kids"
   with `tagForChildDirectedTreatment`, and Play Target Audience must include children — keep all three
   consistent or expect a rejection / FTC exposure.
+- **Internal Testing & Testers Setup (First-time upload)**:
+  - **iOS (TestFlight)**: Create an internal beta group via ASC API (`POST /v1/betaGroups`) with
+    `isInternalGroup: true` and link App Store Connect team developers. Processed builds deploy
+    instantly to internal testers without Apple Beta review.
+  - **Android (Google Play)**: Play Developer API rejects tester assignment on internal tracks
+    (`Cannot set tester group on an internal track`). The developer must navigate to
+    **Play Console → Testing → Internal testing → Testers tab**, select their tester email list,
+    and click Save once. Subsequent API uploads deploy automatically to those testers.
 
 ### Pre-pause state write
 

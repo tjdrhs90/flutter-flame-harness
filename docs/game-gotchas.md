@@ -394,3 +394,16 @@ Lower-frequency but real, from a full read of all repos' commits + docs.
 - **Speed-gate impulses & remove spawn overlaps** — springs/bumpers fire only above a contact-velocity
   threshold (else resting bodies launch at spawn); strip overlapping bodies at level-gen (Box2D
   explodes overlaps).
+
+## Store Testing & Beta Distribution
+
+- **Google Play Internal Testing: API cannot set testers on internal tracks**:
+  The Google Play Developer API's `edits.testers` rejects internal tracks with `Cannot set tester group on an internal track`.
+  Individual tester email lists cannot be created or linked via API. You **must** go to the Play Console web UI
+  once: **Testing → Internal testing → Testers tab**, select your tester email list, and save.
+  Subsequent AAB uploads via API will then automatically deploy to those testers.
+- **TestFlight: Always specify `isInternalGroup: true`**:
+  TestFlight beta groups can be created via ASC API (`POST /v1/betaGroups`), but omitting `isInternalGroup: true`
+  defaults to an **external** group which requires Apple Beta App Review. For instant internal developer testing,
+  always set `isInternalGroup: true` and link App Store Connect team members.
+
